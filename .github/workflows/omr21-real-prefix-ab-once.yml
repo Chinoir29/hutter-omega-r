@@ -1,0 +1,144 @@
+name: "OMÉGA-R v0.21 — réel codeur bit à bit A/B"
+on:
+  push:
+    branches:
+      - research/omr21-cmix-shadow-calibration
+    paths:
+      - .github/workflows/omr21-real-prefix-ab-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  real-coded-prefix-ab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    steps:
+      - name: Checkout only authorized original project
+        uses: actions/checkout@v4
+      - name: Local gate tests and compilation of candidate probability observer
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v21 -p 'test_*.py' -v
+          g++ -std=c++17 -O2 -Wall -Wextra -I Hutter_OmegaR/v21 Hutter_OmegaR/v21/shadow_selftest.cpp -o /tmp/omr21-selftest
+          /tmp/omr21-selftest > /tmp/omr21-synthetic.stdout 2> /tmp/omr21-synthetic.stderr
+          grep -F 'OMR21_SHADOW_SYNTHETIC_SELFTEST_OK' /tmp/omr21-synthetic.stdout
+          free -m
+          df -h /tmp
+      - name: Install standard upstream toolchain (no proprietary services or payments)
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version
+          dpkg-query -W clang-18 libclang-rt-18-dev lld-18 gcc-13
+      - name: Pin GPL-3.0-only source and prepare EXACT paired research prefixes
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr21-upstream
+          git -C /tmp/omr21-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v21/prepare_shadow.py --upstream /tmp/omr21-upstream --output /tmp/omr21-shadow --control-output /tmp/omr21-control
+          cmp /tmp/omr21-shadow/src/runner.cpp /tmp/omr21-control/src/runner.cpp
+          cmp /tmp/omr21-shadow/src/coder/decoder.cpp /tmp/omr21-control/src/coder/decoder.cpp
+      - name: Build paired real production compressor pathways, serially
+        run: |
+          for arm in control shadow; do
+            cd /tmp/omr21-$arm
+            /usr/bin/time -f 'BUILD_WALL=%e BUILD_PEAK_RSS_KIB=%M' -o /tmp/omr21-$arm-build-time.log bash build.sh >/tmp/omr21-$arm-build.stdout 2>/tmp/omr21-$arm-build.stderr
+            test -x comp9
+            sha256sum comp9 > /tmp/omr21-$arm-binary.sha256
+            wc -c < comp9 > /tmp/omr21-$arm-binary-bytes.txt
+          done
+      - name: Download and independently authenticate exact 1GB public corpus
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr21-enwik9.zip
+          python3 - <<'PY'
+          import hashlib,shutil,zipfile
+          from pathlib import Path
+          src=Path('/tmp/omr21-enwik9.zip'); dst=Path('/tmp/omr21-enwik9')
+          with zipfile.ZipFile(src) as z:
+              files=[x for x in z.infolist() if not x.is_dir()]
+              assert len(files)==1 and files[0].filename=='enwik9' and files[0].file_size==1_000_000_000
+              with z.open(files[0]) as a,dst.open('wb') as b:shutil.copyfileobj(a,b,4<<20)
+          h=hashlib.sha256()
+          with dst.open('rb') as f:
+              for b in iter(lambda:f.read(4<<20),b''):h.update(b)
+          assert dst.stat().st_size==1_000_000_000
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          src.unlink()
+          print('CANONICAL_ENWIK9_SHA_VERIFIED_NOT_UPLOADED')
+          PY
+      - name: Real arithmetic prefix, control then shadow; compare same first 524288 preprocessed bytes
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os, pathlib,subprocess,shutil,re
+          root=pathlib.Path('/tmp')
+          marks={}
+          for arm in ('control','shadow'):
+              cwd=root/('omr21-run-'+arm)
+              cwd.mkdir()
+              (cwd/'enwik9').symlink_to(root/'omr21-enwik9')
+              env=os.environ.copy()
+              env['OMR21_SHADOW_PREFIX_BYTES']='524288'
+              cmd=['timeout','--signal=TERM','1800','/usr/bin/time','-f','PREFIX_WALL=%e PREFIX_PEAK_RSS_KIB=%M',
+                  '-o',str(root/('omr21-'+arm+'-prefix-time.log')),str(root/('omr21-'+arm)/'comp9')]
+              with (root/('omr21-'+arm+'-prefix.stdout')).open('wb') as out,(root/('omr21-'+arm+'-prefix.stderr')).open('wb') as err:
+                  p=subprocess.run(cmd,cwd=cwd,env=env,stdout=out,stderr=err)
+              if p.returncode: raise RuntimeError(arm+' RUN_FAILED returncode='+str(p.returncode))
+              stderr=(root/('omr21-'+arm+'-prefix.stderr')).read_text(errors='replace')
+              hits=re.findall(r'OMR21_PREFIX_ACTUAL_CODED_STREAM_BYTES=(\d+)',stderr)
+              assert len(hits)==1 and int(hits[0])==501_062_281,(arm,hits)
+              assert not (cwd/'archive9').exists()
+              coded=cwd/'omr21-coded-prefix.bin'
+              assert coded.is_file() and coded.stat().st_size>5
+              marks[arm]={'coded_payload_bytes':coded.stat().st_size,
+                    'coded_payload_sha256':hashlib.sha256(coded.read_bytes()).hexdigest(),
+                    'source_preprocessed_bytes':int(hits[0])}
+              if arm=='shadow':
+                  scores=re.findall(r'OMR21_SHADOW_RESULT (\{[^\r\n]+\})',stderr)
+                  assert len(scores)==1,('no shadow result',stderr[-2500:])
+                  obs=json.loads(scores[0])
+                  assert obs['changed_real_probabilities'] is False
+                  assert obs['train_bits']==262144 and obs['holdout_bits']>262144
+                  assert obs['train_bits']+obs['holdout_bits']==obs['coded_bits']
+                  assert obs['selected_mode']==min(range(4),key=lambda j:(obs['train_loss'][j],j))
+                  assert len(obs['holdout_loss'])==4
+                  marks['shadow_online_scores']=obs
+              # Do NOT retain source, transformed bytes, weights or coded raw payloads.
+              shutil.rmtree(cwd)
+          assert marks['control']['coded_payload_sha256']==marks['shadow']['coded_payload_sha256'],'OBSERVER_CHANGED_REAL_ARITHMETIC_BYTES'
+          assert marks['control']['coded_payload_bytes']==marks['shadow']['coded_payload_bytes']
+          obs=marks['shadow_online_scores']
+          marks['status']='SHADOW_REAL_CMIX_PROBABILITIES_VERIFIED_INERT'
+          marks['real_prefix_bytes']=524288
+          marks['training_rule']='first 262144 CODED bits, not raw stream bytes'
+          marks['holdout_rule']='all subsequent coded bits, online model trains on past decoded bits'
+          marks['decision']='KEEP_FOR_ACTUAL_ENCODER_DECODER_PATCH' if obs['selected_mode'] and obs['holdout_gain_bits']>0 else 'REJECT_THIS_CALIBRATION_SHADOW'
+          marks['official_hutter_score']=None
+          marks['archive9_self_extracting']=False
+          marks['whole_enwik9_reconstructed']=False
+          marks['upstream_commit']='35d1957a5074db802fc134126afc77b76d931761'
+          (root/'omr21-prefix-ab-result.json').write_text(json.dumps(marks,indent=2)+'\n')
+          print(json.dumps(marks,indent=2))
+          PY
+      - name: Upload hashes and tests ONLY, never model, corpus or codec payload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr21-real-coded-prefix-shadow-metadata
+          path: |
+            /tmp/omr21-prefix-ab-result.json
+            /tmp/omr21-source-audit-shadow.json
+            /tmp/omr21-source-audit-control.json
+            /tmp/omr21-synthetic.stderr
+            /tmp/omr21-control-build-time.log
+            /tmp/omr21-shadow-build-time.log
+            /tmp/omr21-control-prefix-time.log
+            /tmp/omr21-shadow-prefix-time.log
+            /tmp/omr21-control-binary.sha256
+            /tmp/omr21-shadow-binary.sha256
+            /tmp/omr21-control-binary-bytes.txt
+            /tmp/omr21-shadow-binary-bytes.txt
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Destroy temporary source corpus and models
+        if: always()
+        run: |
+          rm -rf /tmp/omr21-enwik9 /tmp/omr21-enwik9.zip /tmp/omr21-run-control /tmp/omr21-run-shadow
