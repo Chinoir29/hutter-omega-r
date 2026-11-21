@@ -1,0 +1,147 @@
+name: "OMÉGA-R v0.11 — test intégral reproductible enwik9"
+# Benchmark scientifique local. Aucun envoi au jury et aucune dépense externe.
+on:
+  push:
+    paths:
+      - ".github/workflows/omr11-enwik9-full.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write # Publier UNIQUEMENT le JSON de mesures, pas de corpus ni de binaire.
+
+concurrency:
+  group: omr11-enwik9-full-once
+  cancel-in-progress: false
+
+jobs:
+  full:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr11-full-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 160
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Préparer environnement et confirmer ressources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/full11
+          test -x /usr/bin/time || sudo apt-get install -y time
+          { date -u --iso-8601=seconds; uname -a; free -h; df -h .; g++ --version | head -1; } \
+            > reports/full11/environment.txt
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+
+      - name: Télécharger le corpus enwik9 officiel et vérifier son SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-all-errors --connect-timeout 30 \
+            --max-time 3600 -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          printf '%s  %s\n' \
+             '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' \
+             data/enwik9 | sha256sum --check --status
+          sha256sum data/enwik9 > reports/full11/enwik9.sha256
+          rm -f data/enwik9.zip
+
+      - name: Recompiler v0.6 et le candidat v0.11 sans différence de taille
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash Hutter_OmegaR/v6/build.sh
+          python3 Hutter_OmegaR/v11/make_candidate.py
+          printf '%s  %s\n' \
+             '6dd3a2d7b28851552223118c9abf27fe9be8a28d223f96b15fd49553a3910c39' \
+             Hutter_OmegaR/v11/omr11_fold_word.cpp | sha256sum --check --status
+          bash Hutter_OmegaR/v11/build.sh > reports/full11/build_hashes.txt
+          cmp Hutter_OmegaR/v6/comp9 Hutter_OmegaR/v11/comp9_mode0
+          test "$(stat -c%s Hutter_OmegaR/v11/comp9_mode0)" \
+             = "$(stat -c%s Hutter_OmegaR/v11/comp9_mode2)"
+          sha256sum Hutter_OmegaR/v11/comp9_mode2 > reports/full11/candidate_sha256.txt
+          echo "Baseline and candidate byte sizes equal; baseline exact binary reproduction confirmed"
+
+      - name: Compresser et décompresser le milliard d'octets avec v0.11
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v11/verified_enwik9_run_v11.py \
+            data/enwik9 --out reports/full11/report.json --limit-hours 1.5
+
+      - name: Contrôler le rapport avant publication
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -s reports/full11/report.json ]; then
+            python3 Hutter_OmegaR/v9/assess_hutter_report.py \
+              reports/full11/report.json --out reports/full11/audit.json
+          else
+            echo '{"status":"no_complete_report","hutter_claim":false}' > reports/full11/audit.json
+          fi
+
+      - name: Publier seulement le rapport du test dans GitHub
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import base64,datetime,json,os,pathlib,urllib.error,urllib.request
+          root=pathlib.Path('reports/full11')
+          src=root/'report.json'
+          if src.is_file():
+            entry=json.loads(src.read_text())
+            if (entry.get('verified_official_input') is not True
+                or entry.get('source_sha256') != '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+                or entry.get('verified_full_roundtrip_sha256') is not True
+                or entry.get('score_bytes_LOCAL_only') != entry.get('comp9_bytes',0)+entry.get('archive9_bytes',0)
+                or entry.get('organizer_verified') is not False):
+              raise SystemExit('INVALID REPORT - no result published')
+            report={'status':'completed_verified_local_full',
+                    'score_bytes':entry['score_bytes_LOCAL_only'],
+                    'delta_from_v06_bytes':entry['score_bytes_LOCAL_only']-284637047,
+                    'local_benchmark':entry}
+          else:
+            report={'status':'no_complete_report',
+                    'reason':'No verified enwik9 report produced; see GitHub logs and saved diagnostics'}
+          report.update({'project':'OMEGA-R v0.11','run_url':'https://github.com/'+os.environ['REPO']+'/actions/runs/'+os.environ['RUN_ID'],
+                         'job_status_prior_to_reporting':os.environ['JOB_STATUS'],
+                         'published_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                         'committee_validated':False,'prize_submission_sent':False})
+          path='Hutter_OmegaR/results_v11/ENWIK9_FULL_GITHUB.json'
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+path
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+                   'Accept':'application/vnd.github+json',
+                   'X-GitHub-Api-Version':'2022-11-28','User-Agent':'omega-r-v11'}
+          try:
+            with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=20) as res:
+              old=json.load(res).get('sha')
+          except urllib.error.HTTPError as ex:
+            if ex.code!=404:raise
+            old=None
+          payload={'message':'Enregistrer le benchmark local enwik9 v0.11 sans soumission',
+                   'content':base64.b64encode((json.dumps(report,ensure_ascii=False,indent=2)+chr(10)).encode()).decode(),
+                   'branch':'main'}
+          if old:payload['sha']=old
+          req=urllib.request.Request(url,headers=headers,
+             data=json.dumps(payload).encode(),method='PUT')
+          with urllib.request.urlopen(req,timeout=30) as res:
+            res.read()
+          print('Published:',path)
+          PY
+
+      - name: Archiver les rapports exclusivement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr11-enwik9-report
+          path: reports/full11/
+          if-no-files-found: warn
+          retention-days: 14
