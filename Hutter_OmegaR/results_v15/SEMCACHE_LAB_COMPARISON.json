@@ -1,17 +1,111 @@
 {
-  "project": "OMÉGA-R v0.15 SEMCACHE A/B laboratory",
-  "status": "not_run",
-  "revision": "35d1957a5074db802fc134126afc77b76d931761",
-  "thresholds": [
-    990,
-    980,
-    970
-  ],
-  "sample_bytes": 65536,
-  "sample_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
-  "laboratory_only": true,
-  "prize_score": null,
+  "project": "OMÉGA-R v0.15 laboratory SEMCACHE gate A/B",
+  "status": "success_three_lab_roundtrips",
+  "research_only": true,
+  "source_is_lossy_projection": true,
+  "hutter_prize_score": null,
   "committee_validated": false,
-  "submission_sent": false,
-  "note": "Placeholder. No compression result recorded yet."
+  "competition_submission_sent": false,
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44949569634",
+  "job_status_before_reporting": "success",
+  "recorded_utc": "2026-11-21T21:09:33.692688+00:00",
+  "source": "lossily projected 65,536 bytes of canonical enwik9 prefix",
+  "source_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
+  "sample_bytes": 65536,
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "baseline_reproduces_v0143_stream": true,
+  "results": [
+    {
+      "threshold_qpe3": 990,
+      "source_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
+      "lab_coder_bytes": 20533,
+      "lab_coder_sha256": "837f350ac4a4a4f046e1b9eac35956f34548d61db3d8f489fdd17d702e2bc3fe",
+      "unpacked_program_bytes": 621432,
+      "unpacked_program_sha256": "8f92596e03745034c89179a772a7ea044eed0c7026baa59a153e9eb2bbb976c4",
+      "compression": {
+        "wall_s": 36.38,
+        "max_rss_kib": 7286060,
+        "user_cpu_s": 33.62,
+        "system_cpu_s": 2.75,
+        "affinity_cpu": 0
+      },
+      "decompression": {
+        "wall_s": 36.15,
+        "max_rss_kib": 5153488,
+        "user_cpu_s": 33.42,
+        "system_cpu_s": 2.72,
+        "affinity_cpu": 0
+      },
+      "roundtrip_sha256_verified": true,
+      "source_patch_blob": "20614538d3ff90906163a6bd9150894cbb7020f1",
+      "runner_patch_blob": "aed4c66b0dd7e81b546f891fb69ccdb8ee8cd67b",
+      "gate_patch_blob": "480e33dccd31b20c3ea5ee7f8cb220cc1335e66b",
+      "delta_stream_bytes_vs_control": 0,
+      "delta_unpacked_program_bytes_vs_control": 0,
+      "stream_differs_from_control": false
+    },
+    {
+      "threshold_qpe3": 980,
+      "source_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
+      "lab_coder_bytes": 20570,
+      "lab_coder_sha256": "cae0ab39ac37bf3edf12dfe515d68b7d26aa356bdd99dedeb983c45f53fd07f4",
+      "unpacked_program_bytes": 621432,
+      "unpacked_program_sha256": "879810e928b4364e337bc6d2a4b6c65727d9403ec008feffaae6693941d0746b",
+      "compression": {
+        "wall_s": 36.71,
+        "max_rss_kib": 7286216,
+        "user_cpu_s": 33.9,
+        "system_cpu_s": 2.8,
+        "affinity_cpu": 0
+      },
+      "decompression": {
+        "wall_s": 36.53,
+        "max_rss_kib": 5153264,
+        "user_cpu_s": 33.85,
+        "system_cpu_s": 2.67,
+        "affinity_cpu": 0
+      },
+      "roundtrip_sha256_verified": true,
+      "source_patch_blob": "2c10874bd0fe8daeefa38dc331da4e38bb9e6375",
+      "runner_patch_blob": "aed4c66b0dd7e81b546f891fb69ccdb8ee8cd67b",
+      "gate_patch_blob": "480e33dccd31b20c3ea5ee7f8cb220cc1335e66b",
+      "delta_stream_bytes_vs_control": 37,
+      "delta_unpacked_program_bytes_vs_control": 0,
+      "stream_differs_from_control": true
+    },
+    {
+      "threshold_qpe3": 970,
+      "source_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
+      "lab_coder_bytes": 20603,
+      "lab_coder_sha256": "760ec3d08956bda54063d1e954ae9c5b76b1d0657197ca29c59e6bd52db3f3ed",
+      "unpacked_program_bytes": 621432,
+      "unpacked_program_sha256": "6c0647dc42884332b74f319ab378920d9344c59e202442134fdeb9a8dfa4917c",
+      "compression": {
+        "wall_s": 37.2,
+        "max_rss_kib": 7285960,
+        "user_cpu_s": 34.33,
+        "system_cpu_s": 2.86,
+        "affinity_cpu": 0
+      },
+      "decompression": {
+        "wall_s": 37.22,
+        "max_rss_kib": 5153608,
+        "user_cpu_s": 34.39,
+        "system_cpu_s": 2.82,
+        "affinity_cpu": 0
+      },
+      "roundtrip_sha256_verified": true,
+      "source_patch_blob": "0f836f093048d840fc3dfb39cddbe583dc60e5a1",
+      "runner_patch_blob": "aed4c66b0dd7e81b546f891fb69ccdb8ee8cd67b",
+      "gate_patch_blob": "480e33dccd31b20c3ea5ee7f8cb220cc1335e66b",
+      "delta_stream_bytes_vs_control": 70,
+      "delta_unpacked_program_bytes_vs_control": 0,
+      "stream_differs_from_control": true
+    }
+  ],
+  "observed_threshold_effect": true,
+  "full_enwik9_tested": false,
+  "self_extracting_archive_tested": false,
+  "committee_verified": false,
+  "interpretation": "Only the arithmetic-coded *research stream* may be compared; no full enwik9 or Hutter Prize claims."
 }
