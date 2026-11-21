@@ -21,6 +21,21 @@ OLD_HELPER = "#if !(1 && !AUX_BUILD)\nstatic bool provide_dict_file"
 NEW_HELPER = "#if OMR14_RAW_CODER || !(1 && !AUX_BUILD)\nstatic bool provide_dict_file"
 OLD_BRANCH = "#if !(1 && !AUX_BUILD)   // the package form has no -c"
 NEW_BRANCH = "#if OMR14_RAW_CODER || !(1 && !AUX_BUILD) // LAB ONLY: allow -c in full-model build"
+INERT_ANCHOR = "static inline bool AuthorBlockInert() {"
+INERT_OLD = ("  if (transformer::BlobForm()) return true;\n"
+             "  if (vocab_frozen::g_aux) return true;\n"
+             "  return false;")
+INERT_NEW = ("  if (g_omr14_lab_raw_mode) return true;\n"
+             + INERT_OLD)
+LAB_GLOBAL = ("// Independent from transformer::Active() and SEMCACHE.\n"
+              "// Lab-only: disable metadata transformations for raw byte streams.\n"
+              "static bool g_omr14_lab_raw_mode = false;\n\n")
+MAIN_ANCHOR = "int main(int argc, char** argv) {\n  console_progress::Begin();"
+MAIN_REPLACE = ("int main(int argc, char** argv) {\n"
+                "  g_omr14_lab_raw_mode = (argc > 1 && argv[1][0] == '-' &&\n"
+                "      (argv[1][1] == 'c' || argv[1][1] == 'd'));\n"
+                "  console_progress::Begin();")
+
 LAB_HEAD = ("// OMÉGA-R research-only build: allow raw -c coding with the unchanged full model.\n"
             "// This laboratory path and its scores are NOT Hutter Prize submissions.\n"
             "#define OMR14_RAW_CODER 1\n")
@@ -32,11 +47,19 @@ def modify_source(source: str) -> str:
         raise ValueError("Unexpected release -c switch")
     if source.count(OLD_HELPER) != 1:
         raise ValueError("Missing auxiliary dictionary file helper")
+    if source.count(INERT_ANCHOR) != 1 or source.count(INERT_OLD) != 3:
+        raise ValueError("Unexpected metadata-inert function bodies")
+    if source.count(MAIN_ANCHOR) != 1:
+        raise ValueError("Unexpected main entry")
     if "OMR14_RAW_CODER" in source:
         raise ValueError("This source was previously patched")
     changed=(LAB_HEAD+source.replace(OLD_PARSER,NEW_PARSER,1)
-             .replace(OLD_BRANCH,NEW_BRANCH,1).replace(OLD_HELPER,NEW_HELPER,1))
-    if changed.count("OMR14_RAW_CODER")!=3:
+             .replace(OLD_BRANCH,NEW_BRANCH,1)
+             .replace(OLD_HELPER,NEW_HELPER,1)
+             .replace(INERT_ANCHOR,LAB_GLOBAL+INERT_ANCHOR,1)
+             .replace(INERT_OLD,INERT_NEW,3)
+             .replace(MAIN_ANCHOR,MAIN_REPLACE,1))
+    if changed.count("OMR14_RAW_CODER")!=3 or changed.count(INERT_NEW)!=3:
         raise RuntimeError("Unexpected patch output")
     return changed
 
@@ -62,7 +85,7 @@ def patch_checkout(checkout:Path,out:Path):
        "runner_original_git_blob":before_blob,
        "runner_patched_git_blob":after_blob,
        "changed_files":[str(RUNNER)],
-       "change_scope":"enable -c for full-model laboratory coding; no claim of score",
+       "change_scope":"enable -c and skip metadata-specific transforms only for lab -c/-d; full transformer and SEMCACHE retained; no score claimed",
        "hutter_score":None,
        "upstream_modified":True,
     }
