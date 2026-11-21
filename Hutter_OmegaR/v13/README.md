@@ -26,3 +26,11 @@ python3 test_semantic_cache_gate_patch.py
 Après réussite confirmée de la v0.12, comparer `990` (témoin), `980` et `970` sur **le même** extrait authentifié de `enwik9`, avec le même environnement, la même architecture, la même reconstitution SHA-256 et la taille du programme incluse. Faire mesurer au minimum la taille totale du compresseur et de l'archive, la durée de chaque phase et le pic de RAM. Les tests sur extrait ne sont **pas** des scores officiels.
 
 Rejeter toute variante dont la décompression diverge, qui ne respecte pas les limites, ou dont la perte en taille ne justifie pas le gain de calcul; retenir les résultats négatifs aussi. Un avantage sur extrait ne prouve pas un avantage sur `enwik9` complet ni une première place au concours.
+
+## Mise à jour après l'échec v0.12 (21 novembre 2026)
+
+**La condition de canary v0.12 n'a pas été remplie.** Le binaire officiel `comp9 -e` a échoué sur l'extrait avec E178 : son dictionnaire dépend des « hints » de l'ensemble de `enwik9`. Le [diagnostic complet](../results_v12/DIAGNOSTIC_E178_2026-11-21.md) explique pourquoi cet échantillon n'est pas valide pour le programme de compétition.
+
+Le test prévu sur un extrait est donc **suspendu**, et aucun gain de compression n'est démontré par v0.13. Le workflow [omr13-semcache-build.yml](../../.github/workflows/omr13-semcache-build.yml) vérifie uniquement la **constructibilité** des trois seuils sur une révision identique et enregistre les tailles/empreintes des *binaires non empaquetés*. Les nombres obtenus ne sont **pas** comparables à la taille finale du programme empaqueté `comp9` ni à un score Hutter.
+
+Pour une vraie ablation A/B, employer un flux et un chemin de codage compatibles sans supprimer les garanties de restitution ; mesurer la taille des flux et la correction, et inclure l'impact sur l'exécutable de concours. Ne pas extrapoler les coûts ni lancer `comp9 -e` sur l'XML tronqué.
