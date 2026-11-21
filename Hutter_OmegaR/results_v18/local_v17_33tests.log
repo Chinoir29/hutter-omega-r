@@ -1,0 +1,38 @@
+test_all_bytes_roundtrip (test_reversible_sample.Tests.test_all_bytes_roundtrip) ... ok
+test_allowed_only_output (test_reversible_sample.Tests.test_allowed_only_output) ... ok
+test_bad_bitmap_rejected (test_reversible_sample.Tests.test_bad_bitmap_rejected) ... ok
+test_bad_escape_code_rejected (test_reversible_sample.Tests.test_bad_escape_code_rejected) ... ok
+test_bad_input_byte_rejected (test_reversible_sample.Tests.test_bad_input_byte_rejected) ... ok
+test_binary_payload_with_binary_controls (test_reversible_sample.Tests.test_binary_payload_with_binary_controls) ... ok
+test_bitmap_parser (test_reversible_sample.Tests.test_bitmap_parser) ... ok
+test_empty (test_reversible_sample.Tests.test_empty) ... ok
+test_escape_byte (test_reversible_sample.Tests.test_escape_byte) ... ok
+test_escape_overhead_exact (test_reversible_sample.Tests.test_escape_overhead_exact) ... ok
+test_git_blob_hash (test_reversible_sample.Tests.test_git_blob_hash) ... ok
+test_incomplete_escape_rejected (test_reversible_sample.Tests.test_incomplete_escape_rejected) ... ok
+test_non_allowed_values (test_reversible_sample.Tests.test_non_allowed_values) ... ok
+test_nonoverlap_predeclared (test_reversible_sample.Tests.test_nonoverlap_predeclared) ... ok
+test_repeated_escape_codes (test_reversible_sample.Tests.test_repeated_escape_codes) ... ok
+test_source_hash_pinned (test_reversible_sample.Tests.test_source_hash_pinned) ... ok
+test_wrong_alphabet_rejected (test_reversible_sample.Tests.test_wrong_alphabet_rejected) ... ok
+test_bad_manifest_hash (test_run_reversible_lab.RunnerTest.test_bad_manifest_hash) ... ok
+test_bad_sample_bytes (test_run_reversible_lab.RunnerTest.test_bad_sample_bytes) ... ok
+test_both_stages (test_run_reversible_lab.RunnerTest.test_both_stages) ... ok
+test_bad_raw_hash_denied (test_summarize_reversible.TestSummary.test_bad_raw_hash_denied) ... ok
+test_bad_source_commit_denied (test_summarize_reversible.TestSummary.test_bad_source_commit_denied) ... ok
+test_bad_unlisted_file_denied (test_summarize_reversible.TestSummary.test_bad_unlisted_file_denied) ... ok
+test_credible_complete (test_summarize_reversible.TestSummary.test_credible_complete) ... ok
+test_exceeds_memory_denied (test_summarize_reversible.TestSummary.test_exceeds_memory_denied) ... ok
+test_failed_decoding_denied (test_summarize_reversible.TestSummary.test_failed_decoding_denied) ... ok
+test_forged_official_prize_score_denied (test_summarize_reversible.TestSummary.test_forged_official_prize_score_denied) ... ok
+test_lossy_flag_denied (test_summarize_reversible.TestSummary.test_lossy_flag_denied) ... ok
+test_missing_mode (test_summarize_reversible.TestSummary.test_missing_mode) ... ok
+test_program_varies_across_samples_denied (test_summarize_reversible.TestSummary.test_program_varies_across_samples_denied) ... ok
+test_source_whole_file_sha_denied (test_summarize_reversible.TestSummary.test_source_whole_file_sha_denied) ... ok
+test_worse_variant_rejected (test_summarize_reversible.TestSummary.test_worse_variant_rejected) ... ok
+test_wrong_sample_sha_denied (test_summarize_reversible.TestSummary.test_wrong_sample_sha_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 33 tests in 1.520s
+
+OK
