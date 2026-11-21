@@ -25,3 +25,17 @@
 La projection de l'entrée est **avec perte** par rapport au vrai `enwik9`, les sources comportent un **patch de laboratoire de deux fichiers**, et les flux n'ont **pas de décompresseur autonome**. Aucun chiffre de cet essai n'est un score Hutter Prize. Une économie sur le petit échantillon n'est pas un gain garanti sur la compétition. Un débit plus rapide dans GitHub n'est pas une preuve de conformité à la limite de ≲50 h sur une machine à un seul cœur.
 
 **Seuil scientifique :** les 3 restitutions doivent réussir. Un flux compressé différent prouve un effet de la modification sur cette expérience, non une supériorité compétitive mondiale.
+
+## Résultat distant vérifié — rejet de la réduction du seuil
+
+GitHub Actions [n° 44949569634](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44949569634), source JSON [SEMCACHE_LAB_COMPARISON.json](../results_v15/SEMCACHE_LAB_COMPARISON.json). **Trois reconstructions exactes et vérifiées**. Le résultat est négatif pour l'hypothèse testée :
+
+| Seuil QpE3 | Flux de laboratoire (octets) | Surcoût au témoin | Compression mesurée |
+|---:|---:|---:|---:|
+| 990 (origine) | 20 533 | — | 36,38 s |
+| 980 | 20 570 | +37 | 36,71 s |
+| 970 | 20 603 | +70 | 37,20 s |
+
+Les tailles du programme *non empaqueté* sont identiques (**621 432 octets**) et la RAM rapportée est d'environ **6,95 Gio** à la compression. Réduire ce seuil ne diminue pas le temps total dans cet essai, même si la différence d'environ une seconde reste trop faible pour constituer un benchmark de vitesse stable.
+
+**Décision :** conserver le seuil original **990** dans ce laboratoire et rejeter les valeurs 980 et 970 sur cet échantillon. Le test ne démontre pas que 990 serait optimal dans tous les corpus. La [v0.16](../v16/README.md) contrôle la direction inverse (995 et 999), sur trois fenêtres tenues à l'écart de v0.15. Ce sont toujours des projections avec perte et jamais un score Hutter Prize.
