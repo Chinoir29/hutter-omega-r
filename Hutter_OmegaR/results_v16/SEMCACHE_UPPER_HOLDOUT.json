@@ -1,12 +1,292 @@
 {
   "project": "OMEGA-R v0.16",
-  "status": "pending_remote_verification",
-  "thresholds": [990, 995, 999],
-  "holdout_offsets_mib": [32, 96, 192],
-  "samples_are_lossy": true,
-  "official_enwik9_score": null,
-  "roundtrip_verified": false,
+  "status": "success_nine_verified_lab_roundtrips",
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44951476074",
+  "job_prior_to_reporting": "success",
+  "reported_utc": "2026-11-21T21:36:49.618949+00:00",
+  "source_is_lossy_projection": true,
+  "hutter_prize_score": null,
   "competition_submission_sent": false,
-  "workflow_url": "https://github.com/Chinoir29/hutter-omega-r/actions/workflows/omr16-semc-upper-holdout.yml",
-  "note": "Placeholder. No v0.16 holdout experiment has been measured or judged."
+  "comparison": {
+    "project": "OMÉGA-R v0.16 SEMCACHE high-threshold holdout A/B",
+    "status": "all_nine_lab_roundtrips_verified",
+    "input_is_lossy_projection": true,
+    "samples_from_authentic_enwik9": true,
+    "holdout_offsets_mib": [
+      32,
+      96,
+      192
+    ],
+    "reference_qpe3": 990,
+    "hypothesis": "More SEMCACHE lookups via upper thresholds 995 or 999",
+    "results": [
+      {
+        "threshold_qpe3": 990,
+        "offset_mib": 32,
+        "source_sha256": "0c669b4db50c8ec8b2b37f4d4577c79295e69ae65e306abfa1f8d611658bf25b",
+        "lab_stream_bytes": 21687,
+        "lab_stream_sha256": "1d8d4b3f670950daae2d41245412cbca17e17e7ba66ec836951511df151ca720",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "8f92596e03745034c89179a772a7ea044eed0c7026baa59a153e9eb2bbb976c4",
+        "compression": {
+          "wall_s": 30.62,
+          "max_rss_kib": 7329308,
+          "user_cpu_s": 26.5,
+          "system_cpu_s": 4.11,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.28,
+          "max_rss_kib": 5197864,
+          "user_cpu_s": 26.06,
+          "system_cpu_s": 4.21,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": 0
+      },
+      {
+        "threshold_qpe3": 990,
+        "offset_mib": 96,
+        "source_sha256": "f874b4e279ade0a66d394e53e948664cdd4d2b8dcdb0fd5ee476bbd08730082e",
+        "lab_stream_bytes": 20336,
+        "lab_stream_sha256": "182749b0467eb9e4067cab291d1e333fdf8eb4d29c3dc1315179c0cf1af6ce8b",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "8f92596e03745034c89179a772a7ea044eed0c7026baa59a153e9eb2bbb976c4",
+        "compression": {
+          "wall_s": 29.89,
+          "max_rss_kib": 7167312,
+          "user_cpu_s": 25.71,
+          "system_cpu_s": 4.13,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.13,
+          "max_rss_kib": 5036220,
+          "user_cpu_s": 25.91,
+          "system_cpu_s": 4.18,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": 0
+      },
+      {
+        "threshold_qpe3": 990,
+        "offset_mib": 192,
+        "source_sha256": "d62f072a226a2ff7280885a981a1ef7175597ae0b05a0e9c94167f6dccaf8ab5",
+        "lab_stream_bytes": 22696,
+        "lab_stream_sha256": "1726563466d878f80df0e3fb0869a7cc8abe72b9b33f77b870ebc395ce4d14ef",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "8f92596e03745034c89179a772a7ea044eed0c7026baa59a153e9eb2bbb976c4",
+        "compression": {
+          "wall_s": 30.66,
+          "max_rss_kib": 7312624,
+          "user_cpu_s": 26.38,
+          "system_cpu_s": 4.27,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.5,
+          "max_rss_kib": 5181480,
+          "user_cpu_s": 26.13,
+          "system_cpu_s": 4.33,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": 0
+      },
+      {
+        "threshold_qpe3": 995,
+        "offset_mib": 32,
+        "source_sha256": "0c669b4db50c8ec8b2b37f4d4577c79295e69ae65e306abfa1f8d611658bf25b",
+        "lab_stream_bytes": 21678,
+        "lab_stream_sha256": "38cfd0966898634b8e9ca980bfdb52583084d9552eee3210e1c01a06edcc666c",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "e3b6c410c76514022c3072fd955dfc1ba7a1cfd66aa30ba43ca6300d3dcfcad0",
+        "compression": {
+          "wall_s": 31.25,
+          "max_rss_kib": 7328912,
+          "user_cpu_s": 27.12,
+          "system_cpu_s": 4.12,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.4,
+          "max_rss_kib": 5197952,
+          "user_cpu_s": 26.0,
+          "system_cpu_s": 4.33,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": -9
+      },
+      {
+        "threshold_qpe3": 995,
+        "offset_mib": 96,
+        "source_sha256": "f874b4e279ade0a66d394e53e948664cdd4d2b8dcdb0fd5ee476bbd08730082e",
+        "lab_stream_bytes": 20325,
+        "lab_stream_sha256": "b2c5297fd99d29513aa55c675c3958dbf0d09df35e4afc4316cdb9b0f4a2edbc",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "e3b6c410c76514022c3072fd955dfc1ba7a1cfd66aa30ba43ca6300d3dcfcad0",
+        "compression": {
+          "wall_s": 30.05,
+          "max_rss_kib": 7167544,
+          "user_cpu_s": 25.9,
+          "system_cpu_s": 4.14,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.1,
+          "max_rss_kib": 5036448,
+          "user_cpu_s": 26.04,
+          "system_cpu_s": 4.05,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": -11
+      },
+      {
+        "threshold_qpe3": 995,
+        "offset_mib": 192,
+        "source_sha256": "d62f072a226a2ff7280885a981a1ef7175597ae0b05a0e9c94167f6dccaf8ab5",
+        "lab_stream_bytes": 22680,
+        "lab_stream_sha256": "6e0899f817129f1dd721100adea79d9472869ec41e8e85bd603e99b4772ff2e7",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "e3b6c410c76514022c3072fd955dfc1ba7a1cfd66aa30ba43ca6300d3dcfcad0",
+        "compression": {
+          "wall_s": 30.68,
+          "max_rss_kib": 7312552,
+          "user_cpu_s": 26.51,
+          "system_cpu_s": 4.16,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.34,
+          "max_rss_kib": 5181600,
+          "user_cpu_s": 26.09,
+          "system_cpu_s": 4.24,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": -16
+      },
+      {
+        "threshold_qpe3": 999,
+        "offset_mib": 32,
+        "source_sha256": "0c669b4db50c8ec8b2b37f4d4577c79295e69ae65e306abfa1f8d611658bf25b",
+        "lab_stream_bytes": 21669,
+        "lab_stream_sha256": "2a3539dd3c64fa70ba3d627622976b16495c1059256ddada00c52d1553150655",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "ac25966aec097e2ab85ab4d4ac22507796f1452f2998f9f28ea5b575318a99ad",
+        "compression": {
+          "wall_s": 30.37,
+          "max_rss_kib": 7328932,
+          "user_cpu_s": 26.22,
+          "system_cpu_s": 4.14,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.65,
+          "max_rss_kib": 5196648,
+          "user_cpu_s": 26.32,
+          "system_cpu_s": 4.25,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": -18
+      },
+      {
+        "threshold_qpe3": 999,
+        "offset_mib": 96,
+        "source_sha256": "f874b4e279ade0a66d394e53e948664cdd4d2b8dcdb0fd5ee476bbd08730082e",
+        "lab_stream_bytes": 20314,
+        "lab_stream_sha256": "79d0377ddb2174be0a8f0310f588372ddf79cc53c41fd91341f156f3b0222b75",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "ac25966aec097e2ab85ab4d4ac22507796f1452f2998f9f28ea5b575318a99ad",
+        "compression": {
+          "wall_s": 29.98,
+          "max_rss_kib": 7167316,
+          "user_cpu_s": 25.76,
+          "system_cpu_s": 4.18,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 29.87,
+          "max_rss_kib": 5036316,
+          "user_cpu_s": 25.8,
+          "system_cpu_s": 4.05,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": -22
+      },
+      {
+        "threshold_qpe3": 999,
+        "offset_mib": 192,
+        "source_sha256": "d62f072a226a2ff7280885a981a1ef7175597ae0b05a0e9c94167f6dccaf8ab5",
+        "lab_stream_bytes": 22669,
+        "lab_stream_sha256": "5efb99b00cac0c098e0d9c12466fedfaa4b6cd6ed9a50d4114a9ceca37840b31",
+        "unpacked_program_bytes": 621432,
+        "unpacked_program_sha256": "ac25966aec097e2ab85ab4d4ac22507796f1452f2998f9f28ea5b575318a99ad",
+        "compression": {
+          "wall_s": 30.52,
+          "max_rss_kib": 7312412,
+          "user_cpu_s": 26.3,
+          "system_cpu_s": 4.2,
+          "affinity_cpu": 0
+        },
+        "decompression": {
+          "wall_s": 30.54,
+          "max_rss_kib": 5181408,
+          "user_cpu_s": 26.29,
+          "system_cpu_s": 4.18,
+          "affinity_cpu": 0
+        },
+        "roundtrip_verified": true,
+        "delta_stream_bytes_from_q990": -27
+      }
+    ],
+    "aggregates": [
+      {
+        "threshold_qpe3": 990,
+        "total_lab_stream_bytes": 64719,
+        "delta_total_stream_bytes_from_q990": 0,
+        "relative_stream_delta_percent": 0.0,
+        "win_count": 0,
+        "loss_count": 0,
+        "program_bytes": 621432,
+        "delta_unpacked_program_bytes": 0,
+        "provisional_support": false
+      },
+      {
+        "threshold_qpe3": 995,
+        "total_lab_stream_bytes": 64683,
+        "delta_total_stream_bytes_from_q990": -36,
+        "relative_stream_delta_percent": -0.0556,
+        "win_count": 3,
+        "loss_count": 0,
+        "program_bytes": 621432,
+        "delta_unpacked_program_bytes": 0,
+        "provisional_support": true
+      },
+      {
+        "threshold_qpe3": 999,
+        "total_lab_stream_bytes": 64652,
+        "delta_total_stream_bytes_from_q990": -67,
+        "relative_stream_delta_percent": -0.1035,
+        "win_count": 3,
+        "loss_count": 0,
+        "program_bytes": 621432,
+        "delta_unpacked_program_bytes": 0,
+        "provisional_support": true
+      }
+    ],
+    "any_provisionally_supported": true,
+    "conclusion_scope": "Only nonofficial lab coder streams on 3 disjoint projected holdouts, not enwik9 or an archive score",
+    "official_hutter_score": null,
+    "full_enwik9_compared": false,
+    "self_extracting_archive_compared": false,
+    "jury_approved": false,
+    "submission_sent": false
+  }
 }
