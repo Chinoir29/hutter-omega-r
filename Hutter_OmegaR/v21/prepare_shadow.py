@@ -52,9 +52,9 @@ def patch_sources(files:dict[str,bytes],header:bytes, shadow:bool=True)->dict[st
     omr21_cap = n;
   }
   while (pos < omr21_cap) {''',1)
-    flush='  e.Flush();\\n  run_mode::gram.Report("compress");'
+    flush='  e.Flush();\n  run_mode::gram.Report("compress");'
     if runner.count(flush)!=1: raise ValueError('COMPRESS_FLUSH_ANCHOR_DRIFT')
-    runner=runner.replace(flush,'  e.Flush();\\n  if (std::getenv("OMR21_SHADOW_PREFIX_BYTES")) { *output_bytes=ftell(os); return; }\\n  run_mode::gram.Report("compress");',1)
+    runner=runner.replace(flush,'  e.Flush();\n  if (std::getenv("OMR21_SHADOW_PREFIX_BYTES")) { *output_bytes=ftell(os); return; }\n  run_mode::gram.Report("compress");',1)
     anchor2='  Compress(temp_bytes, temp_in, data_out, output_bytes, &p);'
     if runner.count(anchor2)!=1:raise ValueError('RUN_COMPRESSION_ANCHOR_DRIFT')
     runner=runner.replace(anchor2,anchor2+'''
