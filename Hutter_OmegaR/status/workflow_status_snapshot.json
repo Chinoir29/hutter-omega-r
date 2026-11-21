@@ -1,32 +1,139 @@
 {
   "project": "Hutter OMEGA-R",
-  "query_at_utc": "2026-11-21T20:28:03.959744+00:00",
+  "query_at_utc": "2026-11-21T20:47:33.509839+00:00",
   "scope": "GitHub Actions metadata only: no corpus, no executables, no credentials",
   "competition_submission_sent": false,
   "workflows": {
+    "omr14-raw-core-lab.yml": [
+      {
+        "run_id": 44948098491,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948098491",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-21T20:47:07Z",
+        "updated_at": "2026-11-21T20:47:11Z",
+        "head_sha": "1029c056d801ee245a740b7a429ff29a4e27a07f",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136979769545,
+            "name": "laboratory",
+            "status": "in_progress",
+            "conclusion": null,
+            "active_steps": [
+              "Compiler le moteur complet sans autopackaging"
+            ],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": []
+      }
+    ],
+    "omr13-semcache-build.yml": [
+      {
+        "run_id": 44947707113,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44947707113",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-21T20:42:34Z",
+        "updated_at": "2026-11-21T20:44:18Z",
+        "head_sha": "da736c27aaa0a03b890d1412e5a68594f4216de1",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136978563714,
+            "name": "compile (980)",
+            "status": "completed",
+            "conclusion": "success",
+            "active_steps": [],
+            "failed_steps": []
+          },
+          {
+            "id": 136978563949,
+            "name": "compile (990)",
+            "status": "completed",
+            "conclusion": "success",
+            "active_steps": [],
+            "failed_steps": []
+          },
+          {
+            "id": 136978563957,
+            "name": "compile (970)",
+            "status": "completed",
+            "conclusion": "success",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 14724700009,
+            "name": "omr13-compile-qpe3-990",
+            "size_in_bytes": 6629
+          },
+          {
+            "id": 14724490208,
+            "name": "omr13-compile-qpe3-980",
+            "size_in_bytes": 6404
+          },
+          {
+            "id": 14724133977,
+            "name": "omr13-compile-qpe3-970",
+            "size_in_bytes": 6592
+          }
+        ]
+      }
+    ],
     "omr12-cmix-neif-canary.yml": [
+      {
+        "run_id": 44947727914,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44947727914",
+        "status": "completed",
+        "conclusion": "skipped",
+        "created_at": "2026-11-21T20:42:49Z",
+        "updated_at": "2026-11-21T20:42:50Z",
+        "head_sha": "e01f1ad5537cf531008b431602328737a3865218",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136978630685,
+            "name": "canary",
+            "status": "completed",
+            "conclusion": "skipped",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": []
+      },
       {
         "run_id": 44946052561,
         "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44946052561",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "failure",
         "created_at": "2026-11-21T20:23:44Z",
-        "updated_at": "2026-11-21T20:23:48Z",
+        "updated_at": "2026-11-21T20:32:32Z",
         "head_sha": "6aa8abad246b1b71933964fff555d74587d938e0",
         "event": "push",
         "jobs": [
           {
             "id": 136973484658,
             "name": "canary",
-            "status": "in_progress",
-            "conclusion": null,
-            "active_steps": [
-              "Construire le compresseur amont sans modifier ses sources"
-            ],
-            "failed_steps": []
+            "status": "completed",
+            "conclusion": "failure",
+            "active_steps": [],
+            "failed_steps": [
+              "Compression et décompression autonomes de l'extrait"
+            ]
           }
         ],
-        "artifacts": []
+        "artifacts": [
+          {
+            "id": 14724141153,
+            "name": "omr12-cmix-neif-canary",
+            "size_in_bytes": 10175
+          }
+        ]
       }
     ],
     "omr11-enwik9-full.yml": [
