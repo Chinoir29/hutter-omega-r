@@ -1,0 +1,90 @@
+[
+  {
+    "dataset": "random_128k",
+    "bytes": 131072,
+    "sha256": "ac565a2b92ac8ddcffb62982a5dc36921caaf4cab86c11c0a672fd0345f34ce0",
+    "mode": 0,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 166474,
+    "total_bytes": 201666,
+    "roundtrip": true,
+    "compress_wall_s": 0.251
+  },
+  {
+    "dataset": "random_128k",
+    "bytes": 131072,
+    "sha256": "ac565a2b92ac8ddcffb62982a5dc36921caaf4cab86c11c0a672fd0345f34ce0",
+    "mode": 1,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 166474,
+    "total_bytes": 201666,
+    "roundtrip": true,
+    "compress_wall_s": 0.284
+  },
+  {
+    "dataset": "random_128k",
+    "bytes": 131072,
+    "sha256": "ac565a2b92ac8ddcffb62982a5dc36921caaf4cab86c11c0a672fd0345f34ce0",
+    "mode": 2,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 166474,
+    "total_bytes": 201666,
+    "roundtrip": true,
+    "compress_wall_s": 0.231
+  },
+  {
+    "dataset": "random_128k",
+    "bytes": 131072,
+    "sha256": "ac565a2b92ac8ddcffb62982a5dc36921caaf4cab86c11c0a672fd0345f34ce0",
+    "mode": 3,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 166474,
+    "total_bytes": 201666,
+    "roundtrip": true,
+    "compress_wall_s": 0.237
+  },
+  {
+    "dataset": "repetitive",
+    "bytes": 30000,
+    "sha256": "e50cace0ac016c99b1ff3817da09e1a9c3f44e7d8b120a69aa64b4985c91269e",
+    "mode": 0,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 35325,
+    "total_bytes": 70517,
+    "roundtrip": true,
+    "compress_wall_s": 0.036
+  },
+  {
+    "dataset": "repetitive",
+    "bytes": 30000,
+    "sha256": "e50cace0ac016c99b1ff3817da09e1a9c3f44e7d8b120a69aa64b4985c91269e",
+    "mode": 1,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 35325,
+    "total_bytes": 70517,
+    "roundtrip": true,
+    "compress_wall_s": 0.035
+  },
+  {
+    "dataset": "repetitive",
+    "bytes": 30000,
+    "sha256": "e50cace0ac016c99b1ff3817da09e1a9c3f44e7d8b120a69aa64b4985c91269e",
+    "mode": 2,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 35325,
+    "total_bytes": 70517,
+    "roundtrip": true,
+    "compress_wall_s": 0.034
+  },
+  {
+    "dataset": "repetitive",
+    "bytes": 30000,
+    "sha256": "e50cace0ac016c99b1ff3817da09e1a9c3f44e7d8b120a69aa64b4985c91269e",
+    "mode": 3,
+    "comp9_bytes": 35192,
+    "archive9_bytes": 35325,
+    "total_bytes": 70517,
+    "roundtrip": true,
+    "compress_wall_s": 0.037
+  }
+]
