@@ -1,0 +1,81 @@
+name: "OMÉGA-R v0.18 — dérivation dictionnaire canonique 1 Go, sans codage"
+on:
+  push:
+    branches:
+      - research/omr18-production-preflight
+    paths:
+      - .github/workflows/omr18-dictionary-full-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  derive-dictionary-from-canonical-enwik9:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout project for audit
+        uses: actions/checkout@v4
+      - name: Install C++ compiler and time
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends g++-13 time
+      - name: Fetch pinned GPL-3.0 dictionary derivation sources
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr18-upstream
+          git -C /tmp/omr18-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Download and authenticate canonical public benchmark; do NOT upload corpus
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr18-enwik9.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, shutil, zipfile
+          p=Path('/tmp/omr18-enwik9.zip')
+          out=Path('/tmp/omr18-enwik9')
+          with zipfile.ZipFile(p) as z:
+              files=[x for x in z.infolist() if not x.is_dir()]
+              assert len(files)==1 and files[0].filename=='enwik9' and files[0].file_size==1_000_000_000
+              with z.open(files[0]) as source, out.open('wb') as target:
+                  shutil.copyfileobj(source,target,1024*1024)
+          digest=hashlib.sha256()
+          with out.open('rb') as stream:
+              for part in iter(lambda:stream.read(4<<20),b''):
+                  digest.update(part)
+          assert out.stat().st_size==1_000_000_000
+          assert digest.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          print('CANONICAL_ENWIK9_1GB_SHA256_VERIFIED; NOT PUBLISHED')
+          Path('/tmp/omr18-enwik9.zip').unlink()
+          PY
+      - name: Compile and execute ONLY the production dictionary derivation entrypoint
+        run: |
+          g++-13 -std=c++17 -O2 -DDICT_DERIVE_MAIN /tmp/omr18-upstream/src/preprocess/dict_derive.cpp -o /tmp/omr18-derive-dict
+          /usr/bin/time -f 'DICT_DERIVE_WALL=%e MAX_RSS_KIB=%M CPU_USER=%U' -o /tmp/omr18-dict-timing.log /tmp/omr18-derive-dict /tmp/omr18-enwik9 /tmp/omr18-upstream/dictionary/english.hints /tmp/omr18-derived.dict 2>/tmp/omr18-dict-run.stderr
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          ref=Path('/tmp/omr18-upstream/dictionary/english.dic')
+          out=Path('/tmp/omr18-derived.dict')
+          def checksum(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+          rec={'status':'FULL_CORPUS_DICTIONARY_DERIVED','upstream_commit':'35d1957a5074db802fc134126afc77b76d931761',
+            'enwik9_bytes':1000000000,'enwik9_sha256':'159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc',
+            'dictionary_bytes':out.stat().st_size,'dictionary_sha256':checksum(out),
+            'reference_dict_bytes':ref.stat().st_size,'reference_dict_sha256':checksum(ref),
+            'same_as_source_reference':out.read_bytes()==ref.read_bytes(),
+            'official_hutter_score':None,'archive9_created':False}
+          Path('/tmp/omr18-dict-result.json').write_text(json.dumps(rec,indent=2)+'\n')
+          print(json.dumps(rec,indent=2))
+          PY
+      - name: Do not upload any input corpus, weights or derived dictionary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr18-canonical-dictionary-metadata-only
+          path: |
+            /tmp/omr18-dict-result.json
+            /tmp/omr18-dict-run.stderr
+            /tmp/omr18-dict-timing.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove corpus and dictionary from runner filesystem
+        if: always()
+        run: rm -f /tmp/omr18-enwik9.zip /tmp/omr18-enwik9 /tmp/omr18-derived.dict
