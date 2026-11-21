@@ -1,0 +1,31 @@
+{
+  "audit_version": "OMÉGA-R report audit v0.9.1",
+  "category": "NOT_COMPETITIVE_WITH_AWARDED_THRESHOLD",
+  "report_internally_consistent": true,
+  "issues": [],
+  "notes": [
+    "Committee rules, hardware-normalized time limit, exact disk usage, and standalone eligibility are NOT validated by this audit.",
+    "Benchmarks and reference figures are dated 2026-11-21; verify up-to-date record before competition submission.",
+    "This checks report claims only, not the corpus or archive bytes independently."
+  ],
+  "historical_awarded_record_bytes": 100424672,
+  "historical_awarded_1pct_ceiling_bytes": 99420425,
+  "historical_pending_candidate_bytes": 93388956,
+  "historical_pending_1pct_ceiling_bytes": 92455066,
+  "local_score_bytes": 282550351,
+  "bytes_to_save_for_awarded_1pct_if_over": 183129926,
+  "bytes_to_save_for_pending_1pct_if_over": 190095285,
+  "resources": {
+    "compression": {
+      "max_rss_kib": 56980,
+      "wall_seconds": 1405.91,
+      "cpu_core": 0
+    },
+    "decompression": {
+      "max_rss_kib": 56824,
+      "wall_seconds": 1290.51,
+      "cpu_core": 0
+    }
+  },
+  "committee_validated": false
+}
