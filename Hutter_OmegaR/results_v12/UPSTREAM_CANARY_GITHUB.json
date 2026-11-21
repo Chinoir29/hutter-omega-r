@@ -1,0 +1,11 @@
+{
+  "version": "OMÉGA-R v0.12",
+  "status": "not_yet_verified",
+  "basis": "cmix-neif-2.0 commit 35d1957a5074db802fc134126afc77b76d931761",
+  "scope": "small rewrapped XML subset of authenticated enwik9",
+  "authentic_enwik9_score": null,
+  "roundtrip_verified": false,
+  "prize_submission": false,
+  "execution_url": null,
+  "note": "Placeholder; updated by workflow only after actual execution."
+}
