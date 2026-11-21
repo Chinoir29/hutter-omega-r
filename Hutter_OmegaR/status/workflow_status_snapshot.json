@@ -1,0 +1,212 @@
+{
+  "project": "Hutter OMEGA-R",
+  "query_at_utc": "2026-11-21T20:28:03.959744+00:00",
+  "scope": "GitHub Actions metadata only: no corpus, no executables, no credentials",
+  "competition_submission_sent": false,
+  "workflows": {
+    "omr12-cmix-neif-canary.yml": [
+      {
+        "run_id": 44946052561,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44946052561",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-21T20:23:44Z",
+        "updated_at": "2026-11-21T20:23:48Z",
+        "head_sha": "6aa8abad246b1b71933964fff555d74587d938e0",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136973484658,
+            "name": "canary",
+            "status": "in_progress",
+            "conclusion": null,
+            "active_steps": [
+              "Construire le compresseur amont sans modifier ses sources"
+            ],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": []
+      }
+    ],
+    "omr11-enwik9-full.yml": [
+      {
+        "run_id": 44945151998,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44945151998",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-21T20:13:41Z",
+        "updated_at": "2026-11-21T20:13:45Z",
+        "head_sha": "0f2ca762e26dd9ffa6753286d17daa3cf14564c6",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136970718426,
+            "name": "full",
+            "status": "in_progress",
+            "conclusion": null,
+            "active_steps": [
+              "Compresser et décompresser le milliard d'octets avec v0.11"
+            ],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": []
+      }
+    ],
+    "omr11-enwik8-ablation.yml": [
+      {
+        "run_id": 44944729388,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44944729388",
+        "status": "completed",
+        "conclusion": "skipped",
+        "created_at": "2026-11-21T20:09:09Z",
+        "updated_at": "2026-11-21T20:09:10Z",
+        "head_sha": "2e28b4a9efd26981cff6faab26997d9305c46c56",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136969424615,
+            "name": "paired_preflight",
+            "status": "completed",
+            "conclusion": "skipped",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": []
+      },
+      {
+        "run_id": 44944691842,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44944691842",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-21T20:08:44Z",
+        "updated_at": "2026-11-21T20:12:08Z",
+        "head_sha": "140cc193e174ee27c3291c020dee8bd7575307f8",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136969307629,
+            "name": "paired_preflight",
+            "status": "completed",
+            "conclusion": "success",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 14722684667,
+            "name": "omr11-enwik8-ablation-reports",
+            "size_in_bytes": 13415
+          }
+        ]
+      },
+      {
+        "run_id": 44943935726,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44943935726",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-21T20:00:28Z",
+        "updated_at": "2026-11-21T20:03:32Z",
+        "head_sha": "33d2a790a216003ca2e0a514c05a8cdd670d9b7e",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136966980209,
+            "name": "paired_preflight",
+            "status": "completed",
+            "conclusion": "success",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 14722338149,
+            "name": "omr11-enwik8-ablation-reports",
+            "size_in_bytes": 13401
+          }
+        ]
+      }
+    ],
+    "omr9-build-upstream.yml": [
+      {
+        "run_id": 44942316594,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44942316594",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-21T19:41:56Z",
+        "updated_at": "2026-11-21T19:50:17Z",
+        "head_sha": "87a71b353e279ab7fc4fa96bef0e2746aac93e8f",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136962007800,
+            "name": "build_upstream",
+            "status": "completed",
+            "conclusion": "success",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 14721419135,
+            "name": "omr9-upstream-build-diagnostics",
+            "size_in_bytes": 9847
+          }
+        ]
+      },
+      {
+        "run_id": 44942174310,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44942174310",
+        "status": "completed",
+        "conclusion": "skipped",
+        "created_at": "2026-11-21T19:40:22Z",
+        "updated_at": "2026-11-21T19:40:22Z",
+        "head_sha": "f1fd427c1a20e4ef8cc0a904d3683e1865c13574",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136961574847,
+            "name": "build_upstream",
+            "status": "completed",
+            "conclusion": "skipped",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": []
+      },
+      {
+        "run_id": 44940531505,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44940531505",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-21T19:21:47Z",
+        "updated_at": "2026-11-21T19:30:27Z",
+        "head_sha": "f8cf509bc495b33ec1aaf25959c2eece8c9765f4",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136956502445,
+            "name": "build_upstream",
+            "status": "completed",
+            "conclusion": "success",
+            "active_steps": [],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 14722225128,
+            "name": "omr9-upstream-build-diagnostics",
+            "size_in_bytes": 9834
+          }
+        ]
+      }
+    ]
+  }
+}
