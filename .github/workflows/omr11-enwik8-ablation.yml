@@ -99,7 +99,7 @@ jobs:
             if ex.code!=404:raise
             prior=None
           payload={'message':'Publier le verdict reproductible du prétest Wikipédia v0.11',
-                   'content':base64.b64encode((json.dumps(verdict,ensure_ascii=False,indent=2)+'\\n').encode()).decode(),
+                   'content':base64.b64encode((json.dumps(verdict,ensure_ascii=False,indent=2)+'\n').encode()).decode(),
                    'branch':'main'}
           if prior:payload['sha']=prior
           req=urllib.request.Request(url,headers=hdr,data=json.dumps(payload).encode(),method='PUT')
