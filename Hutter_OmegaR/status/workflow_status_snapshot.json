@@ -1,32 +1,61 @@
 {
   "project": "Hutter OMEGA-R",
-  "query_at_utc": "2026-11-21T20:54:48.633547+00:00",
+  "query_at_utc": "2026-11-21T20:58:54.656370+00:00",
   "scope": "GitHub Actions metadata only: no corpus, no executables, no credentials",
   "competition_submission_sent": false,
   "workflows": {
     "omr14-raw-core-lab.yml": [
       {
-        "run_id": 44948698647,
-        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948698647",
+        "run_id": 44949002223,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44949002223",
         "status": "in_progress",
         "conclusion": null,
+        "created_at": "2026-11-21T20:57:44Z",
+        "updated_at": "2026-11-21T20:57:48Z",
+        "head_sha": "1197d91b01a9e58e87a89965b4ac83e83124af14",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136982571098,
+            "name": "laboratory",
+            "status": "in_progress",
+            "conclusion": null,
+            "active_steps": [
+              "Tester le codage-décompression du laboratoire"
+            ],
+            "failed_steps": []
+          }
+        ],
+        "artifacts": []
+      },
+      {
+        "run_id": 44948698647,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948698647",
+        "status": "completed",
+        "conclusion": "failure",
         "created_at": "2026-11-21T20:54:07Z",
-        "updated_at": "2026-11-21T20:54:11Z",
+        "updated_at": "2026-11-21T20:55:27Z",
         "head_sha": "132ab648bb353905c6d07bbcef0b9052e5dcc9f6",
         "event": "push",
         "jobs": [
           {
             "id": 136981622034,
             "name": "laboratory",
-            "status": "in_progress",
-            "conclusion": null,
-            "active_steps": [
-              "Compiler le moteur complet sans autopackaging"
-            ],
-            "failed_steps": []
+            "status": "completed",
+            "conclusion": "failure",
+            "active_steps": [],
+            "failed_steps": [
+              "Tester le codage-décompression du laboratoire"
+            ]
           }
         ],
-        "artifacts": []
+        "artifacts": [
+          {
+            "id": 14724531488,
+            "name": "omr14-laboratory-only",
+            "size_in_bytes": 7939
+          }
+        ]
       },
       {
         "run_id": 44948332114,
