@@ -28,3 +28,11 @@ Il existe cependant un chemin de codage brut `RunCompression()` / `RunDecompress
 Un essai valide exige la compilation, une taille non nulle du flux de codage, puis la reconstruction exacte du flux expérimental (SHA-256). En cas d'échec, conserver les logs pour réviser le protocole sans effacer les résultats négatifs.
 
 **Aucune soumission n'est autorisée sur la base de ces résultats.**
+
+## Diagnostic E215 et quatrième protocole (v0.14.3)
+
+Le troisième essai [44948698647](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948698647) a franchi l'authentification d'`enwik9`, la compilation et la préparation de l'entrée, puis s'est arrêté avec **E215 après 4 097 tokens** : l'automate [tf1_gate.cpp\] attend un bloc de métadonnées de l'entrée de concours. La source amont [tf1_gate.cpp\] de la révision épinglée contient le garde-fou correspondant. Cette preuve d'échec ne mesure aucun gain de compression.
+
+La version **v0.14.3** étend le patch contrôlé à **deux fichiers amont** : `src/runner.cpp` (interface \-c et isolation de métadonnées) et `src/tf1/tf1_gate.cpp` (initialisation du gate directement dans l'état textuel \-body\- avec le masque de métadonnées désarmé). La source originale n'est jamais modifiée en amont. Le modèle Transformer et la mémoire sémantique SEMCACHE restent présents ; toutefois leur activité effective pendant cette entrée artificielle devra être prouvée avant toute interprétation de performance.
+
+Les [tests de patch](test_enable_raw_lab.py) ont été étendus à **17 cas**. Ils vérifient les occurrences exactes, les refus sur divergence du code amont et la symétrie du code de laboratoire. Les tests ne remplacent pas le roundtrip réel. Le quatrième workflow est un essai fonctionnel, pas un benchmark Hutter.
