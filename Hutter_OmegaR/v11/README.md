@@ -1,6 +1,6 @@
 # Hutter OMÉGA-R v0.11 — normalisation contextuelle sans coût de modèle
 
-**Statut :** variante expérimentale améliorant légèrement les tests locaux ; non validée sur enwik8/enwik9 au moment de cette publication. Ce n'est pas une candidature Hutter Prize ni une invention mondiale revendiquée.
+**Statut :** variante expérimentale améliorant les tests locaux **et trois extraits authentifiés d'enwik8** ; validation intégrale enwik9 en cours. Ce n'est pas une candidature Hutter Prize ni une invention mondiale revendiquée.
 
 ## Construction et paramètres
 À partir du source de référence `../v6/omr6_sfx.cpp`, `make_candidate.py` remplace **une seule opération** de calcul de contexte lexical. La normalisation change uniquement ce que le prédicteur apprend de l'historique déjà décodé ; elle ne change aucun octet dans le texte reconstruit.
@@ -38,3 +38,21 @@ Le candidat est retenu **pour un prétest**, pas comme amélioration prouvée su
 ## Limites
 
 Les données de développement et de validation sont principalement du code source, pas des articles Wikipédia. Les scores ne sont pas transférables au concours. Une amélioration de l'ordre de 0,1 % dans un moteur encore peu compétitif ne permet pas de déduire que l'on battra `cmix-neif 2.0` ou le record officiellement récompensé. Pour le prix, il faut intégrer une amélioration dans une architecture du niveau mondial et démontrer l'intégralité des contraintes.
+
+## Résultat sur Wikipédia authentifié — 21 novembre 2026
+
+Le workflow GitHub [n° 44944691842](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44944691842) a téléchargé et vérifié le corpus `enwik8` officiel (100 millions d'octets), puis comparé **trois tranches disjointes de 8 Mio** à modèles réinitialisés. Les six reconstructions ont réussi.
+
+| Début de tranche | Contrôle v0.6, score total | Candidat v0.11, score total | Économie |
+|---:|---:|---:|---:|
+| 0 Mio | 2 839 188 | 2 822 811 | 16 377 |
+| 40 Mio | 2 839 292 | 2 821 434 | 17 858 |
+| 80 Mio | 2 866 626 | 2 849 643 | 16 983 |
+| **Somme des 3 expériences** | **8 545 106** | **8 493 888** | **51 218** |
+
+Économie mesurée : **0,60 % de la somme de trois scores locaux**, compresseur compté séparément à chaque essai. La taille du binaire sur Linux GitHub est **35 040 octets dans les deux modes**.
+
+- [Rapport brut publié automatiquement](../results_v11/ENWIK8_ABLATION_GITHUB.json)
+- [Benchmark intégral candidat v0.11](../../.github/workflows/omr11-enwik9-full.yml) : lancé pour mesurer l'effet sur `enwik9`, sans extrapolation à partir des tranches et sans soumission au jury.
+
+Ce résultat ne démontre **aucune amélioration d'une soumission de premier rang**. Il démontre une amélioration d'OMÉGA-R v0.6 par v0.11 sur des extraits de Wikipédia. L'objectif de la première place exige une architecture de niveau `cmix-neif 2.0`, et sa propre validation indépendante.
