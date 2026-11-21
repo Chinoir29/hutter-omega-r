@@ -1,0 +1,42 @@
+{
+  "version": "OMÉGA-R v0.6",
+  "verified_official_input": true,
+  "source_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "verified_full_roundtrip_sha256": true,
+  "organizer_verified": false,
+  "official_record_awarded": false,
+  "score_bytes_LOCAL_only": 284637047,
+  "comp9_bytes": 35040,
+  "archive9_bytes": 284602007,
+  "no_runtime_options_counted": true,
+  "award_ceiling_2026_11_21": 99420425,
+  "pending_candidate_2026_11_21": 93388956,
+  "pending_candidate_1pct_ceiling_if_awarded": 92455066,
+  "locally_below_awarded_1pct_ceiling": false,
+  "locally_below_pending_1pct_ceiling": false,
+  "compression": {
+    "wall_seconds": 1151.279,
+    "reported_wall_seconds": 1151.27,
+    "max_rss_kib": 56952,
+    "user_cpu_s": 1150.25,
+    "system_cpu_s": 0.94,
+    "cpu_core": 0,
+    "command": [
+      "./comp9"
+    ],
+    "stderr_tail": "OMR6 mode=adaptive-textgate-match style=1 min_support=2 input=1000000000 payload=284566935 binary=35040 archive=284602007\n__OMR6_TIME__1151.27 56952 1150.25 0.94\n"
+  },
+  "decompression": {
+    "wall_seconds": 1205.186,
+    "reported_wall_seconds": 1205.18,
+    "max_rss_kib": 56732,
+    "user_cpu_s": 1204.11,
+    "system_cpu_s": 0.99,
+    "cpu_core": 0,
+    "command": [
+      "./archive9"
+    ],
+    "stderr_tail": "OMR6 decoded exactly 1000000000 bytes, checksum verified\n__OMR6_TIME__1205.18 56732 1204.11 0.99\n"
+  },
+  "warning": "Local single-core benchmark only; hardware-normalized deadlines and compliance must be checked by Hutter Prize committee."
+}
