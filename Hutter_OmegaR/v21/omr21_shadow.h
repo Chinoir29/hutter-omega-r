@@ -70,7 +70,7 @@ inline void Report() {
   if(s.pending_bucket>=0)std::abort();
   int selected=0;
   for(int j=1;j<kVariants;++j)if(s.train[j]<s.train[selected])selected=j;
-  std::fprintf(stderr,"OMR21_SHADOW_RESULT {\\"coded_bits\\":%llu,\\"train_bits\\":%llu,\\"holdout_bits\\":%llu,\\"train_loss\\":[%.10f,%.10f,%.10f,%.10f],\\"holdout_loss\\":[%.10f,%.10f,%.10f,%.10f],\\"selected_mode\\":%d,\\"holdout_gain_bits\\":%.10f,\\"changed_real_probabilities\\":false}\\n",
+  std::fprintf(stderr,"OMR21_SHADOW_RESULT {\"coded_bits\":%llu,\"train_bits\":%llu,\"holdout_bits\":%llu,\"train_loss\":[%.10f,%.10f,%.10f,%.10f],\"holdout_loss\":[%.10f,%.10f,%.10f,%.10f],\"selected_mode\":%d,\"holdout_gain_bits\":%.10f,\"changed_real_probabilities\":false}\n",
     (unsigned long long)s.bits,(unsigned long long)s.train_n,(unsigned long long)s.validation_n,
     s.train[0],s.train[1],s.train[2],s.train[3],
     s.validation[0],s.validation[1],s.validation[2],s.validation[3],
