@@ -40,6 +40,8 @@ jobs:
             with urllib.request.urlopen(req,timeout=25) as res:
               return json.load(res)
           names=[
+            'omr14-raw-core-lab.yml',
+            'omr13-semcache-build.yml',
             'omr12-cmix-neif-canary.yml',
             'omr11-enwik9-full.yml',
             'omr11-enwik8-ablation.yml',
