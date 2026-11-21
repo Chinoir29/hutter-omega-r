@@ -1,0 +1,35 @@
+{
+  "project": "OMÉGA-R v0.13 SEMCACHE",
+  "experiment": "COMPILE_ONLY_NO_WIKI_BENCHMARK",
+  "threshold_qpe3": 970,
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "upstream_license": "GPL-3.0",
+  "source_patch": {
+    "project": "OMÉGA-R v0.13 semantic cache gate ablation",
+    "baseline_repo": "https://github.com/marwoelk/cmix-neif-2.0",
+    "upstream_license": "GPL-3.0",
+    "baseline_revision": "35d1957a5074db802fc134126afc77b76d931761",
+    "baseline_blob": "20614538d3ff90906163a6bd9150894cbb7020f1",
+    "result_blob": "0f836f093048d840fc3dfb39cddbe583dc60e5a1",
+    "threshold_qpe3": 970,
+    "changed_source_files": [
+      "src/semantic_cache.h"
+    ],
+    "comparison_required": true,
+    "performance_measured": false,
+    "lossless_roundtrip_verified": false,
+    "hutter_prize_score": null,
+    "claim": "source patch only, not a compression improvement"
+  },
+  "status": "build_succeeded",
+  "job_status_prior_to_report": "success",
+  "unpacked_binary_bytes": 621240,
+  "unpacked_binary_sha256": "51dba56b65265e77a6190eb5a85b6c3706f234bb491e6acd7fcea2c8be76b790",
+  "resource_text": "wall_seconds=33.48 peak_rss_kib=229016",
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44947707113",
+  "timestamp_utc": "2026-11-21T20:44:14.900326+00:00",
+  "prize_score": null,
+  "compression_performance_measured": false,
+  "roundtrip_verified": false,
+  "competition_submission_sent": false
+}
