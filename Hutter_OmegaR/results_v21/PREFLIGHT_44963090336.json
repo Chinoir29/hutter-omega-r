@@ -1,0 +1,28 @@
+{
+  "project": "OMEGA-R",
+  "version": "v0.21",
+  "classification": "PROVED_SOURCE_AND_SYNTHETIC_PREFLIGHT_NOT_REAL_CMIX_RESULT",
+  "git_branch": "research/omr21-cmix-shadow-calibration",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "source_pin_git_blobs": {
+    "src/runner.cpp": "4f9ee4adfeef37069eecf95bf8efb4c0d03cf09b",
+    "src/coder/encoder.cpp": "c7299664111582c04c5d1fee4a545505e46f10d0",
+    "src/coder/decoder.cpp": "58f5d01bb4520378968fc43f226486ea56ea9bc7"
+  },
+  "run_id": 44963090336,
+  "job_id": 137026000107,
+  "conclusion": "success",
+  "tests": {
+    "python_source_gate_pass": 5,
+    "cpp_synthetic_test_pass": true,
+    "cloned_real_upstream_pin_check_pass": true,
+    "control_and_shadow_same_runner_sha256": "6195e9058a6d5baf7db505b31a8a748261c7033927e67fc11c57d86793f80953",
+    "decoded_source_unchanged": true
+  },
+  "artifact_id": 14730228030,
+  "real_experiment_run_id": 44963170463,
+  "lossless_full_enwik9": false,
+  "archive9_produced": false,
+  "official_competition_score": null,
+  "decision": "KEEP_PREFLIGHT_WAIT_FOR_REAL_AB_BEFORE_RANKING_CORRECTIONS"
+}
