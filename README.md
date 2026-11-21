@@ -43,7 +43,7 @@ Le score officiel récompensé consulté le 21 novembre 2026 était de 100 424 6
 
 ## Expérience v0.11 — normalisation des contextes lexicaux
 
-Une modification à huit tables constantes (minuscules ASCII et chiffres regroupés) améliore localement le score total de 898 octets sur les fichiers de développement et 801 octets sur les fichiers de validation, avec 28/28 reconstructions exactes et une taille de programme identique au témoin. Le test A/B sur trois tranches authentiques d'`enwik8` est défini dans le workflow [omr11-enwik8-ablation.yml](.github/workflows/omr11-enwik8-ablation.yml). Aucun gain sur `enwik9` n'est revendiqué.
+Une modification du contexte lexical, à huit tables inchangées (minuscules ASCII et chiffres regroupés), a amélioré le score sur **trois tranches authentifiées de 8 Mio d'`enwik8`**, avec **51 218 octets économisés (0,60 % de la somme des scores)**, six reconstructions exactes et des tailles de programmes identiques. Le verdict est publié dans [le registre v0.11](Hutter_OmegaR/results_v11/ENWIK8_ABLATION_GITHUB.json) et [l'exécution GitHub](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44944691842). Un **nouveau benchmark intégral `enwik9`**, distinct de la mesure v0.6 à 284 637 047 octets, est configuré dans [le workflow v0.11 complet](.github/workflows/omr11-enwik9-full.yml). Son score n'est pas encore confirmé : aucune victoire revendiquée.
 
 - [Méthode et résultats locaux v0.11](Hutter_OmegaR/v11/README.md)
 - [Code de génération de la variante](Hutter_OmegaR/v11/make_candidate.py)
