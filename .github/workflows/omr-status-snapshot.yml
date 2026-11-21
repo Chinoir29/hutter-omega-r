@@ -41,6 +41,7 @@ jobs:
             with urllib.request.urlopen(req,timeout=25) as res:
               return json.load(res)
           names=[
+            'omr16-semc-upper-holdout.yml',
             'omr15-semcache-raw-ab.yml',
             'omr14-raw-core-lab.yml',
             'omr13-semcache-build.yml',
