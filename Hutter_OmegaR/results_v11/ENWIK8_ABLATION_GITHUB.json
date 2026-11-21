@@ -1,15 +1,67 @@
 {
-  "status": "pending_remote_verification",
+  "status": "completed_verified_enwik8",
+  "comparison": {
+    "official_data": "enwik8 only",
+    "hutter_prize_score": null,
+    "enwik9_measured": false,
+    "comparison": "OMR11_MODE2 minus OMR11_MODE0, individual archives on disjoint excerpts",
+    "combined_delta_bytes": -51218,
+    "decision": "candidate_improves_enwik8_excerpts",
+    "individual": [
+      {
+        "offset_mib": 0,
+        "input_bytes": 8388608,
+        "sha256": "09f6dd7241a8ae21edfd6762f3c6712a1fd02f7f322c5e77cab8bb88f292ee8e",
+        "baseline_total_bytes": 2839188,
+        "candidate_total_bytes": 2822811,
+        "baseline_archive_bytes": 2804148,
+        "candidate_archive_bytes": 2787771,
+        "baseline_compiler_bytes": 35040,
+        "candidate_compiler_bytes": 35040,
+        "delta_total_bytes": -16377,
+        "baseline_rss_kib": 56952,
+        "candidate_rss_kib": 56976,
+        "baseline_time_s": 14.56,
+        "candidate_time_s": 15.24
+      },
+      {
+        "offset_mib": 40,
+        "input_bytes": 8388608,
+        "sha256": "c2297c8cdcf32a605a4824d90a644a83cac0f66cb0d71897b8fd6f1d86896254",
+        "baseline_total_bytes": 2839292,
+        "candidate_total_bytes": 2821434,
+        "baseline_archive_bytes": 2804252,
+        "candidate_archive_bytes": 2786394,
+        "baseline_compiler_bytes": 35040,
+        "candidate_compiler_bytes": 35040,
+        "delta_total_bytes": -17858,
+        "baseline_rss_kib": 56980,
+        "candidate_rss_kib": 56952,
+        "baseline_time_s": 12.74,
+        "candidate_time_s": 14.18
+      },
+      {
+        "offset_mib": 80,
+        "input_bytes": 8388608,
+        "sha256": "17dce12214bd3def91f14ee31aff4b4738637967462c46f3544f6bde306f6138",
+        "baseline_total_bytes": 2866626,
+        "candidate_total_bytes": 2849643,
+        "baseline_archive_bytes": 2831586,
+        "candidate_archive_bytes": 2814603,
+        "baseline_compiler_bytes": 35040,
+        "candidate_compiler_bytes": 35040,
+        "delta_total_bytes": -16983,
+        "baseline_rss_kib": 56952,
+        "candidate_rss_kib": 56952,
+        "baseline_time_s": 13.46,
+        "candidate_time_s": 9.54
+      }
+    ]
+  },
   "project": "OMEGA-R v0.11",
-  "metric": "paired lossless comparison on 3 disjoint 8 MiB slices of authentic enwik8",
-  "published_utc": "2026-11-21",
-  "baseline": "OMR6 mode 0",
-  "candidate": "OMR11 mode 2 (ASCII case and digit normalization)",
-  "tested_official_enwik8": false,
+  "execution_utc": "2026-11-21T20:12:03.960897+00:00",
+  "workflow_run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44944691842",
+  "prior_steps_status": "success",
   "enwik9_tested": false,
-  "combined_delta_bytes": null,
-  "individual": [],
-  "note": "Placeholder only, not an experimental result. GitHub Actions will update this same file if the remote test succeeds or fails.",
-  "workflow_url": "https://github.com/Chinoir29/hutter-omega-r/actions/workflows/omr11-enwik8-ablation.yml",
   "hutter_prize_submission": false
-}
+}\n
