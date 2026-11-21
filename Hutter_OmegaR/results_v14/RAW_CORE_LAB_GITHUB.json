@@ -6,9 +6,9 @@
   "entire_enwik9_tested": false,
   "hutter_prize_score": null,
   "competition_submission_sent": false,
-  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948698647",
-  "status_prior_to_reporting": "failure",
-  "updated_at_utc": "2026-11-21T20:55:22.164906+00:00",
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44949002223",
+  "status_prior_to_reporting": "success",
+  "updated_at_utc": "2026-11-21T21:00:04.373688+00:00",
   "patch": {
     "project": "OMÉGA-R v0.14 experimental raw core coder",
     "upstream": "https://github.com/marwoelk/cmix-neif-2.0",
@@ -16,10 +16,13 @@
     "head_commit": "35d1957a5074db802fc134126afc77b76d931761",
     "runner_original_git_blob": "4f9ee4adfeef37069eecf95bf8efb4c0d03cf09b",
     "runner_patched_git_blob": "aed4c66b0dd7e81b546f891fb69ccdb8ee8cd67b",
+    "gate_original_git_blob": "17eae4b1f5eca43598fa1b28c46a10b191793fe1",
+    "gate_patched_git_blob": "480e33dccd31b20c3ea5ee7f8cb220cc1335e66b",
     "changed_files": [
-      "src/runner.cpp"
+      "src/runner.cpp",
+      "src/tf1/tf1_gate.cpp"
     ],
-    "change_scope": "enable -c and skip metadata-specific transforms only for lab -c/-d; full transformer and SEMCACHE retained; no score claimed",
+    "change_scope": "lab-only -c/-d, skip enwik9-specific metadata and gate initialization; keep Transformer+SEMCACHE, no score claimed",
     "hutter_score": null,
     "upstream_modified": true
   },
@@ -36,11 +39,35 @@
     "normalization_is_lossy": true,
     "official_score_eligible": false
   },
-  "status": "failed_or_incomplete",
-  "failure": {
-    "status": "error",
-    "reason": "./cmix exited 1: progress 0.00 %\n\nE215 4097\nCommand exited with non-zero status 1\n__OMR14__2.37 4368452 1.11 1.26\n",
-    "prize_score": null
-  },
-  "encode.log_tail": "progress 0.00 %\n\nE215 4097\nCommand exited with non-zero status 1\n__OMR14__2.37 4368452 1.11 1.26\n"
+  "status": "passed_lab_only",
+  "experiment": {
+    "status": "verified_roundtrip",
+    "research_only": true,
+    "hutter_score_bytes": null,
+    "full_enwik9": false,
+    "upstream_release_unmodified": false,
+    "model_build": "full-model original source plus OMR14 laboratory -c parser patch",
+    "source_bytes": 65536,
+    "source_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
+    "lab_coder_bytes": 20533,
+    "lab_coder_sha256": "837f350ac4a4a4f046e1b9eac35956f34548d61db3d8f489fdd17d702e2bc3fe",
+    "unpacked_program_bytes": 621432,
+    "unpacked_program_sha256": "8f92596e03745034c89179a772a7ea044eed0c7026baa59a153e9eb2bbb976c4",
+    "self_extracting_archive": false,
+    "lossless_roundtrip_verified": true,
+    "compression": {
+      "wall_s": 36.98,
+      "max_rss_kib": 7286184,
+      "user_cpu_s": 34.18,
+      "system_cpu_s": 2.79,
+      "affinity_cpu": 0
+    },
+    "decompression": {
+      "wall_s": 37.1,
+      "max_rss_kib": 5153472,
+      "user_cpu_s": 34.36,
+      "system_cpu_s": 2.69,
+      "affinity_cpu": 0
+    }
+  }
 }
