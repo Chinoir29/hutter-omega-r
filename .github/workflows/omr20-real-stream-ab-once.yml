@@ -1,0 +1,117 @@
+name: "OMÉGA-R v0.20 — reversible real-stream AB one time"
+on:
+  push:
+    branches:
+      - research/omr20-reversible-stream-ab
+    paths:
+      - .github/workflows/omr20-real-stream-ab-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-stream-ab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - name: Checkout authorized project source
+        uses: actions/checkout@v4
+      - name: Run local adversarial tests of all five invertible transforms and archive format
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v20 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v19 -p 'test_*.py' -v
+      - name: Install pinned-major upstream prerequisites without changing system snapshot
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version
+          dpkg-query -W clang-18 libclang-rt-18-dev lld-18 gcc-13
+      - name: Clone upstream GPL-3.0 at exact approved commit and instrument scratch copy
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr20-upstream
+          git -C /tmp/omr20-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v19/production_stream_probe.py --upstream /tmp/omr20-upstream --output /tmp/omr20-probe
+      - name: Compile the identical research stream probe
+        run: |
+          cd /tmp/omr20-probe
+          /usr/bin/time -f 'BUILD_WALL=%e BUILD_RSS_KIB=%M' -o /tmp/omr20-build-time.log bash build.sh > /tmp/omr20-build.stdout 2> /tmp/omr20-build.stderr
+          test -x comp9
+      - name: Retrieve and authenticate 1GB official enwik9, no corpus upload
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr20-enwik9.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,shutil,zipfile
+          f=Path('/tmp/omr20-enwik9.zip'); out=Path('/tmp/omr20-enwik9')
+          with zipfile.ZipFile(f) as archive:
+              entries=[m for m in archive.infolist() if not m.is_dir()]
+              assert len(entries)==1 and entries[0].filename=='enwik9' and entries[0].file_size==1_000_000_000
+              with archive.open(entries[0]) as src, out.open('wb') as dst:
+                  shutil.copyfileobj(src,dst,4<<20)
+          assert out.stat().st_size==1_000_000_000
+          h=hashlib.sha256()
+          with out.open('rb') as src:
+              for b in iter(lambda:src.read(4<<20),b''):h.update(b)
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          f.unlink()
+          print('OMR20_CANONICAL_ENWIK9_VERIFIED_AND_NOT_UPLOADED')
+          PY
+      - name: Run genuine canonical -e transformations until just before arithmetic coding
+        run: |
+          mkdir -p /tmp/omr20-run
+          cd /tmp/omr20-run
+          ln -s /tmp/omr20-enwik9 enwik9
+          OMR19_PROBE_PRODUCTION_STREAM=1 /usr/bin/time -f 'PROBE_WALL=%e PROBE_RSS_KIB=%M' -o /tmp/omr20-probe-time.log /tmp/omr20-probe/comp9 >/tmp/omr20-probe.stdout 2>/tmp/omr20-probe.stderr
+          grep -F 'OMR19_REAL_CODER_INPUT=archive9.cmix.temp' /tmp/omr20-probe.stderr
+          test ! -e archive9
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p=Path('/tmp/omr20-run/archive9.cmix.temp')
+          assert p.stat().st_size==501062281
+          h=hashlib.sha256()
+          with p.open('rb') as s:
+              for b in iter(lambda:s.read(4<<20),b''):h.update(b)
+          assert h.hexdigest()=='c35d3073eeba70f22a2e08a50202b53eb95466e3e9f1f2702f6f9b3f96fd8718'
+          print('OMR20_REAL_501MB_SOURCE_MATCHED_INDEPENDENT_V019_SHA')
+          PY
+      - name: Evaluate five reversible representations; train 20 percent, assess other 80 percent and double decode
+        run: |
+          /usr/bin/time -f 'AB_WALL=%e AB_RSS_KIB=%M' -o /tmp/omr20-ab-time.log python3 Hutter_OmegaR/v20/reversible_stream_ab.py /tmp/omr20-run/archive9.cmix.temp --work /tmp/omr20-ab-scratch --result /tmp/omr20-AB-real.json > /tmp/omr20-AB-summary.log
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/omr20-AB-real.json').read_text())
+          assert r['status']=='REAL_PRECODER_STREAM_DOUBLE_ROUNDTRIP'
+          assert r['source_bytes']==501062281
+          assert r['source_sha256']=='c35d3073eeba70f22a2e08a50202b53eb95466e3e9f1f2702f6f9b3f96fd8718'
+          assert r['num_chunks']==60 and r['holdout_blocks']==48
+          assert len(r['two_exact_stream_sha_roundtrips'])==2
+          assert r['competition_score'] is None and not r['independent_enwik9_restoration']
+          print('OMR20_COMPLETE_DOUBLE_LOSSLESS_PRECODER_STREAM; HUTTER_SCORE_NOT_MEASURED')
+          print('OMR20_MODE',r['training']['chosen_mode'])
+          print('OMR20_TRAIN_DELTA',r['training']['train_delta_bytes'])
+          print('OMR20_HOLDOUT_DELTA',r['holdout_improvement_bytes'])
+          print('OMR20_FULL_PROXY_DELTA',r['full_proxy_improvement_bytes'])
+          print('OMR20_DECISION',r['decision'])
+          PY
+      - name: Upload only compact metrics, logs and hashes, not archive, corpus, dictionary or weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr20-real-stream-ab-metadata
+          path: |
+            /tmp/omr20-AB-real.json
+            /tmp/omr20-AB-summary.log
+            /tmp/omr20-ab-time.log
+            /tmp/omr20-build-time.log
+            /tmp/omr20-probe-time.log
+            /tmp/omr20-probe.stderr
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Clean any corpus/stream copies after experiment
+        if: always()
+        run: |
+          rm -rf /tmp/omr20-ab-scratch
+          rm -f /tmp/omr20-enwik9 /tmp/omr20-enwik9.zip /tmp/omr20-run/archive9.cmix.temp
