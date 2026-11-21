@@ -1,0 +1,15 @@
+{
+  "status": "pending_remote_verification",
+  "project": "OMEGA-R v0.11",
+  "metric": "paired lossless comparison on 3 disjoint 8 MiB slices of authentic enwik8",
+  "published_utc": "2026-11-21",
+  "baseline": "OMR6 mode 0",
+  "candidate": "OMR11 mode 2 (ASCII case and digit normalization)",
+  "tested_official_enwik8": false,
+  "enwik9_tested": false,
+  "combined_delta_bytes": null,
+  "individual": [],
+  "note": "Placeholder only, not an experimental result. GitHub Actions will update this same file if the remote test succeeds or fails.",
+  "workflow_url": "https://github.com/Chinoir29/hutter-omega-r/actions/workflows/omr11-enwik8-ablation.yml",
+  "hutter_prize_submission": false
+}
