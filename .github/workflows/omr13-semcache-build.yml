@@ -1,0 +1,145 @@
+name: "OMÉGA-R v0.13 — compilation A/B du seuil SEMCACHE"
+# Évaluation de constructibilité uniquement ; aucun codage enwik9, aucune soumission.
+on:
+  push:
+    paths:
+      - ".github/workflows/omr13-semcache-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omr13-semcache-build
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr13-build-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        threshold: [990, 980, 970]
+    env:
+      THRESHOLD: ${{ matrix.threshold }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier les neuf tests de modification et installer la chaîne d'outils
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "reports/v13"
+          python3 Hutter_OmegaR/v13/test_semantic_cache_gate_patch.py \
+            > reports/v13/patch_unit_tests.log 2>&1
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential make binutils git gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          { date -u --iso-8601=seconds; clang++-18 --version | head -1; \
+            gcc --version | head -1; free -h; df -h .; } > reports/v13/environment.txt
+      - name: Modifier UNE valeur depuis le commit amont contrôlé
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          python3 Hutter_OmegaR/v13/semantic_cache_gate_patch.py \
+            --checkout upstream --qpe3 "$THRESHOLD" \
+            --report reports/v13/patch.json > reports/v13/patch_stdout.log
+          test "$(git -C upstream rev-parse HEAD)" = "$expected"
+      - name: Compiler le modèle non empaqueté avec le même outil amont
+        shell: bash
+        run: |
+          set -euo pipefail
+          /usr/bin/time -f 'wall_seconds=%e peak_rss_kib=%M' \
+             -o reports/v13/build_resources.txt \
+             bash -c 'cd upstream && make CC=clang++-18 CFLAGS_DEFINES="-DSEED=923 -DUPDATE_LIMIT=3000" prof_use -j2' \
+             > reports/v13/build.log 2>&1 || {
+               echo 'Build failed. See archived diagnostic.'
+               tail -60 reports/v13/build.log || true
+               exit 1
+             }
+          test -s upstream/cmix
+          stat -c '%s' upstream/cmix > reports/v13/unpacked_binary_bytes.txt
+          sha256sum upstream/cmix > reports/v13/unpacked_binary_sha256.txt
+          sha256sum upstream/src/semantic_cache.h > reports/v13/modified_source_sha256.txt
+          echo "COMPILE_PASS threshold=$THRESHOLD; NO_COMPRESSION_EXECUTED"
+      - name: Sauvegarder les diagnostics du build (aucun binaire, aucun corpus)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr13-compile-qpe3-${{ matrix.threshold }}
+          path: reports/v13/
+          if-no-files-found: warn
+          retention-days: 10
+      - name: Écrire un petit bilan par configuration dans le dépôt
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          BUILD_STEPS_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import base64, datetime, json, os, pathlib, time, urllib.error, urllib.request
+          root=pathlib.Path('reports/v13')
+          read=lambda filename: (root/filename).read_text().strip() if (root/filename).is_file() else None
+          patch=None
+          if read('patch.json'):
+            try:patch=json.loads(read('patch.json'))
+            except ValueError:pass
+          tested=bool(read('unpacked_binary_bytes.txt') and read('unpacked_binary_sha256.txt') and patch)
+          report={
+            'project':'OMÉGA-R v0.13 SEMCACHE',
+            'experiment':'COMPILE_ONLY_NO_WIKI_BENCHMARK',
+            'threshold_qpe3':int(os.environ['THRESHOLD']),
+            'upstream_commit':'35d1957a5074db802fc134126afc77b76d931761',
+            'upstream_license':'GPL-3.0',
+            'source_patch':patch,
+            'status':'build_succeeded' if tested else 'build_failed_or_incomplete',
+            'job_status_prior_to_report':os.environ['BUILD_STEPS_STATUS'],
+            'unpacked_binary_bytes':int(read('unpacked_binary_bytes.txt')) if read('unpacked_binary_bytes.txt') else None,
+            'unpacked_binary_sha256':read('unpacked_binary_sha256.txt').split()[0] if read('unpacked_binary_sha256.txt') else None,
+            'resource_text':read('build_resources.txt'),
+            'run_url':'https://github.com/'+os.environ['REPO']+'/actions/runs/'+os.environ['RUN_ID'],
+            'timestamp_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'prize_score':None,
+            'compression_performance_measured':False,
+            'roundtrip_verified':False,
+            'competition_submission_sent':False
+          }
+          name='Hutter_OmegaR/results_v13/BUILD_QP'+os.environ['THRESHOLD']+'.json'
+          uri='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+name
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+                   'Accept':'application/vnd.github+json',
+                   'X-GitHub-Api-Version':'2022-11-28',
+                   'User-Agent':'hutter-omr13-build'}
+          payload={'message':'Documenter la constructibilité du seuil SEMCACHE qpe3 '+os.environ['THRESHOLD'],
+                   'content':base64.b64encode((json.dumps(report,indent=2,ensure_ascii=False)+chr(10)).encode()).decode(),
+                   'branch':'main'}
+          for attempt in range(10):
+            try:
+              with urllib.request.urlopen(urllib.request.Request(uri,headers=headers),timeout=20) as r:
+                f=json.load(r)
+              payload['sha']=f['sha']
+            except urllib.error.HTTPError as ex:
+              if ex.code==404:payload.pop('sha',None)
+              else:raise
+            req=urllib.request.Request(uri,headers=headers,data=json.dumps(payload).encode(),method='PUT')
+            try:
+              with urllib.request.urlopen(req,timeout=25) as res:
+                res.read()
+              print('BUILD_STATUS_PUBLISHED',name,report['status'])
+              break
+            except urllib.error.HTTPError as ex:
+              if ex.code not in (409,422) or attempt==9:raise
+              time.sleep(1+attempt)
+          PY
