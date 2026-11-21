@@ -22,6 +22,8 @@ void Encoder::Flush() {
   while (pos < input_bytes) {
     // coded bit loop
   }
+  e.Flush();
+  run_mode::gram.Report("compress");
 }
 bool RunCompression() {
   Compress(temp_bytes, temp_in, data_out, output_bytes, &p);
@@ -45,6 +47,7 @@ bool RunCompression() {
         self.assertIn('omr21_shadow::After(bit)',e)
         self.assertIn('omr21_shadow::Report()',e)
         self.assertIn('while (pos < omr21_cap)',patched['src/runner.cpp'].decode())
+        self.assertIn('std::rename(output_path.c_str()',patched['src/runner.cpp'].decode())
         self.assertNotIn('src/coder/decoder.cpp',patched)
         with patch.dict(p.PINS,{k:p.blob(v) for k,v in data.items()}):
             ctrl=p.patch_sources(data,b'// test header\n',shadow=False)
