@@ -20,7 +20,7 @@ def measured(command,cwd,phase,reports,timeout,cpu):
     output=reports/f'{phase}.log'
     time_log=reports/f'{phase}.resource.txt'
     with output.open('wb') as f:
-        run=subprocess.run(['/usr/bin/time','-f','wall_s=%e\\nmax_rss_kib=%M\\nuser_cpu_s=%U\\nsystem_cpu_s=%S',
+        run=subprocess.run(['/usr/bin/time','-f','wall_s=%e\nmax_rss_kib=%M\nuser_cpu_s=%U\nsystem_cpu_s=%S',
             '-o',str(time_log),'taskset','-c',str(cpu),*command],cwd=cwd,
             stdout=f,stderr=subprocess.STDOUT,timeout=timeout)
     if run.returncode:
