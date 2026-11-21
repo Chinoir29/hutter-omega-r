@@ -1,0 +1,113 @@
+name: Hutter OMÉGA-R v0.8 — prévol enwik8 et essai complet enwik9
+
+# AUCUNE soumission au concours. Démarrage manuel uniquement.
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Prévol enwik8 (défaut) ou essai complet enwik9 (après prévol)"
+        type: choice
+        required: true
+        default: preflight
+        options:
+          - preflight
+          - full
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hutter-omr8-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer Linux et le rapport
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/preflight
+          command -v zstd >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y zstd; }
+          test -x /usr/bin/time || { sudo apt-get update -qq && sudo apt-get install -y time; }
+          { date -u --iso-8601=seconds; uname -a; free -h; df -h .; g++ --version | head -1; } > reports/preflight/environment.txt
+      - name: Télécharger le véritable enwik8 (100 Mo)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --retry-all-errors --connect-timeout 30 \
+            --max-time 1200 --output data/enwik8.zip https://mattmahoney.net/dc/enwik8.zip
+          unzip -tq data/enwik8.zip
+          test "$(unzip -Z1 data/enwik8.zip)" = enwik8
+          unzip -p data/enwik8.zip enwik8 > data/enwik8
+          test "$(stat -c%s data/enwik8)" = 100000000
+          printf '%s  %s\n' 'a1fa5ffddb56f4953e226637dabbb36a' data/enwik8 | md5sum --check --status
+          printf '%s  %s\n' '57b8363b814821dc9d47aa4d41f58733519076b2' data/enwik8 | sha1sum --check --status
+          sha256sum data/enwik8 > reports/preflight/enwik8.sha256
+          rm data/enwik8.zip
+      - name: Compiler v0.6 puis mesurer trois tranches authentiques de 8 Mio
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash Hutter_OmegaR/v6/build.sh
+          for offset in 0 40 80; do
+            python3 Hutter_OmegaR/v8/prefix_benchmark_v8.py \
+              --enwik8 data/enwik8 --prefix-mib 8 --offset-mib "$offset" \
+              --out "reports/preflight/report_offset_${offset}MiB.json" \
+              --max-phase-seconds 600
+          done
+      - name: Sauvegarder les mesures, même en cas d'échec
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr8-enwik8-preflight
+          path: reports/preflight/
+          if-no-files-found: warn
+          retention-days: 14
+
+  full_enwik9:
+    if: ${{ inputs.phase == 'full' }}
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer l'environnement
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/full
+          test -x /usr/bin/time || { sudo apt-get update -qq && sudo apt-get install -y time; }
+          { date -u --iso-8601=seconds; uname -a; free -h; df -h .; } > reports/full/environment.txt
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+      - name: Télécharger et authentifier le milliard d'octets officiels
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 4 --retry-all-errors --connect-timeout 30 \
+            --max-time 3600 --output data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          printf '%s  %s\n' '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' data/enwik9 | sha256sum --check --status
+          sha256sum data/enwik9 > reports/full/enwik9.sha256
+          rm data/enwik9.zip
+      - name: Compiler et compresser/décompresser (mesure strictement locale)
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash Hutter_OmegaR/v6/build.sh
+          python3 Hutter_OmegaR/v6/verified_enwik9_run_v6.py \
+            data/enwik9 --out reports/full/report.json --limit-hours 2.5
+      - name: Sauvegarder uniquement les rapports (aucun corpus, aucune archive)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr8-enwik9-local-full
+          path: reports/full/
+          if-no-files-found: warn
+          retention-days: 14
