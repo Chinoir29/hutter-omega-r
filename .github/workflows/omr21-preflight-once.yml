@@ -1,0 +1,52 @@
+name: "OMÉGA-R v0.21 — préflight sources et modèle fantôme"
+on:
+  push:
+    branches:
+      - research/omr21-cmix-shadow-calibration
+    paths:
+      - .github/workflows/omr21-preflight-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-source-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout authorized project
+        uses: actions/checkout@v4
+      - name: Test Python source guards against adversarial drift
+        run: python3 -m unittest discover -s Hutter_OmegaR/v21 -p 'test_*.py' -v
+      - name: Compile standalone online calibrator and run synthetic contradiction
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -I Hutter_OmegaR/v21 Hutter_OmegaR/v21/shadow_selftest.cpp -o /tmp/omr21-shadow-test
+          /tmp/omr21-shadow-test 2>&1 | tee /tmp/omr21-synthetic.log
+          grep -F 'OMR21_SHADOW_SYNTHETIC_SELFTEST_OK' /tmp/omr21-synthetic.log
+      - name: Clone exact GPL-3.0 upstream and derive identical control/instrumented research trees
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr21-upstream
+          git -C /tmp/omr21-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v21/prepare_shadow.py --upstream /tmp/omr21-upstream --output /tmp/omr21-shadow --control-output /tmp/omr21-control
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          s=Path('/tmp/omr21-shadow/src/runner.cpp').read_bytes()
+          c=Path('/tmp/omr21-control/src/runner.cpp').read_bytes()
+          assert s==c, 'control and shadow modify different preprocessing/stream caps'
+          assert Path('/tmp/omr21-shadow/src/coder/encoder.cpp').read_bytes()!=Path('/tmp/omr21-control/src/coder/encoder.cpp').read_bytes()
+          assert Path('/tmp/omr21-shadow/src/coder/decoder.cpp').read_bytes()==Path('/tmp/omr21-control/src/coder/decoder.cpp').read_bytes()
+          print('OMR21_REAL_PINNED_SOURCE_PREFLIGHT_OK', hashlib.sha256(s).hexdigest())
+          print('NO_PRODUCTION_BUILD; NO_HUTTER_ARCHIVE; NO_COMPETITION_SCORE')
+          PY
+      - name: Preserve audit metadata, not external GPL source/weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr21-source-preflight
+          path: |
+            /tmp/omr21-source-audit-shadow.json
+            /tmp/omr21-source-audit-control.json
+            /tmp/omr21-synthetic.log
+          retention-days: 14
+          if-no-files-found: ignore
