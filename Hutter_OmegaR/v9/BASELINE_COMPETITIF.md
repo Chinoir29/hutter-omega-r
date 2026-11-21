@@ -26,3 +26,14 @@ Un écart de version des compilateurs ou bibliothèques peut modifier le binaire
 - Vérifier systématiquement `S = taille(comp9) + taille(archive9) + longueur(options)`, restitution exacte, RAM, disque, temps CPU, puis reconnaissance externe.
 
 **Statut :** infrastructure de recherche, pas une victoire au Hutter Prize.
+
+## Résultat de compilation vérifié — 21 novembre 2026
+
+- [Exécution GitHub Actions n° 44942316594](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44942316594) : **succès** pour toutes les étapes.
+- Révision reconstruite : `35d1957a5074db802fc134126afc77b76d931761`, identique à la révision source épinglée.
+- Exécutable `comp9` produit : **4 042 424 octets**.
+- SHA-256 du binaire produit : `333b183e88a71064da31606e0a3e78dfc3006cc7095c183fb50ee6f43d509531`.
+- Ressources du build : `wall_s=478.33 peak_rss_kib=4557388` soit environ 7 min 58 s et 4,35 Gio de RAM en pic, selon le rapport GitHub.
+- Binaire publié par l'auteur : 4 042 564 octets. Notre compilation diffère de **140 octets** en taille, sans comparaison des flux compressés ni preuve d'amélioration du score.
+- Le rapport source est disponible dans [upstream_build_status.json](upstream_build_status.json).
+- **Aucune compression `enwik9` et aucune vérification de compatibilité compression/décompression par ce binaire ne sont revendiquées.** Le statut R3 porte uniquement sur l'outil de compilation.
