@@ -1,0 +1,64 @@
+{
+  "project": "OMÉGA-R v0.18",
+  "result_type": "source_construction_and_local_tests",
+  "official_hutter_score": null,
+  "enwik9_full_candidate_retested": false,
+  "upstream_baseline_compiled_this_session": false,
+  "remote_lookups": {
+    "project_head_before_changes": "3b525be7f5dc5ba7800df793cf78138ea2644761",
+    "github_run_44953624240": "completed/success (v0.17 lab only)",
+    "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761"
+  },
+  "archive_manifest_sha256": {
+    "verified_files": 203,
+    "invalid_files": 0
+  },
+  "local_tests": {
+    "v17_unittest": {
+      "passed": 33
+    },
+    "v18_unittest": {
+      "passed": 7
+    },
+    "v17_codec_selftest": true,
+    "v11_portable_real_executables": {
+      "passed": 8,
+      "cases": {
+        "random_128k": {
+          "roundtrips": 4,
+          "mode_totals": [
+            201666,
+            201666,
+            201666,
+            201666
+          ],
+          "delta_max_min": 0
+        },
+        "repetitive": {
+          "roundtrips": 4,
+          "mode_totals": [
+            70517,
+            70517,
+            70517,
+            70517
+          ],
+          "delta_max_min": 0
+        }
+      },
+      "source": "v11 upstream project source in supplied ZIP, not enwik9 data"
+    }
+  },
+  "source_v18": {
+    "production_ab.py": "f7e8cbe83383f951bdea7783d34111638bc9913ad6c00de30cc89557c20eb923",
+    "test_production_ab.py": "beca0afcf49e5e0852c8631f3473ddb34cf9e52c62ad8ea0b13bbceaf182390e",
+    "README.md": "471da69f5bce967f98bb931a92324fe299abee43b74acc2501c6fb2cb24037e0"
+  },
+  "constraints": {
+    "source_pinned_hashes": "defined in production_ab.py; validated remotely from GitHub",
+    "no_production_compiled_here": true,
+    "no_corpus_present": true,
+    "no_eligible_score": true,
+    "decision": "HOLD pending actual full production path roundtrips and size comparison"
+  },
+  "python": "3.13.5"
+}
