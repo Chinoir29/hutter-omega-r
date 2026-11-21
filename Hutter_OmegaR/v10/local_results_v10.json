@@ -1,0 +1,90 @@
+[
+  {
+    "dataset": "pandas_frame",
+    "source_bytes": 447104,
+    "mode": 0,
+    "program_bytes": 35192,
+    "archive_bytes": 132876,
+    "score_bytes": 168068,
+    "seconds_compress": 0.846,
+    "roundtrip_verified": true,
+    "sha256_original": "9b813159606b62af03bfe76a7089da282d2d6091f308cf2f4d90dd0661a01105"
+  },
+  {
+    "dataset": "pandas_frame",
+    "source_bytes": 447104,
+    "mode": 1,
+    "program_bytes": 43384,
+    "archive_bytes": 140769,
+    "score_bytes": 184153,
+    "seconds_compress": 1.152,
+    "roundtrip_verified": true,
+    "sha256_original": "9b813159606b62af03bfe76a7089da282d2d6091f308cf2f4d90dd0661a01105"
+  },
+  {
+    "dataset": "pandas_generic",
+    "source_bytes": 474370,
+    "mode": 0,
+    "program_bytes": 35192,
+    "archive_bytes": 130914,
+    "score_bytes": 166106,
+    "seconds_compress": 0.667,
+    "roundtrip_verified": true,
+    "sha256_original": "504217660fbe1aa74ff98b31bea093bd9043cd61c35aba272073464f38e46f22"
+  },
+  {
+    "dataset": "pandas_generic",
+    "source_bytes": 474370,
+    "mode": 1,
+    "program_bytes": 43384,
+    "archive_bytes": 138738,
+    "score_bytes": 182122,
+    "seconds_compress": 1.107,
+    "roundtrip_verified": true,
+    "sha256_original": "504217660fbe1aa74ff98b31bea093bd9043cd61c35aba272073464f38e46f22"
+  },
+  {
+    "dataset": "numpy_numeric",
+    "source_bytes": 82322,
+    "mode": 0,
+    "program_bytes": 35192,
+    "archive_bytes": 58193,
+    "score_bytes": 93385,
+    "seconds_compress": 0.154,
+    "roundtrip_verified": true,
+    "sha256_original": "fc3727bd7bbaa1a1d74a2f50f8157dc86cdfc7bb5cf620b1ebdafd3272439b98"
+  },
+  {
+    "dataset": "numpy_numeric",
+    "source_bytes": 82322,
+    "mode": 1,
+    "program_bytes": 43384,
+    "archive_bytes": 66305,
+    "score_bytes": 109689,
+    "seconds_compress": 0.271,
+    "roundtrip_verified": true,
+    "sha256_original": "fc3727bd7bbaa1a1d74a2f50f8157dc86cdfc7bb5cf620b1ebdafd3272439b98"
+  },
+  {
+    "dataset": "wiki_xml_synthetic",
+    "source_bytes": 1250000,
+    "mode": 0,
+    "program_bytes": 35192,
+    "archive_bytes": 178564,
+    "score_bytes": 213756,
+    "seconds_compress": 1.868,
+    "roundtrip_verified": true,
+    "sha256_original": "e321ed074eee2d321fcdb95989ee3d83e0ddbfe6c589e15318f8564f0c780bbc"
+  },
+  {
+    "dataset": "wiki_xml_synthetic",
+    "source_bytes": 1250000,
+    "mode": 1,
+    "program_bytes": 43384,
+    "archive_bytes": 184992,
+    "score_bytes": 228376,
+    "seconds_compress": 3.073,
+    "roundtrip_verified": true,
+    "sha256_original": "e321ed074eee2d321fcdb95989ee3d83e0ddbfe6c589e15318f8564f0c780bbc"
+  }
+]
