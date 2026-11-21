@@ -94,3 +94,15 @@ La [v0.15](Hutter_OmegaR/v15/README.md) applique, sur **la même entrée artific
 Les sources et les tests locaux ont été publiés après **20 tests unitaires et l'autotest d'extraction réussis**. Le workflow [omr16-semc-upper-holdout.yml](.github/workflows/omr16-semc-upper-holdout.yml) exécute la comparaison A/B depuis un commit amont épinglé et enregistre le verdict dans [SEMCACHE_UPPER_HOLDOUT.json](Hutter_OmegaR/results_v16/SEMCACHE_UPPER_HOLDOUT.json). [Exécution de lancement n° 44951476074](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44951476074).
 
 **Attention :** aucune valeur n'est retenue avant vérification de chaque décompression ; le résultat expérimental n'est pas une archive auto-extractible du concours, et aucun nouvel exploit mondial n'est revendiqué.
+
+## v0.16 — résultat confirmé (21 novembre 2026)
+
+La [comparaison v0.16](Hutter_OmegaR/results_v16/SEMCACHE_UPPER_HOLDOUT.json) a réussi : neuf restitutions de flux de laboratoire exactes, trois fenêtres projetées de 65 536 octets chacune. Le témoin q990 totalise **64 719 octets**, q995 **64 683** (−36), q999 **64 652** (−67, soit −0,1035 %). La variante **q999 améliore les trois fenêtres**, sans changement de taille de l'exécutable non empaqueté dans ce laboratoire. Ces flux sont **avec perte par rapport au corpus officiel**, sans score Hutter Prize.
+
+## v0.17 — suppression de la perte d'information dans les fenêtres expérimentales
+
+La nouvelle [méthode v0.17](Hutter_OmegaR/v17/README.md) code les octets Wikipédia **bruts** dans l'alphabet figé de 208 symboles, grâce à un échappement réversible ; sa [preuve de réversibilité et ses limites](Hutter_OmegaR/v17/FORMAL_CODEC_SPEC.md) sont conservées. Les **33 tests locaux** ont réussi, incluant tests d'octets arbitraires, contrôles négatifs et simulation des deux étapes de restauration.
+
+Le [workflow v0.17](.github/workflows/omr17-reversible-wiki-ab.yml) a été publié au commit `4c35cf4a1ae3d31074ce37a544826d5e79456096` et son [exécution n° 44953624240](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44953624240) compare q990 contre q999 sur de nouvelles fenêtres à 256, 384, 640 Mio. Les critères sont six reproductions exactes du **flux échappé** et des **octets bruts d'origine**, avec manifeste SHA-256 authentifié. Verdict final : consulter le [registre v0.17](Hutter_OmegaR/results_v17/REVERSIBLE_AB_GITHUB.json).
+
+**Important :** le programme expérimental utilise toujours un chemin de codage modifié (`-c/-d`) et ne produit ni une archive auto-extractible ni un score officiel. La source amont GPL-3.0 et les poids sont utilisés dans GitHub Actions, sans redistribution de binaires concurrents.
