@@ -1,0 +1,78 @@
+name: 'OMÉGA-R v0.9 — compilation d’une référence compétitive'
+
+# Un seul build de référence; jamais de compression enwik9 ni de candidature.
+on:
+  push:
+    paths:
+      - '.github/workflows/omr9-build-upstream.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omr9-upstream-build
+  cancel-in-progress: false
+
+jobs:
+  build_upstream:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr9-upstream-build-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Préparer les dépendances système standard
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential make binutils ca-certificates git gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          for x in clang++-18 clang-18 ld.lld-18 llvm-profdata-18 \
+                   llvm-strip-18 llvm-objcopy-18 gawk gcc python3 make; do
+            command -v "$x"
+          done
+
+      - name: Récupérer et vérifier la révision publiée sous GPL-3.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          git clone --depth 1 https://github.com/marwoelk/cmix-neif-2.0.git upstream
+          cd upstream
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          actual="$(git rev-parse HEAD)"
+          printf '%s\n' "$actual" | tee ../reports/upstream_commit.txt
+          test "$actual" = "$expected"
+          test -s LICENSE
+          sha256sum LICENSE build.sh install.sh > ../reports/upstream_scripts_sha256.txt
+          printf 'Upstream license: GNU GPL-3.0; https://github.com/marwoelk/cmix-neif-2.0\n' > ../reports/provenance.txt
+          { uname -a; clang++-18 --version | head -1; gcc --version | head -1; free -h; df -h .; } > ../reports/environment.txt
+
+      - name: Compiler uniquement la référence, sans exécuter enwik9
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work
+          /usr/bin/time -f 'wall_s=%e peak_rss_kib=%M' -o reports/build_resources.txt \
+            bash -c 'cd work && bash ../upstream/build.sh' \
+            > reports/build_stdout.log 2> reports/build_stderr.log || {
+              echo 'ERROR: upstream build failed; diagnostics retained.'
+              tail -100 reports/build_stderr.log || true
+              tail -100 reports/build_stdout.log || true
+              exit 1
+            }
+          test -s work/comp9
+          stat -c '%s' work/comp9 > reports/comp9_bytes.txt
+          sha256sum work/comp9 > reports/comp9_sha256.txt
+          echo 'BUILD SUCCESS; not a Hutter Prize score.'
+          cat reports/comp9_bytes.txt reports/comp9_sha256.txt
+
+      - name: Archiver seulement les rapports, même en cas d'échec
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr9-upstream-build-diagnostics
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 7
