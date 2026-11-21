@@ -15,7 +15,9 @@ concurrency:
 
 jobs:
   canary:
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr12-canary-once]') }}
+    # DÉSACTIVÉ : E178, les hints enwik9 ne se reconstruisent pas sur un sous-corpus.
+    # Ne pas répéter cet essai sans un flux d'entrée compatible et attesté.
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     steps:
