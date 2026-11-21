@@ -1,0 +1,11 @@
+{
+  "project": "OMÉGA-R v0.14 laboratory raw coder",
+  "status": "not_run",
+  "tested_upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "scope": "full-model source with lab-only -c; lossy vocabulary-projected input from authenticated enwik9",
+  "full_enwik9_tested": false,
+  "hutter_prize_score": null,
+  "lossless_roundtrip_of_lab_input_verified": false,
+  "prize_submission_sent": false,
+  "note": "Placeholder; not a result."
+}
