@@ -84,4 +84,13 @@ Une troisième exécution [v0.14.2](https://github.com/Chinoir29/hutter-omega-r/
 
 Le quatrième essai [v0.14.3](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44949002223) a réussi, après correction du gate Transformer sur une copie GPL du concurrent. Le laboratoire a traité **65 536 octets projetés avec perte** depuis `enwik9` authentifié, codés en **20 533 octets**, puis restitués exactement (SHA-256), en 36,98 s d'encodage et 37,10 s de décodage. **Ce résultat ne constitue ni une compression du véritable enwik9 ni un score Hutter Prize.** Les [preuves](Hutter_OmegaR/results_v14/RAW_CORE_LAB_GITHUB.json) et les échecs E553/E215 précédents sont conservés.
 
-La [v0.15](Hutter_OmegaR/v15/README.md) applique, sur **la même entrée artificielle, les mêmes poids et le même runner**, les seuils SEMCACHE 990, 980 et 970, avec reconstruction exacte exigée à chaque essai. Le [workflow de comparaison](.github/workflows/omr15-semcache-raw-ab.yml) publiera un résultat dans le [registre v0.15](Hutter_OmegaR/results_v15/SEMCACHE_LAB_COMPARISON.json), seulement lorsque les tests auront réussi. Aucun gain n'est revendiqué avant les mesures.
+La [v0.15](Hutter_OmegaR/v15/README.md) applique, sur **la même entrée artificielle, les mêmes poids et le même runner**, les seuils SEMCACHE 990, 980 et 970, avec reconstruction exacte exigée à chaque essai. Le [workflow de comparaison](.github/workflows/omr15-semcache-raw-ab.yml) a **réussi** et son [rapport v0.15](Hutter_OmegaR/results_v15/SEMCACHE_LAB_COMPARISON.json) confirme trois reconstructions exactes. Les seuils 980 et 970 dégradent le flux sur cet échantillon ; ils sont rejetés pour cette configuration.
+
+
+## v0.16 — contre-expérience SEMCACHE sur trois holdouts
+
+À la suite du résultat négatif v0.15, nous testons la direction opposée : augmenter le seuil de recherche SEMCACHE de 990 à **995** ou **999**, sous contrôle de neuf restitutions sans perte sur trois fenêtres disjointes de Wikipédia (32, 96 et 192 Mio). Ces données sont projetées dans le vocabulaire restreint du laboratoire et sont donc **avec perte par rapport au corpus officiel**.
+
+Les sources et les tests locaux ont été publiés après **20 tests unitaires et l'autotest d'extraction réussis**. Le workflow [omr16-semc-upper-holdout.yml](.github/workflows/omr16-semc-upper-holdout.yml) exécute la comparaison A/B depuis un commit amont épinglé et enregistre le verdict dans [SEMCACHE_UPPER_HOLDOUT.json](Hutter_OmegaR/results_v16/SEMCACHE_UPPER_HOLDOUT.json). [Exécution de lancement n° 44951476074](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44951476074).
+
+**Attention :** aucune valeur n'est retenue avant vérification de chaque décompression ; le résultat expérimental n'est pas une archive auto-extractible du concours, et aucun nouvel exploit mondial n'est revendiqué.
