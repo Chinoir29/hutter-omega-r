@@ -72,7 +72,7 @@ jobs:
           retention-days: 14
 
   full_enwik9:
-    if: ${{ inputs.phase == 'full' }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.phase == 'full') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[omr8-full-once]')) }}
     needs: preflight
     runs-on: ubuntu-24.04
     timeout-minutes: 330
