@@ -17,6 +17,8 @@ RUNNER_BLOB = "4f9ee4adfeef37069eecf95bf8efb4c0d03cf09b"
 RUNNER = Path("src/runner.cpp")
 OLD_PARSER = "(argv[1][1] != 'd' && argv[1][1] != 'e'"
 NEW_PARSER = "(argv[1][1] != 'c' && argv[1][1] != 'd' && argv[1][1] != 'e'"
+OLD_HELPER = "#if !(1 && !AUX_BUILD)\\nstatic bool provide_dict_file"
+NEW_HELPER = "#if OMR14_RAW_CODER || !(1 && !AUX_BUILD)\\nstatic bool provide_dict_file"
 OLD_BRANCH = "#if !(1 && !AUX_BUILD)   // the package form has no -c"
 NEW_BRANCH = "#if OMR14_RAW_CODER || !(1 && !AUX_BUILD) // LAB ONLY: allow -c in full-model build"
 LAB_HEAD = ("// OMÉGA-R research-only build: allow raw -c coding with the unchanged full model.\n"
@@ -28,10 +30,13 @@ def modify_source(source: str) -> str:
         raise ValueError("Unexpected release argument parser")
     if source.count(OLD_BRANCH) != 1:
         raise ValueError("Unexpected release -c switch")
+    if source.count(OLD_HELPER) != 1:
+        raise ValueError("Missing auxiliary dictionary file helper")
     if "OMR14_RAW_CODER" in source:
         raise ValueError("This source was previously patched")
-    changed=LAB_HEAD+source.replace(OLD_PARSER,NEW_PARSER,1).replace(OLD_BRANCH,NEW_BRANCH,1)
-    if changed.count("OMR14_RAW_CODER")!=2:
+    changed=(LAB_HEAD+source.replace(OLD_PARSER,NEW_PARSER,1)
+             .replace(OLD_BRANCH,NEW_BRANCH,1).replace(OLD_HELPER,NEW_HELPER,1))
+    if changed.count("OMR14_RAW_CODER")!=3:
         raise RuntimeError("Unexpected patch output")
     return changed
 
