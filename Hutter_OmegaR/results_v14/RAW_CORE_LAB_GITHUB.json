@@ -1,11 +1,27 @@
 {
-  "project": "OMÉGA-R v0.14 laboratory raw coder",
-  "status": "not_run",
-  "tested_upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
-  "scope": "full-model source with lab-only -c; lossy vocabulary-projected input from authenticated enwik9",
-  "full_enwik9_tested": false,
+  "project": "OMÉGA-R v0.14 laboratory core coder",
+  "scope": "experimentally enabled -c on unpacked full-model coder",
+  "source": "lossily projected bytes from authenticated enwik9",
+  "competing_release_binary_unchanged": false,
+  "entire_enwik9_tested": false,
   "hutter_prize_score": null,
-  "lossless_roundtrip_of_lab_input_verified": false,
-  "prize_submission_sent": false,
-  "note": "Placeholder; not a result."
+  "competition_submission_sent": false,
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948098491",
+  "status_prior_to_reporting": "failure",
+  "updated_at_utc": "2026-11-21T20:47:45.608418+00:00",
+  "patch": {
+    "project": "OMÉGA-R v0.14 experimental raw core coder",
+    "upstream": "https://github.com/marwoelk/cmix-neif-2.0",
+    "license": "GPL-3.0",
+    "head_commit": "35d1957a5074db802fc134126afc77b76d931761",
+    "runner_original_git_blob": "4f9ee4adfeef37069eecf95bf8efb4c0d03cf09b",
+    "runner_patched_git_blob": "035357b6c97bc15581b42a888b22566b8c4e064d",
+    "changed_files": [
+      "src/runner.cpp"
+    ],
+    "change_scope": "enable -c for full-model laboratory coding; no claim of score",
+    "hutter_score": null,
+    "upstream_modified": true
+  },
+  "status": "failed_or_incomplete"
 }
