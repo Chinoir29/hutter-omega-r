@@ -7,6 +7,6 @@ test_reject_noncanonical_corpus_before_run (test_production_ab.ProductionGateTes
 test_source_contract_fixture (test_production_ab.ProductionGateTests.test_source_contract_fixture) ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests in 0.006s
+Ran 7 tests in 0.008s
 
 OK
