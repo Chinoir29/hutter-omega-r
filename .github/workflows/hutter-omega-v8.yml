@@ -2,6 +2,9 @@ name: Hutter OMÉGA-R v0.8 — prévol enwik8 et essai complet enwik9
 
 # AUCUNE soumission au concours. Démarrage manuel uniquement.
 on:
+  push:
+    paths:
+      - '.github/workflows/hutter-omega-v8.yml'
   workflow_dispatch:
     inputs:
       phase:
