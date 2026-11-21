@@ -1,6 +1,6 @@
 name: 'OMÉGA-R — relevé des exécutions GitHub'
 # Vérifie seulement l'état des jobs précédents. Ne lance aucune compression.
-# Relevé v0.14.2 : vérifier le nouveau test des métadonnées brutes et le score intégral v0.11.
+# Relevé v0.14.3 : localiser la quatrième exécution du laboratoire et v0.11.
 on:
   push:
     paths:
