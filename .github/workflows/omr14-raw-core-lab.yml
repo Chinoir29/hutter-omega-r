@@ -1,6 +1,7 @@
 name: 'OMÉGA-R v0.14 — laboratoire de codage compétitif non officiel'
 # Aucune soumission, aucun score enwik9 et aucune archive de corpus dans GitHub.
-# Correction v0.14.1 : activation du helper provide_dict_file dans le build non AUX.
+# Correction v0.14.2 : seul le codage brut de laboratoire désactive les règles
+# de métadonnées propres à enwik9, tout en gardant Transformer et SEMCACHE.
 on:
   push:
     paths:
