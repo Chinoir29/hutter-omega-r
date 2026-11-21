@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # Publier uniquement un diagnostic JSON; aucun corpus ni archive
 
 jobs:
   paired_preflight:
@@ -57,6 +57,57 @@ jobs:
             done
           done
           python3 Hutter_OmegaR/v11/summarize_enwik8.py reports/v11 | tee reports/v11/summary_stdout.log
+      - name: Enregistrer publiquement le verdict expérimental
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          REPO_FULL_NAME: ${{ github.repository }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, datetime, json, os, pathlib, urllib.error, urllib.request
+          root = pathlib.Path('reports/v11')
+          summary = root / 'summary.json'
+          if summary.exists():
+            data = json.loads(summary.read_text(encoding='utf-8'))
+            if data.get('official_data')!='enwik8 only' or len(data.get('individual',[]))!=3:
+              raise SystemExit('Incorrect or incomplete summary — refusing publication')
+            verdict = {'status':'completed_verified_enwik8', 'comparison':data}
+          else:
+            verdict = {'status':'not_completed', 'reason':'Missing complete summary (see run logs)'}
+          verdict.update({
+            'project':'OMEGA-R v0.11',
+            'execution_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'workflow_run_url':'https://github.com/'+os.environ['REPO_FULL_NAME']+'/actions/runs/'+os.environ['RUN_ID'],
+            'prior_steps_status':os.environ['JOB_STATUS'],
+            'enwik9_tested':False, 'hutter_prize_submission':False,
+          })
+          path='Hutter_OmegaR/results_v11/ENWIK8_ABLATION_GITHUB.json'
+          url='https://api.github.com/repos/'+os.environ['REPO_FULL_NAME']+'/contents/'+path
+          hdr={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+               'Accept':'application/vnd.github+json',
+               'X-GitHub-Api-Version':'2022-11-28',
+               'User-Agent':'omega-r-v11-results'}
+          try:
+            with urllib.request.urlopen(urllib.request.Request(url,headers=hdr),timeout=20) as f:
+              prior=json.load(f).get('sha')
+          except urllib.error.HTTPError as ex:
+            if ex.code!=404:raise
+            prior=None
+          payload={'message':'Publier le verdict reproductible du prétest Wikipédia v0.11',
+                   'content':base64.b64encode((json.dumps(verdict,ensure_ascii=False,indent=2)+'\\n').encode()).decode(),
+                   'branch':'main'}
+          if prior:payload['sha']=prior
+          req=urllib.request.Request(url,headers=hdr,data=json.dumps(payload).encode(),method='PUT')
+          with urllib.request.urlopen(req,timeout=30) as f:
+            f.read()
+          print('Result published:',path)
+          PY
+
       - name: Conserver seulement les mesures
         if: always()
         uses: actions/upload-artifact@v4
