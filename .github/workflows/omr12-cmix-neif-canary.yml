@@ -1,0 +1,161 @@
+name: 'OMÉGA-R v0.12 — canary de cmix-neif 2.0 sur extrait Wikipédia'
+# Aucune participation au Hutter Prize; aucun traitement complet enwik9.
+on:
+  push:
+    paths:
+      - '.github/workflows/omr12-cmix-neif-canary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Écrire uniquement un résultat texte et ne jamais verser un corpus.
+
+concurrency:
+  group: omr12-competitive-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr12-canary-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier l'extracteur et les outils
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/v12 work
+          python3 Hutter_OmegaR/v12/extract_wiki_pages.py --self-test \
+            | tee reports/v12/extractor_self_test.log
+          python3 -m py_compile Hutter_OmegaR/v12/extract_wiki_pages.py \
+            Hutter_OmegaR/v12/run_upstream_canary.py
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential make binutils ca-certificates git gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          { date -u --iso-8601=seconds; uname -a; clang++-18 --version | head -1; \
+            gcc --version | head -1; free -h; df -h .; } > reports/v12/environment.txt
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+
+      - name: Authentifier enwik9 et produire un extrait XML complet
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-all-errors --connect-timeout 30 \
+             --max-time 1200 -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          printf '%s  %s\n' '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' \
+            data/enwik9 | sha256sum --check --status
+          python3 Hutter_OmegaR/v12/extract_wiki_pages.py \
+            --source data/enwik9 --out data/sample.xml \
+            --target 800000 --report reports/v12/extract.json
+          rm -f data/enwik9 data/enwik9.zip
+
+      - name: Construire le compresseur amont sans modifier ses sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          actual="$(git -C upstream rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf '%s\n' "$actual" > reports/v12/upstream_commit.txt
+          test -s upstream/LICENSE
+          /usr/bin/time -f 'wall_s=%e max_rss_kib=%M' -o reports/v12/build_resources.txt \
+            bash -c 'cd work && bash ../upstream/build.sh' \
+            > reports/v12/build.log 2>&1
+          test -s work/comp9
+          sha256sum work/comp9 > reports/v12/comp9.sha256
+          stat -c '%s' work/comp9 > reports/v12/comp9.bytes
+
+      - name: Compression et décompression autonomes de l'extrait
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v12/run_upstream_canary.py \
+            --sample data/sample.xml --comp9 work/comp9 \
+            --reports reports/v12 --timeout 1200 \
+            > reports/v12/runner_stdout.log
+          python3 - <<'PY'
+          import json, pathlib
+          folder=pathlib.Path('reports/v12')
+          a=json.loads((folder/'extract.json').read_text())
+          b=json.loads((folder/'result.json').read_text())
+          assert a['source_authenticated'] and b['roundtrip_sha256_verified']
+          assert b['sample_sha256']==a['sha256'] and b['sample_bytes']==a['sample_bytes']
+          assert b['official_hutter_score'] is None and not b['enwik9_full_tested']
+          print('UPSTREAM_CANARY_VALIDATED')
+          PY
+
+      - name: Enregistrer le résultat technique sans divulguer le corpus
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          PREVIOUS_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import base64,datetime,json,os,pathlib,urllib.error,urllib.request
+          root=pathlib.Path('reports/v12')
+          status={
+            'version':'OMÉGA-R v0.12',
+            'scope':'cmix-neif-2.0 baseline only, authentic enwik9-derived XML subset',
+            'official_hutter_score':None,
+            'competition_submission_sent':False,
+            'run_url':'https://github.com/'+os.environ['REPO']+'/actions/runs/'+os.environ['RUN_ID'],
+            'tested_upstream_commit':'35d1957a5074db802fc134126afc77b76d931761',
+            'job_status_before_reporting':os.environ['PREVIOUS_STATUS'],
+            'checked_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+          }
+          try:
+            a=json.loads((root/'extract.json').read_text())
+            b=json.loads((root/'result.json').read_text())
+            if not (a.get('source_authenticated') is True and b.get('roundtrip_sha256_verified') is True
+               and b['sample_sha256']==a['sha256'] and b['sample_bytes']==a['sample_bytes']
+               and b.get('official_hutter_score') is None and b.get('enwik9_full_tested') is False):
+              raise ValueError('Unverified sample or decoder')
+            status.update(status='success',extract=a,canary=b)
+          except Exception as err:
+            status.update(status='failed_or_incomplete',diagnostic=str(err)[:500])
+            f=root/'failure.json'
+            if f.is_file():
+              status['runner_failure']=json.loads(f.read_text())
+          path='Hutter_OmegaR/results_v12/UPSTREAM_CANARY_GITHUB.json'
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+path
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+                   'Accept':'application/vnd.github+json',
+                   'X-GitHub-Api-Version':'2022-11-28','User-Agent':'hutter-omr12'}
+          try:
+            with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=25) as response:
+              old=json.load(response).get('sha')
+          except urllib.error.HTTPError as exc:
+            if exc.code!=404:raise
+            old=None
+          payload={'message':'Consigner la validation expérimentale du canary amont v0.12',
+                   'branch':'main',
+                   'content':base64.b64encode((json.dumps(status,indent=2,ensure_ascii=False)+chr(10)).encode()).decode()}
+          if old:payload['sha']=old
+          req=urllib.request.Request(url,headers=headers,data=json.dumps(payload).encode(),method='PUT')
+          with urllib.request.urlopen(req,timeout=30) as res:
+            res.read()
+          print('Experiment status published:',status['status'])
+          PY
+
+      - name: Sauvegarder uniquement les journaux et petits rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr12-cmix-neif-canary
+          path: reports/v12/
+          if-no-files-found: warn
+          retention-days: 14
