@@ -1,0 +1,33 @@
+{
+  "project": "OMEGA-R v0.21",
+  "status": "LOCAL_SYNTHETIC_POSITIVE_AND_NEGATIVE_CONTROLS",
+  "classification": "SYNTHETIC_NOT_WIKIPEDIA_MEASUREMENT",
+  "toolchain": "g++ 14.2.0 -std=c++17 -O2",
+  "test_cases": [
+    {
+      "name": "negative",
+      "bits": 350000,
+      "train_bits": 262144,
+      "holdout_bits": 87856,
+      "selected_mode": 0,
+      "holdout_gain_bits": 0,
+      "source": "shadow_selftest.cpp",
+      "meaning": "Observer rejects an adverse online correction"
+    },
+    {
+      "name": "positive",
+      "bits": 350000,
+      "train_bits": 262144,
+      "holdout_bits": 87856,
+      "predicted_p_one": 0.45,
+      "observed_fraction_one": 0.8,
+      "selected_mode": 3,
+      "holdout_gain_bits": 29561.3439068825,
+      "source": "shadow_positive_selftest.cpp",
+      "meaning": "Observer detects a biased source where calibrated probability improves sequential log loss"
+    }
+  ],
+  "real_bits_result": null,
+  "real_run_id": 44963170463,
+  "official_score": null
+}
