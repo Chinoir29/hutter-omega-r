@@ -103,6 +103,18 @@ jobs:
           bash Hutter_OmegaR/v6/build.sh
           python3 Hutter_OmegaR/v6/verified_enwik9_run_v6.py \
             data/enwik9 --out reports/full/report.json --limit-hours 2.5
+      - name: Auditer le score et les indicateurs du rapport
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -s reports/full/report.json ]; then
+            python3 Hutter_OmegaR/v9/assess_hutter_report.py \
+              reports/full/report.json --out reports/full/assessment.json
+          else
+            printf '%s\n' '{"status":"no_complete_report","reason":"Benchmark absent, failed or still interrupted; no Hutter score claimed."}' \
+              > reports/full/assessment.json
+          fi
       - name: Sauvegarder uniquement les rapports (aucun corpus, aucune archive)
         if: always()
         uses: actions/upload-artifact@v4
