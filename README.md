@@ -57,3 +57,12 @@ La compilation depuis les sources GPL-3.0 de `cmix-neif 2.0` a été reproduite.
 - [Source et méthode](Hutter_OmegaR/v12/README.md) ; [extracteur vérifié localement](Hutter_OmegaR/v12/extract_wiki_pages.py) ; [banc d'essai testé localement avec un simulateur, pas encore avec le modèle amont](Hutter_OmegaR/v12/run_upstream_canary.py).
 - [Workflow en cours de vérification](.github/workflows/omr12-cmix-neif-canary.yml) ; [état du canary](Hutter_OmegaR/results_v12/UPSTREAM_CANARY_GITHUB.json).
 - **Aucun score Hutter Prize n'est produit sur cet échantillon**, et aucun gain de compression de ce concurrent n'est attribué à OMÉGA-R.
+
+## v0.12–v0.13 — Instrumentation compétitive (21 novembre 2026)
+
+- **v0.12 — canary sur la référence compétitive :** le code original `cmix-neif-2.0` est extrait à une révision Git épinglée et compilé, puis essayé sur un *petit XML reconstitué* depuis `enwik9` authentifié. Le verdict est [suivi ici](Hutter_OmegaR/results_v12/UPSTREAM_CANARY_GITHUB.json) et [dans GitHub Actions](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44946052561). Cette expérience n'a **pas** de score officiel et son aller-retour exact doit être confirmé.
+- **v0.13 — préparation d'une première ablation sur SEMCACHE :** [source du patch](Hutter_OmegaR/v13/semantic_cache_gate_patch.py), [tests unitaires](Hutter_OmegaR/v13/test_semantic_cache_gate_patch.py) et [protocole](Hutter_OmegaR/v13/README.md). Neufs tests unitaires ont réussi et les sources publiées ont les mêmes Git blobs que les fichiers testés. Valeurs envisagées du seuil de confiance : `990` (témoin), `980` et `970`. **Aucune amélioration de compression n'est encore mesurée.**
+- **Relevé direct du statut des workflows** : [instantané GitHub Actions](Hutter_OmegaR/status/workflow_status_snapshot.json), produit par un workflow de métadonnées ne relançant ni compression ni benchmark.
+- **v0.11 — score complet enwik9 :** le [registre dédié](Hutter_OmegaR/results_v11/ENWIK9_FULL_GITHUB.json) est distinct de la réussite déjà vérifiée sur trois tranches enwik8 ; un résultat absent n'est pas une victoire.
+
+Rappel : le compresseur amont est GNU GPL-3.0 ; aucune publication de binaire modifié n'a été effectuée et aucune candidature n'a été envoyée aux organisateurs du Hutter Prize.
