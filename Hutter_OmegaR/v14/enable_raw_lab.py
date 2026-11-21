@@ -31,7 +31,7 @@ def modify_source(source: str) -> str:
     if "OMR14_RAW_CODER" in source:
         raise ValueError("This source was previously patched")
     changed=LAB_HEAD+source.replace(OLD_PARSER,NEW_PARSER,1).replace(OLD_BRANCH,NEW_BRANCH,1)
-    if changed.count("OMR14_RAW_CODER")!=3:
+    if changed.count("OMR14_RAW_CODER")!=2:
         raise RuntimeError("Unexpected patch output")
     return changed
 
