@@ -2,9 +2,6 @@ name: Hutter OMÉGA-R v0.8 — prévol enwik8 et essai complet enwik9
 
 # AUCUNE soumission au concours. Démarrage manuel uniquement.
 on:
-  push:
-    paths:
-      - '.github/workflows/hutter-omega-v8.yml'
   workflow_dispatch:
     inputs:
       phase:
@@ -72,7 +69,7 @@ jobs:
           retention-days: 14
 
   full_enwik9:
-    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.phase == 'full') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[omr8-full-once]')) }}
+    if: ${{ inputs.phase == 'full' }}
     needs: preflight
     runs-on: ubuntu-24.04
     timeout-minutes: 330
