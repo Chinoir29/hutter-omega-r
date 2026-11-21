@@ -1,0 +1,175 @@
+name: "OMÉGA-R v0.15 — A/B SEMCACHE sur laboratoire reproductible"
+# Pas de benchmark enwik9 officiel, pas d'archive autonome, pas de candidature.
+on:
+  push:
+    paths:
+      - ".github/workflows/omr15-semcache-raw-ab.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omr15-semc-gate-raw
+  cancel-in-progress: false
+
+jobs:
+  paired_lab:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr15-raw-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer et contrôler les outils et les patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/v15
+          python3 Hutter_OmegaR/v13/test_semantic_cache_gate_patch.py \
+            > reports/v15/v13_patch_unit.log 2>&1
+          python3 Hutter_OmegaR/v14/test_enable_raw_lab.py \
+            > reports/v15/v14_patch_unit.log 2>&1
+          python3 Hutter_OmegaR/v15/test_summarize_lab.py \
+            > reports/v15/summary_unit.log 2>&1
+          python3 Hutter_OmegaR/v14/prepare_vocabulary_sample.py --self-test \
+            > reports/v15/surrogate_unit.log
+          python3 -m py_compile Hutter_OmegaR/v15/*.py
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential git make binutils gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          { date -u --iso-8601=seconds; uname -a; \
+            clang++-18 --version | head -1; free -h; df -h .; } \
+            > reports/v15/environment.txt
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+
+      - name: Récupérer une révision figée et sa licence GPL
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          test "$(git -C upstream rev-parse HEAD)" = "$expected"
+          test -s upstream/LICENSE
+          test -s upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5
+          echo "$expected" > reports/v15/upstream_commit.txt
+          sha256sum upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5 \
+            > reports/v15/weights_sha256.txt
+
+      - name: Authentifier le vrai enwik9 et préparer UN échantillon de laboratoire
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-all-errors --connect-timeout 30 \
+            --max-time 1200 -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          printf '%s  %s\n' \
+            '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' \
+            data/enwik9 | sha256sum --check --status
+          python3 Hutter_OmegaR/v14/prepare_vocabulary_sample.py \
+            --enwik9 data/enwik9 --vocab-header upstream/src/vocab_frozen.h \
+            --target 65536 --out data/lab_sample.dat \
+            --report reports/v15/sample_report.json \
+            > reports/v15/sample_stdout.log
+          printf '%s  %s\n' \
+            'c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604' \
+            data/lab_sample.dat | sha256sum --check --status
+          rm -f data/enwik9 data/enwik9.zip
+
+      - name: Compiler puis décompresser séquentiellement trois configurations A/B
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v15/run_three_modes.py \
+             --upstream upstream --sample data/lab_sample.dat \
+             --reports reports/v15 --phase-timeout 900 \
+             > reports/v15/pipeline_stdout.log
+          python3 - <<'PY'
+          import json, pathlib
+          root=pathlib.Path('reports/v15')
+          a=json.loads((root/'sample_report.json').read_text())
+          b=json.loads((root/'comparison.json').read_text())
+          assert a['source_authenticated'] if 'source_authenticated' in a else True
+          assert a['normalization_is_lossy'] and not a['official_score_eligible']
+          assert b['status']=='all_three_lossless_roundtrips_verified'
+          assert b['source_sha256']==a['sample_sha256'] and len(b['results'])==3
+          assert b['hutter_prize_score'] is None and not b['full_enwik9_tested']
+          print('SUCCESS: all three laboratory streams roundtrip, no Hutter score')
+          PY
+
+      - name: Publier le verdict scientifique, y compris les résultats négatifs
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_FULL: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import base64, datetime, json, os, pathlib, urllib.error, urllib.request
+          folder=pathlib.Path('reports/v15')
+          report=folder/'comparison.json'
+          result={
+            'project':'OMÉGA-R v0.15 SEMCACHE A/B laboratory',
+            'status':'failed_or_incomplete',
+            'research_only':True,
+            'source_is_lossy_projection':True,
+            'hutter_prize_score':None,
+            'committee_validated':False,
+            'competition_submission_sent':False,
+            'run_url':'https://github.com/'+os.environ['REPO_FULL']+'/actions/runs/'+os.environ['RUN_ID'],
+            'job_status_before_reporting':os.environ['JOB_STATUS'],
+            'recorded_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()
+          }
+          if report.is_file():
+            candidate=json.loads(report.read_text())
+            if not (candidate.get('status')=='all_three_lossless_roundtrips_verified'
+                and candidate.get('hutter_prize_score') is None
+                and candidate.get('source_is_lossy_projection') is True
+                and len(candidate.get('results',[]))==3
+                and all(x.get('roundtrip_sha256_verified') is True for x in candidate['results'])):
+              raise SystemExit('Malformed or non-lossless report')
+            result.update(candidate)
+            result['status']='success_three_lab_roundtrips'
+            result['run_url']='https://github.com/'+os.environ['REPO_FULL']+'/actions/runs/'+os.environ['RUN_ID']
+          else:
+            for threshold in (990,980,970):
+              f=folder/('q'+str(threshold))/'failure.json'
+              if f.is_file():
+                result['failure_at_'+str(threshold)]=json.loads(f.read_text())
+          name='Hutter_OmegaR/results_v15/SEMCACHE_LAB_COMPARISON.json'
+          uri='https://api.github.com/repos/'+os.environ['REPO_FULL']+'/contents/'+name
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+                   'Accept':'application/vnd.github+json',
+                   'X-GitHub-Api-Version':'2022-11-28',
+                   'User-Agent':'hutter-omega-r-v15'}
+          with urllib.request.urlopen(urllib.request.Request(uri,headers=headers),timeout=25) as response:
+            prior=json.load(response)['sha']
+          payload={
+            'message':'Archiver la comparaison du laboratoire SEMCACHE v0.15',
+            'branch':'main',
+            'sha':prior,
+            'content':base64.b64encode((json.dumps(result,ensure_ascii=False,indent=2)+chr(10)).encode()).decode()
+          }
+          req=urllib.request.Request(uri,headers=headers,data=json.dumps(payload).encode(),method='PUT')
+          with urllib.request.urlopen(req,timeout=30) as response:
+            response.read()
+          print('Published status',result['status'])
+          PY
+
+      - name: Conserver uniquement les rapports et journaux
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr15-lab-ab-reports
+          path: reports/v15/
+          if-no-files-found: warn
+          retention-days: 14
