@@ -1,0 +1,165 @@
+name: "OMÉGA-R v0.16 — SEMCACHE sur trois holdouts indépendants"
+# Comparaison expérimentale sur projections avec perte; aucun score officiel.
+on:
+  push:
+    paths:
+      - '.github/workflows/omr16-semc-upper-holdout.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omr16-semc-upper-holdout
+  cancel-in-progress: false
+
+jobs:
+  paired_holdouts:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr16-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests adversariaux et environnement de compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/holdouts reports/v16
+          python3 Hutter_OmegaR/v16/test_patch_upper_gate.py > reports/v16/patch_tests.log 2>&1
+          python3 Hutter_OmegaR/v16/test_summarize_holdouts.py > reports/v16/summarizer_tests.log 2>&1
+          python3 Hutter_OmegaR/v16/prepare_holdouts.py --self-test > reports/v16/holdout_selftest.log
+          python3 Hutter_OmegaR/v13/test_semantic_cache_gate_patch.py > reports/v16/v13_patch_tests.log 2>&1
+          python3 Hutter_OmegaR/v14/test_enable_raw_lab.py > reports/v16/v14_patch_tests.log 2>&1
+          python3 -m py_compile Hutter_OmegaR/v16/*.py
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential git make binutils gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          { date -u --iso-8601=seconds; uname -a; \
+            clang++-18 --version | head -1; free -h; df -h .; } > reports/v16/environment.txt
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+
+      - name: Récupérer la référence GPL figée et vérifier ses poids
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          test "$(git -C upstream rev-parse HEAD)" = "$expected"
+          test -s upstream/LICENSE
+          test -s upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5
+          sha256sum upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5 \
+            > reports/v16/upstream_weights.sha256
+          echo "$expected" > reports/v16/upstream_commit.txt
+
+      - name: Authentifier enwik9 et générer 3 échantillons non recouvrants
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-all-errors --connect-timeout 30 \
+            --max-time 1200 -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          python3 Hutter_OmegaR/v16/prepare_holdouts.py \
+            --enwik9 data/enwik9 --vocab-header upstream/src/vocab_frozen.h \
+            --out-dir data/holdouts --report reports/v16/manifest.json \
+            > reports/v16/holdout_source_stdout.log
+          rm -f data/enwik9.zip data/enwik9
+
+      - name: Compiler et mesurer neuf aller-retours sur un seul coeur
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v16/run_holdout_sweep.py \
+            --upstream upstream --samples-dir data/holdouts \
+            --manifest reports/v16/manifest.json \
+            --reports reports/v16 --phase-timeout 600 \
+            > reports/v16/sweep_stdout.log
+          python3 - <<'PY'
+          import json,pathlib
+          root=pathlib.Path('reports/v16')
+          x=json.loads((root/'comparison.json').read_text())
+          assert x['status']=='all_nine_lab_roundtrips_verified'
+          assert x['input_is_lossy_projection'] is True
+          assert len(x['results'])==9 and len(x['aggregates'])==3
+          assert all(r['roundtrip_verified'] is True for r in x['results'])
+          assert x['official_hutter_score'] is None and x['full_enwik9_compared'] is False
+          print('ALL_NINE_LOSSLESS_LAB_ROUNDTRIPS_PASS')
+          PY
+
+      - name: Enregistrer le bilan positif ou négatif en JSON
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_FULL: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          PRIOR_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import base64,datetime,json,os,pathlib,time,urllib.error,urllib.request
+          root=pathlib.Path('reports/v16')
+          report=root/'comparison.json'
+          out={
+            'project':'OMEGA-R v0.16','status':'failed_or_incomplete',
+            'run_url':'https://github.com/'+os.environ['REPO_FULL']+'/actions/runs/'+os.environ['RUN_ID'],
+            'job_prior_to_reporting':os.environ['PRIOR_STATUS'],
+            'reported_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'source_is_lossy_projection':True,
+            'hutter_prize_score':None,'competition_submission_sent':False
+          }
+          if report.is_file():
+            result=json.loads(report.read_text())
+            if not (result.get('status')=='all_nine_lab_roundtrips_verified'
+                    and len(result.get('results',[]))==9
+                    and all(r.get('roundtrip_verified') is True for r in result['results'])
+                    and result.get('official_hutter_score') is None):
+                raise SystemExit('Malformed comparison: no publication')
+            out['status']='success_nine_verified_lab_roundtrips'
+            out['comparison']=result
+          else:
+            out['failure_details']={}
+            for q in (990,995,999):
+              p=root/('q'+str(q))/'failure.json'
+              if p.is_file():out['failure_details'][str(q)]=json.loads(p.read_text())
+          path='Hutter_OmegaR/results_v16/SEMCACHE_UPPER_HOLDOUT.json'
+          url='https://api.github.com/repos/'+os.environ['REPO_FULL']+'/contents/'+path
+          hdr={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+               'Accept':'application/vnd.github+json',
+               'X-GitHub-Api-Version':'2022-11-28',
+               'User-Agent':'omr16-holdout'}
+          payload={'message':'Conserver le résultat scientifique A/B v0.16 sur trois holdouts',
+                   'branch':'main',
+                   'content':base64.b64encode((json.dumps(out,ensure_ascii=False,indent=2)+chr(10)).encode()).decode()}
+          for attempt in range(6):
+            try:
+              with urllib.request.urlopen(urllib.request.Request(url,headers=hdr),timeout=20) as f:
+                current=json.load(f)
+              payload['sha']=current['sha']
+            except urllib.error.HTTPError as e:
+              if e.code==404:payload.pop('sha',None)
+              else:raise
+            request=urllib.request.Request(url,data=json.dumps(payload).encode(),headers=hdr,method='PUT')
+            try:
+              with urllib.request.urlopen(request,timeout=30) as response:response.read()
+              print('Published result:',out['status'])
+              break
+            except urllib.error.HTTPError as e:
+              if e.code not in (409,422) or attempt==5:raise
+              time.sleep(attempt+1)
+          PY
+
+      - name: Archiver exclusivement les rapports et logs, aucun corpus
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr16-semcache-holdout-reports
+          path: reports/v16/
+          if-no-files-found: warn
+          retention-days: 14
