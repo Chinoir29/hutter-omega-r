@@ -1,0 +1,62 @@
+name: "OMÉGA-R v0.18 — double build production une seule fois"
+on:
+  push:
+    branches:
+      - research/omr18-production-preflight
+    paths:
+      - .github/workflows/omr18-build-only-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-two-production-compressors:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout authenticated project code
+        uses: actions/checkout@v4
+      - name: Install publicly available Ubuntu packages; record exact versions
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils
+          clang++-18 --version
+          ld.lld-18 --version
+          gcc-13 --version
+          dpkg-query -W clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 gawk
+      - name: Clone exact upstream GPL-3.0 revision
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr18-upstream
+          git -C /tmp/omr18-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Run source tests and build A/B through production build.sh
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v18 -p 'test_*.py' -v
+          python3 Hutter_OmegaR/v18/production_ab.py --upstream /tmp/omr18-upstream --work /tmp/omr18-production-build --build-only --seconds-per-phase 1200
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          record=json.loads(Path('/tmp/omr18-production-build/build_ab.json').read_text())
+          builds=record['experiment']['builds']
+          assert len(builds)==2
+          assert sorted(x['mode'] for x in builds)==['baseline','candidate']
+          assert all(x['comp9_bytes']>0 and len(x['comp9_sha256'])==64 for x in builds)
+          assert record['experiment']['status']=='BOTH_PRODUCTION_BINARIES_BUILT_NO_DATA'
+          assert record['experiment']['competition_score'] is None
+          print('BOTH_COMP9_BUILT; NO_ARCHIVE9; NO_HUTTER_SCORE')
+          print(json.dumps(builds,sort_keys=True))
+          PY
+      - name: Retain metadata and build logs, not third-party binary or weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr18-production-build-only
+          path: |
+            /tmp/omr18-production-build/preflight.json
+            /tmp/omr18-production-build/build_ab.json
+            /tmp/omr18-production-build/build_baseline.stdout
+            /tmp/omr18-production-build/build_baseline.stderr
+            /tmp/omr18-production-build/build_candidate.stdout
+            /tmp/omr18-production-build/build_candidate.stderr
+          if-no-files-found: ignore
+          retention-days: 14
