@@ -1,0 +1,67 @@
+name: "OMÉGA-R v0.11 — A/B sans perte sur enwik8 authentique"
+# Un seul prétest sur enwik8, pas de candidature.
+on:
+  push:
+    paths:
+      - ".github/workflows/omr11-enwik8-ablation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paired_preflight:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr11-enwik8-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Télécharger et authentifier enwik8
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/v11
+          test -x /usr/bin/time || sudo apt-get install -y time
+          curl -fL --retry 3 --retry-all-errors --max-time 1200 \
+             -o data/enwik8.zip https://mattmahoney.net/dc/enwik8.zip
+          unzip -tq data/enwik8.zip
+          test "$(unzip -Z1 data/enwik8.zip)" = enwik8
+          unzip -p data/enwik8.zip enwik8 > data/enwik8
+          test "$(stat -c%s data/enwik8)" = 100000000
+          printf '%s  %s\n' 'a1fa5ffddb56f4953e226637dabbb36a' data/enwik8 | md5sum --check --status
+          printf '%s  %s\n' '57b8363b814821dc9d47aa4d41f58733519076b2' data/enwik8 | sha1sum --check --status
+          sha256sum data/enwik8 > reports/v11/enwik8.sha256
+          rm data/enwik8.zip
+      - name: Compiler le témoin et les variantes
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash Hutter_OmegaR/v6/build.sh
+          python3 Hutter_OmegaR/v11/make_candidate.py
+          printf '%s  %s\n' '6dd3a2d7b28851552223118c9abf27fe9be8a28d223f96b15fd49553a3910c39' Hutter_OmegaR/v11/omr11_fold_word.cpp | sha256sum --check --status
+          bash Hutter_OmegaR/v11/build.sh | tee reports/v11/binary_hashes.txt
+          cmp Hutter_OmegaR/v6/comp9 Hutter_OmegaR/v11/comp9_mode0
+          test "$(stat -c%s Hutter_OmegaR/v11/comp9_mode0)" = "$(stat -c%s Hutter_OmegaR/v11/comp9_mode2)"
+      - name: Comparer et vérifier la restitution de 6 extraits
+        shell: bash
+        run: |
+          set -euo pipefail
+          for offset in 0 40 80; do
+            for mode in 0 2; do
+              python3 Hutter_OmegaR/v8/prefix_benchmark_v8.py \
+                --enwik8 data/enwik8 --prefix-mib 8 --offset-mib "$offset" \
+                --comp "Hutter_OmegaR/v11/comp9_mode$mode" \
+                --out "reports/v11/report_$offset"MiB"_mode$mode.json" \
+                --max-phase-seconds 600 \
+                > "reports/v11/stdout_$offset"MiB"_mode$mode.log"
+            done
+          done
+          python3 Hutter_OmegaR/v11/summarize_enwik8.py reports/v11 | tee reports/v11/summary_stdout.log
+      - name: Conserver seulement les mesures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr11-enwik8-ablation-reports
+          path: reports/v11/
+          if-no-files-found: warn
+          retention-days: 14
