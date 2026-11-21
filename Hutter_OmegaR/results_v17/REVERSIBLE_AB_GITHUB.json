@@ -1,0 +1,13 @@
+{
+  "project": "OMÉGA-R v0.17 reversible-source SEMCACHE A/B",
+  "status": "pending_remote_validation",
+  "transform_is_reversible": true,
+  "source_is_lossy_projection": false,
+  "thresholds": [990, 999],
+  "holdout_offsets_mib": [256, 384, 640],
+  "full_enwik9_compressed": false,
+  "self_extracting_archive_tested": false,
+  "hutter_prize_score": null,
+  "submission_sent": false,
+  "note": "Provisional registry only: no remote canary results recorded."
+}
