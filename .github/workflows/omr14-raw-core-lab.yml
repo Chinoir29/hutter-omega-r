@@ -1,5 +1,6 @@
 name: 'OMÉGA-R v0.14 — laboratoire de codage compétitif non officiel'
 # Aucune soumission, aucun score enwik9 et aucune archive de corpus dans GitHub.
+# Correction v0.14.1 : activation du helper provide_dict_file dans le build non AUX.
 on:
   push:
     paths:
