@@ -1,0 +1,22 @@
+{
+  "checked_on": "2026-11-22",
+  "source_current_awarded": "https://prize.hutter1.net/",
+  "source_detailed_rules": "https://prize.hutter1.net/hrules.htm",
+  "official_awarded_record_bytes": 100424672,
+  "min_gain_fraction": 0.01,
+  "mathematical_max_integer_S_for_at_least_1pct": 99420425,
+  "note": "The official leaderboard prints <99'420'425 as a conservative display; exact 1% integer threshold is 99,420,425; check the jury's interpretation before submission.",
+  "advertised_unawarded_candidate": {
+    "name": "cmix-neif-2.0",
+    "score_S": 93388956,
+    "repo_commit": "35d1957a5074db802fc134126afc77b76d931761",
+    "status": "self reported, not yet the award reference"
+  },
+  "if_candidate_rewarded": {
+    "required_max_integer_S": 92455066,
+    "required_saving_vs_reported_candidate_bytes": 933890,
+    "indicative_bit_saving_per_real_precoder_byte": 0.014910561587452638,
+    "assumptions": "same code size and no new overhead, all gain from coded stream, no validity or runtime guarantee"
+  },
+  "validation_scope": "not a candidate result; objective and budgeting only"
+}
