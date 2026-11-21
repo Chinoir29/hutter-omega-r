@@ -1,0 +1,187 @@
+name: 'OMÉGA-R v0.14 — laboratoire de codage compétitif non officiel'
+# Aucune soumission, aucun score enwik9 et aucune archive de corpus dans GitHub.
+on:
+  push:
+    paths:
+      - '.github/workflows/omr14-raw-core-lab.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omr14-raw-core-lab
+  cancel-in-progress: false
+
+jobs:
+  laboratory:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr14-raw-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tests des patchs et installation des dépendances
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/v14
+          python3 Hutter_OmegaR/v14/test_enable_raw_lab.py \
+             > reports/v14/patch_unit_tests.log 2>&1
+          python3 Hutter_OmegaR/v14/prepare_vocabulary_sample.py --self-test \
+             > reports/v14/surrogate_selftest.log
+          python3 -m py_compile Hutter_OmegaR/v14/*.py
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential git make binutils gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          { date -u --iso-8601=seconds; uname -a; \
+            clang++-18 --version | head -1; free -h; df -h .; } \
+            > reports/v14/environment.txt
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+
+      - name: Contrôler la révision upstream et appliquer le patch laboratoire
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          test "$(git -C upstream rev-parse HEAD)" = "$expected"
+          test -s upstream/LICENSE
+          test -s upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5
+          python3 Hutter_OmegaR/v14/enable_raw_lab.py \
+             --checkout upstream --report reports/v14/source_patch.json \
+             > reports/v14/source_patch_stdout.log
+
+      - name: Compiler le moteur complet sans autopackaging
+        shell: bash
+        run: |
+          set -euo pipefail
+          /usr/bin/time -f 'wall_s=%e rss_kib=%M' -o reports/v14/build_resources.txt \
+             bash -c 'cd upstream && make CC=clang++-18 CFLAGS_DEFINES="-DSEED=923 -DUPDATE_LIMIT=3000" prof_use -j2' \
+             > reports/v14/build.log 2>&1 || {
+               tail -75 reports/v14/build.log || true
+               exit 1
+             }
+          test -s upstream/cmix
+          stat -c '%s' upstream/cmix > reports/v14/lab_binary_bytes.txt
+          sha256sum upstream/cmix > reports/v14/lab_binary_sha256.txt
+
+      - name: Authentifier enwik9 et produire un flux de laboratoire déclaré non officiel
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-all-errors --connect-timeout 30 \
+             --max-time 1200 -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          printf '%s  %s\n' \
+             '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' \
+             data/enwik9 | sha256sum --check --status
+          python3 Hutter_OmegaR/v14/prepare_vocabulary_sample.py \
+             --enwik9 data/enwik9 --vocab-header upstream/src/vocab_frozen.h \
+             --target 65536 --out data/surrogate.dat \
+             --report reports/v14/sample_report.json \
+             > reports/v14/sample_stdout.log
+          rm -f data/enwik9 data/enwik9.zip
+
+      - name: Tester le codage-décompression du laboratoire
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v14/run_raw_lab.py \
+             --sample data/surrogate.dat --binary upstream/cmix \
+             --weights upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5 \
+             --reports reports/v14 --timeout 900 \
+             > reports/v14/lab_stdout.log
+          python3 - <<'PY'
+          import json, pathlib
+          root=pathlib.Path('reports/v14')
+          sample=json.loads((root/'sample_report.json').read_text())
+          lab=json.loads((root/'coder_report.json').read_text())
+          assert sample['normalization_is_lossy'] is True and sample['official_score_eligible'] is False
+          assert lab['lossless_roundtrip_verified'] is True
+          assert lab['source_sha256']==sample['sample_sha256']
+          assert lab['source_bytes']==sample['sample_bytes']
+          assert lab['hutter_score_bytes'] is None and lab['self_extracting_archive'] is False
+          print('LAB_CODER_ROUNDTRIP_PASS, NOT A HUTTER SCORE')
+          PY
+
+      - name: Publier le diagnostic sans aucun fichier source Wikipédia
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import base64, datetime, json, os, pathlib, urllib.error, urllib.request
+          root=pathlib.Path('reports/v14')
+          entry={
+            'project':'OMÉGA-R v0.14 laboratory core coder',
+            'scope':'experimentally enabled -c on unpacked full-model coder',
+            'source':'lossily projected bytes from authenticated enwik9',
+            'competing_release_binary_unchanged':False,
+            'entire_enwik9_tested':False,
+            'hutter_prize_score':None,
+            'competition_submission_sent':False,
+            'run_url':'https://github.com/'+os.environ['REPO']+'/actions/runs/'+os.environ['RUN_ID'],
+            'status_prior_to_reporting':os.environ['JOB_STATUS'],
+            'updated_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+          }
+          patch=root/'source_patch.json';sample=root/'sample_report.json';out=root/'coder_report.json'
+          if patch.is_file():entry['patch']=json.loads(patch.read_text())
+          if sample.is_file():entry['sample']=json.loads(sample.read_text())
+          if out.is_file():
+            lab=json.loads(out.read_text())
+            if (lab.get('lossless_roundtrip_verified') is not True
+                or not sample.is_file()
+                or lab.get('source_sha256')!=entry['sample']['sample_sha256']
+                or lab.get('hutter_score_bytes') is not None):
+              raise SystemExit('Refusing unverified result')
+            entry['status']='passed_lab_only'
+            entry['experiment']=lab
+          else:
+            entry['status']='failed_or_incomplete'
+            failure=root/'failure.json'
+            if failure.is_file():entry['failure']=json.loads(failure.read_text())
+            for name in ('encode.log','decode.log'):
+              path=root/name
+              if path.is_file():entry[name+'_tail']=path.read_text(errors='replace')[-1200:]
+          name='Hutter_OmegaR/results_v14/RAW_CORE_LAB_GITHUB.json'
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+name
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+                    'Accept':'application/vnd.github+json',
+                    'X-GitHub-Api-Version':'2022-11-28',
+                    'User-Agent':'hutter-omr14-lab'}
+          try:
+            with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=20) as r:
+              old=json.load(r)['sha']
+          except urllib.error.HTTPError as e:
+            if e.code!=404:raise
+            old=None
+          payload={'message':'Documenter les résultats du laboratoire de codage v0.14',
+                   'content':base64.b64encode((json.dumps(entry,indent=2,ensure_ascii=False)+chr(10)).encode()).decode(),
+                   'branch':'main'}
+          if old:payload['sha']=old
+          req=urllib.request.Request(url,headers=headers,data=json.dumps(payload).encode(),method='PUT')
+          with urllib.request.urlopen(req,timeout=30) as r:r.read()
+          print('Published laboratory status',entry['status'])
+          PY
+
+      - name: Archiver uniquement les rapports et journaux
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr14-laboratory-only
+          path: reports/v14/
+          if-no-files-found: warn
+          retention-days: 10
