@@ -49,6 +49,10 @@ def modify_source(source: str) -> str:
         raise ValueError("Missing auxiliary dictionary file helper")
     if source.count(INERT_ANCHOR) != 1 or source.count(INERT_OLD) != 3:
         raise ValueError("Unexpected metadata-inert function bodies")
+    for func in ("AuthorBlockInert", "MetablockInert", "TimestampProgressInert"):
+        body_anchor = "static inline bool " + func + "() {\n" + INERT_OLD
+        if source.count(body_anchor) != 1:
+            raise ValueError("Unexpected metadata-inert function: " + func)
     if source.count(MAIN_ANCHOR) != 1:
         raise ValueError("Unexpected main entry")
     if "OMR14_RAW_CODER" in source:
