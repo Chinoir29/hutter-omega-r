@@ -1,0 +1,165 @@
+name: "OMÉGA-R v0.17 — ablation SEMCACHE sur extraits Wikipédia réversibles"
+# Deux modèles de laboratoire. Aucun benchmark de compétition, aucune candidature.
+on:
+  push:
+    paths:
+      - ".github/workflows/omr17-reversible-wiki-ab.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omr17-reversible-ab
+  cancel-in-progress: false
+
+jobs:
+  paired_raw:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[omr17-lossless-once]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Exécuter 33 tests et préparer la chaîne de compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/escaped reports/v17
+          python3 -m unittest discover -s Hutter_OmegaR/v17 -p 'test_*.py' -v \
+            > reports/v17/unit_tests.log 2>&1
+          python3 Hutter_OmegaR/v17/reversible_sample.py --self-test \
+            > reports/v17/codec_selftest.log
+          python3 Hutter_OmegaR/v16/test_patch_upper_gate.py \
+            > reports/v17/gate_patch_unit.log 2>&1
+          python3 Hutter_OmegaR/v14/test_enable_raw_lab.py \
+            > reports/v17/lab_patch_unit.log 2>&1
+          python3 -m py_compile Hutter_OmegaR/v17/*.py
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential make binutils ca-certificates git gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          { date -u --iso-8601=seconds; uname -a; clang++-18 --version | head -1; \
+            free -h; df -h .; } > reports/v17/environment.txt
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+
+      - name: Récupérer la source amont GPL-3.0 à la révision épinglée
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          test "$(git -C upstream rev-parse HEAD)" = "$expected"
+          test "$(git -C upstream hash-object src/vocab_frozen.h)" = da5ffe84fb7e3d9a5061b43da5970f7c9f728e19
+          test -s upstream/LICENSE
+          test -s upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5
+          echo "$expected" > reports/v17/source_commit.txt
+
+      - name: Authentifier enwik9 puis créer trois extraits réversibles
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-all-errors --connect-timeout 30 \
+            --max-time 1200 -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          printf '%s  %s\n' '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' data/enwik9 | sha256sum --check --status
+          python3 Hutter_OmegaR/v17/reversible_sample.py \
+             --enwik9 data/enwik9 --vocab-header upstream/src/vocab_frozen.h \
+             --out-dir data/escaped --report reports/v17/sample_manifest.json \
+             > reports/v17/sample_stdout.log
+          rm -f data/enwik9 data/enwik9.zip
+
+      - name: Deux variantes et six contrôles de reconstruction de données brutes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v17/run_paired.py \
+            --upstream upstream --samples-dir data/escaped \
+            --manifest reports/v17/sample_manifest.json \
+            --reports reports/v17 --phase-timeout 600 \
+            > reports/v17/pipeline_stdout.log
+          python3 - <<'PY'
+          import json, pathlib
+          root=pathlib.Path('reports/v17')
+          manifest=json.loads((root/'sample_manifest.json').read_text())
+          data=json.loads((root/'comparison.json').read_text())
+          assert manifest['lossy_projection'] is False
+          assert data['status']=='all_six_full_raw_excerpt_roundtrips_verified'
+          assert data['raw_wikipedia_bytes_preserved'] is True
+          assert all(row['both_sha256_roundtrips_pass'] for row in data['results'])
+          assert len(data['results'])==6 and len(data['aggregates'])==2
+          assert data['hutter_prize_score'] is None
+          print('PASS: 6x encoded SHA-256 and original Wikipedia SHA-256')
+          PY
+
+      - name: Publier un verdict textuel contrôlé, sans transférer les octets bruts
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          STEPS_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import base64, datetime, json, os, pathlib, urllib.error, urllib.request
+          root=pathlib.Path('reports/v17')
+          outcome={'project':'OMEGA-R v0.17 reversible-source A/B',
+                   'status':'incomplete_or_failed','research_only':True,
+                   'hutter_prize_score':None,'competition_submission_sent':False,
+                   'run_url':'https://github.com/'+os.environ['REPO']+'/actions/runs/'+os.environ['RUN_ID'],
+                   'prior_steps_status':os.environ['STEPS_STATUS'],
+                   'recorded_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          try:
+            f=root/'comparison.json'
+            if not f.is_file():raise RuntimeError('comparison.json missing')
+            tested=json.loads(f.read_text())
+            if not (tested.get('status')=='all_six_full_raw_excerpt_roundtrips_verified'
+                and tested.get('raw_wikipedia_bytes_preserved') is True
+                and tested.get('hutter_prize_score') is None
+                and len(tested.get('results',[]))==6
+                and all(r.get('both_sha256_roundtrips_pass') is True for r in tested['results'])):
+              raise RuntimeError('Verification failed')
+            outcome.update(tested)
+            outcome['status']='success_six_raw_excerpt_roundtrips'
+          except Exception as exc:
+            outcome['diagnostic']=str(exc)
+            for mode in (990,999):
+              f=root/('q'+str(mode))/'failure.json'
+              if f.is_file():outcome['failure_'+str(mode)]=json.loads(f.read_text())
+            if (root/'pipeline_stdout.log').is_file():
+              outcome['log_tail']=(root/'pipeline_stdout.log').read_text(errors='replace')[-1200:]
+          path='Hutter_OmegaR/results_v17/REVERSIBLE_AB_GITHUB.json'
+          uri='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+path
+          head={'Authorization':'Bearer '+os.environ['GH_TOKEN'],
+                'Accept':'application/vnd.github+json',
+                'X-GitHub-Api-Version':'2022-11-28',
+                'User-Agent':'omega-r-v17-audit'}
+          payload={'message':'Conserver le résultat brut réversible SEMCACHE v0.17',
+                   'branch':'main',
+                   'content':base64.b64encode((json.dumps(outcome,indent=2,ensure_ascii=False)+chr(10)).encode()).decode()}
+          try:
+            with urllib.request.urlopen(urllib.request.Request(uri,headers=head),timeout=20) as r:
+              payload['sha']=json.load(r)['sha']
+          except urllib.error.HTTPError as err:
+            if err.code!=404:raise
+          with urllib.request.urlopen(urllib.request.Request(uri,headers=head,
+                method='PUT',data=json.dumps(payload).encode()),timeout=30) as r:r.read()
+          print('RESULT_RECORDED',outcome['status'])
+          PY
+
+      - name: Publier uniquement les logs et les rapports non sensibles
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr17-reversible-wikipedia-audit
+          path: reports/v17/
+          if-no-files-found: warn
+          retention-days: 14
