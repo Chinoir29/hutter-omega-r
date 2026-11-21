@@ -1,0 +1,17 @@
+{
+  "status": "PREREGISTERED_EXPECTATIONS_BEFORE_REMOTE_AB_RESULT",
+  "provenance_run": 44957604937,
+  "evidence_file": "Hutter_OmegaR/results_v19/REMOTE_STREAM_44957604937.json",
+  "real_precoder_stream_sha256": "c35d3073eeba70f22a2e08a50202b53eb95466e3e9f1f2702f6f9b3f96fd8718",
+  "train_rule": "index % 5 == 0",
+  "train_blocks": 12,
+  "train_original_zlib3_bytes": 50311835,
+  "holdout_rule": "index % 5 != 0",
+  "holdout_blocks": 48,
+  "holdout_original_zlib3_bytes": 201864593,
+  "whole_stream_original_zlib3_bytes": 252176428,
+  "diagnostic_archive_overhead_bytes_per_arm": 324,
+  "expected_archive_baseline_bytes": 252176752,
+  "notes": "Same byte-for-byte stream under identical zlib versions. Candidate choice must be based on training data only. These numbers are not a Hutter competition score.",
+  "competition_score": null
+}
