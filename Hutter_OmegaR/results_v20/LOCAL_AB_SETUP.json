@@ -1,0 +1,27 @@
+{
+  "mission": "OMÉGA-R v0.20",
+  "status": "LOCAL_SOURCE_AND_TESTS_VERIFIED; REMOTE_FULL_AB_PENDING_AT_RECORD_TIME",
+  "branch": "research/omr20-reversible-stream-ab",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "genuine_stream_sha256": "c35d3073eeba70f22a2e08a50202b53eb95466e3e9f1f2702f6f9b3f96fd8718",
+  "genuine_stream_bytes": 501062281,
+  "independent_stream_run": 44957604937,
+  "remote_experiment_run": 44959605545,
+  "local_python_tests": {
+    "passed": 7,
+    "failed": 0,
+    "execution_seconds": 0.027,
+    "source_sha256": "cda17c7cb7aafa7ec7bc7e8b87b5dec715ec0ec1bb9f3edc1777ad236a4bd6f8"
+  },
+  "frozen_hypotheses": [
+    "Byte deinterleaving in 2/4 lanes may concentrate low-entropy subsequences",
+    "Reversing or swapping neighboring bytes may improve a positional zlib proxy on highly patterned regions"
+  ],
+  "preregistered_mode_selection": "12 blocks i mod 5 == 0 of 60",
+  "heldout": "48 remaining blocks; select no mode using heldout data",
+  "expected_container_overhead_bytes_each": 324,
+  "benchmark_not_equivalent_to_hutter": true,
+  "archival_zip_sha256": "b80bd5915fdadddba1125858a3d5e9625dec5a8dc34a19d39e93374862fda3bf",
+  "score_S": null,
+  "official_validation": false
+}
