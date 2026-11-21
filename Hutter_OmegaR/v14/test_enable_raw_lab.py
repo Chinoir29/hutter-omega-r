@@ -9,7 +9,8 @@ from enable_raw_lab import (
     modify_source, OLD_PARSER, OLD_BRANCH, OLD_HELPER,
     NEW_PARSER, NEW_BRANCH, NEW_HELPER, LAB_HEAD,
     INERT_ANCHOR, INERT_OLD, INERT_NEW, LAB_GLOBAL,
-    MAIN_ANCHOR, MAIN_REPLACE
+    MAIN_ANCHOR, MAIN_REPLACE, modify_gate_source,
+    GATE_ANCHOR, GATE_REPLACEMENT
 )
 
 FIXTURE = (
@@ -82,6 +83,39 @@ class TestRawLaboratoryPatch(unittest.TestCase):
         self.assertTrue("MetablockInert" in out)
         self.assertTrue("AuthorBlockInert" in out)
         self.assertTrue("TimestampProgressInert" in out)
+
+class TestTransformerGateIsolation(unittest.TestCase):
+    GATE_FIXTURE = (
+        "CoderGate::CoderGate() {\n"
+        + GATE_ANCHOR
+        + "\n// unrelated source must remain unchanged\n"
+    )
+
+    def test_gate_restored_to_raw_body_without_disabling_model(self):
+        out=modify_gate_source(self.GATE_FIXTURE)
+        self.assertIn(GATE_REPLACEMENT,out)
+        self.assertIn("mf_raus_ = true;",out)
+        self.assertIn("st_state_ = kBody;",out)
+        self.assertIn("arm_[kZoneHdrblock] = false;",out)
+        self.assertNotIn("transformer::Running() = false",out)
+
+    def test_exact_gate_replacement_only(self):
+        self.assertEqual(
+            modify_gate_source(self.GATE_FIXTURE),
+            self.GATE_FIXTURE.replace(GATE_ANCHOR,GATE_REPLACEMENT,1)
+        )
+
+    def test_missing_gate_anchor_fails_closed(self):
+        with self.assertRaises(ValueError):
+            modify_gate_source(self.GATE_FIXTURE.replace(GATE_ANCHOR,"// no gate"))
+
+    def test_duplicate_gate_anchor_fails_closed(self):
+        with self.assertRaises(ValueError):
+            modify_gate_source(self.GATE_FIXTURE+GATE_ANCHOR)
+
+    def test_gate_repatch_rejected(self):
+        with self.assertRaises(ValueError):
+            modify_gate_source(modify_gate_source(self.GATE_FIXTURE))
 
 if __name__=="__main__":
     unittest.main(verbosity=2)
