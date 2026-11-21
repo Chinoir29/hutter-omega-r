@@ -52,14 +52,18 @@ def patch_sources(files:dict[str,bytes],header:bytes, shadow:bool=True)->dict[st
     omr21_cap = n;
   }
   while (pos < omr21_cap) {''',1)
+    flush='  e.Flush();\\n  run_mode::gram.Report("compress");'
+    if runner.count(flush)!=1: raise ValueError('COMPRESS_FLUSH_ANCHOR_DRIFT')
+    runner=runner.replace(flush,'  e.Flush();\\n  if (std::getenv("OMR21_SHADOW_PREFIX_BYTES")) { *output_bytes=ftell(os); return; }\\n  run_mode::gram.Report("compress");',1)
     anchor2='  Compress(temp_bytes, temp_in, data_out, output_bytes, &p);'
     if runner.count(anchor2)!=1:raise ValueError('RUN_COMPRESSION_ANCHOR_DRIFT')
     runner=runner.replace(anchor2,anchor2+'''
   if (std::getenv("OMR21_SHADOW_PREFIX_BYTES")) {
     std::fprintf(stderr,"OMR21_PREFIX_ACTUAL_CODED_STREAM_BYTES=%llu\\n",(unsigned long long)temp_bytes);
     fclose(temp_in); fclose(data_out);
-    // Raw research arithmetic payload is not a standalone Hutter archive.
-    remove(output_path.c_str()); remove(temp_path.c_str());
+    // Keep only until the two SHA-256 hashes are compared; not a prize archive.
+    if (std::rename(output_path.c_str(), "omr21-coded-prefix.bin") != 0) std::exit(184);
+    remove(temp_path.c_str());
     std::exit(0);
   }
 ''',1)
