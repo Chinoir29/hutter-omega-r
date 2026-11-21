@@ -1,0 +1,771 @@
+{
+  "classification": "REPROCESSED_PUBLISHED_CMIX_CODER_COST_MAP_NOT_LOCAL_REEXECUTION",
+  "source_repo": "marwoelk/cmix-neif-2.0",
+  "source_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "source_file": "doc/stream_rate.tsv",
+  "source_blob_sha": "2a042eb0b69a31b9033721485e364de13ee0f093",
+  "source_rows": 1000,
+  "source_total_model_coded_bytes": 85417870,
+  "omr19_run": 44957604937,
+  "omr19_stream_sha256": "c35d3073eeba70f22a2e08a50202b53eb95466e3e9f1f2702f6f9b3f96fd8718",
+  "alignment": "Assume uniform allocation of each 0.1%-width published coder output across overlaps with OMR 8 MiB windows; approximations, not direct measurement at 8MiB boundaries",
+  "pearson_zlib3_vs_published_model_bpb": 0.770616,
+  "spearman_zlib3_vs_published_model_bpb": 0.858516,
+  "highest_published_model_cost": [
+    {
+      "index": 0,
+      "from_bytes": 0,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1794536,
+      "model_bits_per_byte_approx": 1.711403,
+      "zlib3_bytes": 3413452,
+      "zlib3_bits_per_byte": 3.255322
+    },
+    {
+      "index": 26,
+      "from_bytes": 218103808,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1746964,
+      "model_bits_per_byte_approx": 1.666035,
+      "zlib3_bytes": 4735975,
+      "zlib3_bits_per_byte": 4.516578
+    },
+    {
+      "index": 27,
+      "from_bytes": 226492416,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1704060,
+      "model_bits_per_byte_approx": 1.625118,
+      "zlib3_bytes": 4682362,
+      "zlib3_bits_per_byte": 4.465448
+    },
+    {
+      "index": 25,
+      "from_bytes": 209715200,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1701669,
+      "model_bits_per_byte_approx": 1.622838,
+      "zlib3_bytes": 4622270,
+      "zlib3_bits_per_byte": 4.40814
+    },
+    {
+      "index": 30,
+      "from_bytes": 251658240,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1696438,
+      "model_bits_per_byte_approx": 1.617849,
+      "zlib3_bytes": 4636619,
+      "zlib3_bits_per_byte": 4.421824
+    },
+    {
+      "index": 31,
+      "from_bytes": 260046848,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1679505,
+      "model_bits_per_byte_approx": 1.601701,
+      "zlib3_bytes": 4583732,
+      "zlib3_bits_per_byte": 4.371387
+    },
+    {
+      "index": 14,
+      "from_bytes": 117440512,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1677170,
+      "model_bits_per_byte_approx": 1.599474,
+      "zlib3_bytes": 4539042,
+      "zlib3_bits_per_byte": 4.328768
+    },
+    {
+      "index": 8,
+      "from_bytes": 67108864,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1640111,
+      "model_bits_per_byte_approx": 1.564132,
+      "zlib3_bytes": 4549249,
+      "zlib3_bits_per_byte": 4.338502
+    },
+    {
+      "index": 15,
+      "from_bytes": 125829120,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1630301,
+      "model_bits_per_byte_approx": 1.554777,
+      "zlib3_bytes": 4502169,
+      "zlib3_bits_per_byte": 4.293603
+    },
+    {
+      "index": 18,
+      "from_bytes": 150994944,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1619499,
+      "model_bits_per_byte_approx": 1.544475,
+      "zlib3_bytes": 4454587,
+      "zlib3_bits_per_byte": 4.248225
+    }
+  ],
+  "largest_rank_disagreements": [
+    {
+      "index": 0,
+      "from_bytes": 0,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1794536,
+      "model_bits_per_byte_approx": 1.711403,
+      "zlib3_bytes": 3413452,
+      "zlib3_bits_per_byte": 3.255322,
+      "rank_model": 1,
+      "rank_zlib": 55,
+      "rank_distance": 54
+    },
+    {
+      "index": 46,
+      "from_bytes": 385875968,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1375504,
+      "model_bits_per_byte_approx": 1.311783,
+      "zlib3_bytes": 4462413,
+      "zlib3_bits_per_byte": 4.255689,
+      "rank_model": 38,
+      "rank_zlib": 16,
+      "rank_distance": 22
+    },
+    {
+      "index": 17,
+      "from_bytes": 142606336,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1603707,
+      "model_bits_per_byte_approx": 1.529414,
+      "zlib3_bytes": 4387295,
+      "zlib3_bits_per_byte": 4.184051,
+      "rank_model": 12,
+      "rank_zlib": 26,
+      "rank_distance": 14
+    },
+    {
+      "index": 38,
+      "from_bytes": 318767104,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1587817,
+      "model_bits_per_byte_approx": 1.51426,
+      "zlib3_bytes": 4652725,
+      "zlib3_bits_per_byte": 4.437184,
+      "rank_model": 17,
+      "rank_zlib": 3,
+      "rank_distance": 14
+    },
+    {
+      "index": 45,
+      "from_bytes": 377487360,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1408695,
+      "model_bits_per_byte_approx": 1.343436,
+      "zlib3_bytes": 4401545,
+      "zlib3_bits_per_byte": 4.19764,
+      "rank_model": 34,
+      "rank_zlib": 22,
+      "rank_distance": 12
+    },
+    {
+      "index": 1,
+      "from_bytes": 8388608,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1242558,
+      "model_bits_per_byte_approx": 1.184995,
+      "zlib3_bytes": 2968161,
+      "zlib3_bits_per_byte": 2.830659,
+      "rank_model": 49,
+      "rank_zlib": 60,
+      "rank_distance": 11
+    },
+    {
+      "index": 23,
+      "from_bytes": 192937984,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1491206,
+      "model_bits_per_byte_approx": 1.422125,
+      "zlib3_bytes": 4461721,
+      "zlib3_bits_per_byte": 4.255029,
+      "rank_model": 28,
+      "rank_zlib": 17,
+      "rank_distance": 11
+    },
+    {
+      "index": 10,
+      "from_bytes": 83886080,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1563199,
+      "model_bits_per_byte_approx": 1.490782,
+      "zlib3_bytes": 4383020,
+      "zlib3_bits_per_byte": 4.179974,
+      "rank_model": 19,
+      "rank_zlib": 28,
+      "rank_distance": 9
+    },
+    {
+      "index": 7,
+      "from_bytes": 58720256,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1553361,
+      "model_bits_per_byte_approx": 1.481401,
+      "zlib3_bytes": 4362991,
+      "zlib3_bits_per_byte": 4.160872,
+      "rank_model": 22,
+      "rank_zlib": 30,
+      "rank_distance": 8
+    },
+    {
+      "index": 13,
+      "from_bytes": 109051904,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1553063,
+      "model_bits_per_byte_approx": 1.481116,
+      "zlib3_bytes": 4334298,
+      "zlib3_bits_per_byte": 4.133509,
+      "rank_model": 23,
+      "rank_zlib": 31,
+      "rank_distance": 8
+    }
+  ],
+  "windows": [
+    {
+      "index": 0,
+      "from_bytes": 0,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1794536,
+      "model_bits_per_byte_approx": 1.711403,
+      "zlib3_bytes": 3413452,
+      "zlib3_bits_per_byte": 3.255322
+    },
+    {
+      "index": 1,
+      "from_bytes": 8388608,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1242558,
+      "model_bits_per_byte_approx": 1.184995,
+      "zlib3_bytes": 2968161,
+      "zlib3_bits_per_byte": 2.830659
+    },
+    {
+      "index": 2,
+      "from_bytes": 16777216,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1057065,
+      "model_bits_per_byte_approx": 1.008095,
+      "zlib3_bytes": 3404181,
+      "zlib3_bits_per_byte": 3.24648
+    },
+    {
+      "index": 3,
+      "from_bytes": 25165824,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1446452,
+      "model_bits_per_byte_approx": 1.379444,
+      "zlib3_bytes": 4301686,
+      "zlib3_bits_per_byte": 4.102407
+    },
+    {
+      "index": 4,
+      "from_bytes": 33554432,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1339896,
+      "model_bits_per_byte_approx": 1.277824,
+      "zlib3_bytes": 4153638,
+      "zlib3_bits_per_byte": 3.961218
+    },
+    {
+      "index": 5,
+      "from_bytes": 41943040,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1557076,
+      "model_bits_per_byte_approx": 1.484943,
+      "zlib3_bytes": 4397933,
+      "zlib3_bits_per_byte": 4.194196
+    },
+    {
+      "index": 6,
+      "from_bytes": 50331648,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1482511,
+      "model_bits_per_byte_approx": 1.413832,
+      "zlib3_bytes": 4326480,
+      "zlib3_bits_per_byte": 4.126053
+    },
+    {
+      "index": 7,
+      "from_bytes": 58720256,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1553361,
+      "model_bits_per_byte_approx": 1.481401,
+      "zlib3_bytes": 4362991,
+      "zlib3_bits_per_byte": 4.160872
+    },
+    {
+      "index": 8,
+      "from_bytes": 67108864,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1640111,
+      "model_bits_per_byte_approx": 1.564132,
+      "zlib3_bytes": 4549249,
+      "zlib3_bits_per_byte": 4.338502
+    },
+    {
+      "index": 9,
+      "from_bytes": 75497472,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1586044,
+      "model_bits_per_byte_approx": 1.512569,
+      "zlib3_bytes": 4530851,
+      "zlib3_bits_per_byte": 4.320956
+    },
+    {
+      "index": 10,
+      "from_bytes": 83886080,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1563199,
+      "model_bits_per_byte_approx": 1.490782,
+      "zlib3_bytes": 4383020,
+      "zlib3_bits_per_byte": 4.179974
+    },
+    {
+      "index": 11,
+      "from_bytes": 92274688,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1494283,
+      "model_bits_per_byte_approx": 1.425059,
+      "zlib3_bytes": 4377869,
+      "zlib3_bits_per_byte": 4.175061
+    },
+    {
+      "index": 12,
+      "from_bytes": 100663296,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1372282,
+      "model_bits_per_byte_approx": 1.30871,
+      "zlib3_bytes": 4071283,
+      "zlib3_bits_per_byte": 3.882678
+    },
+    {
+      "index": 13,
+      "from_bytes": 109051904,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1553063,
+      "model_bits_per_byte_approx": 1.481116,
+      "zlib3_bytes": 4334298,
+      "zlib3_bits_per_byte": 4.133509
+    },
+    {
+      "index": 14,
+      "from_bytes": 117440512,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1677170,
+      "model_bits_per_byte_approx": 1.599474,
+      "zlib3_bytes": 4539042,
+      "zlib3_bits_per_byte": 4.328768
+    },
+    {
+      "index": 15,
+      "from_bytes": 125829120,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1630301,
+      "model_bits_per_byte_approx": 1.554777,
+      "zlib3_bytes": 4502169,
+      "zlib3_bits_per_byte": 4.293603
+    },
+    {
+      "index": 16,
+      "from_bytes": 134217728,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1593529,
+      "model_bits_per_byte_approx": 1.519708,
+      "zlib3_bytes": 4506509,
+      "zlib3_bits_per_byte": 4.297742
+    },
+    {
+      "index": 17,
+      "from_bytes": 142606336,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1603707,
+      "model_bits_per_byte_approx": 1.529414,
+      "zlib3_bytes": 4387295,
+      "zlib3_bits_per_byte": 4.184051
+    },
+    {
+      "index": 18,
+      "from_bytes": 150994944,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1619499,
+      "model_bits_per_byte_approx": 1.544475,
+      "zlib3_bytes": 4454587,
+      "zlib3_bits_per_byte": 4.248225
+    },
+    {
+      "index": 19,
+      "from_bytes": 159383552,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1560628,
+      "model_bits_per_byte_approx": 1.488331,
+      "zlib3_bytes": 4408167,
+      "zlib3_bits_per_byte": 4.203956
+    },
+    {
+      "index": 20,
+      "from_bytes": 167772160,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1450929,
+      "model_bits_per_byte_approx": 1.383714,
+      "zlib3_bytes": 4398626,
+      "zlib3_bits_per_byte": 4.194857
+    },
+    {
+      "index": 21,
+      "from_bytes": 176160768,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1298252,
+      "model_bits_per_byte_approx": 1.23811,
+      "zlib3_bytes": 4239959,
+      "zlib3_bits_per_byte": 4.04354
+    },
+    {
+      "index": 22,
+      "from_bytes": 184549376,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1602206,
+      "model_bits_per_byte_approx": 1.527983,
+      "zlib3_bytes": 4550876,
+      "zlib3_bits_per_byte": 4.340054
+    },
+    {
+      "index": 23,
+      "from_bytes": 192937984,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1491206,
+      "model_bits_per_byte_approx": 1.422125,
+      "zlib3_bytes": 4461721,
+      "zlib3_bits_per_byte": 4.255029
+    },
+    {
+      "index": 24,
+      "from_bytes": 201326592,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1550386,
+      "model_bits_per_byte_approx": 1.478563,
+      "zlib3_bytes": 4427334,
+      "zlib3_bits_per_byte": 4.222235
+    },
+    {
+      "index": 25,
+      "from_bytes": 209715200,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1701669,
+      "model_bits_per_byte_approx": 1.622838,
+      "zlib3_bytes": 4622270,
+      "zlib3_bits_per_byte": 4.40814
+    },
+    {
+      "index": 26,
+      "from_bytes": 218103808,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1746964,
+      "model_bits_per_byte_approx": 1.666035,
+      "zlib3_bytes": 4735975,
+      "zlib3_bits_per_byte": 4.516578
+    },
+    {
+      "index": 27,
+      "from_bytes": 226492416,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1704060,
+      "model_bits_per_byte_approx": 1.625118,
+      "zlib3_bytes": 4682362,
+      "zlib3_bits_per_byte": 4.465448
+    },
+    {
+      "index": 28,
+      "from_bytes": 234881024,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1600442,
+      "model_bits_per_byte_approx": 1.5263,
+      "zlib3_bytes": 4525939,
+      "zlib3_bits_per_byte": 4.316272
+    },
+    {
+      "index": 29,
+      "from_bytes": 243269632,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1619465,
+      "model_bits_per_byte_approx": 1.544442,
+      "zlib3_bytes": 4568487,
+      "zlib3_bits_per_byte": 4.356849
+    },
+    {
+      "index": 30,
+      "from_bytes": 251658240,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1696438,
+      "model_bits_per_byte_approx": 1.617849,
+      "zlib3_bytes": 4636619,
+      "zlib3_bits_per_byte": 4.421824
+    },
+    {
+      "index": 31,
+      "from_bytes": 260046848,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1679505,
+      "model_bits_per_byte_approx": 1.601701,
+      "zlib3_bytes": 4583732,
+      "zlib3_bits_per_byte": 4.371387
+    },
+    {
+      "index": 32,
+      "from_bytes": 268435456,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1589940,
+      "model_bits_per_byte_approx": 1.516285,
+      "zlib3_bytes": 4533686,
+      "zlib3_bits_per_byte": 4.32366
+    },
+    {
+      "index": 33,
+      "from_bytes": 276824064,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1542003,
+      "model_bits_per_byte_approx": 1.470569,
+      "zlib3_bytes": 4386495,
+      "zlib3_bits_per_byte": 4.183288
+    },
+    {
+      "index": 34,
+      "from_bytes": 285212672,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1541014,
+      "model_bits_per_byte_approx": 1.469625,
+      "zlib3_bytes": 4454316,
+      "zlib3_bits_per_byte": 4.247967
+    },
+    {
+      "index": 35,
+      "from_bytes": 293601280,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 824674,
+      "model_bits_per_byte_approx": 0.78647,
+      "zlib3_bytes": 3375332,
+      "zlib3_bits_per_byte": 3.218967
+    },
+    {
+      "index": 36,
+      "from_bytes": 301989888,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1158131,
+      "model_bits_per_byte_approx": 1.10448,
+      "zlib3_bytes": 4027935,
+      "zlib3_bits_per_byte": 3.841338
+    },
+    {
+      "index": 37,
+      "from_bytes": 310378496,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1428659,
+      "model_bits_per_byte_approx": 1.362475,
+      "zlib3_bytes": 4334167,
+      "zlib3_bits_per_byte": 4.133384
+    },
+    {
+      "index": 38,
+      "from_bytes": 318767104,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1587817,
+      "model_bits_per_byte_approx": 1.51426,
+      "zlib3_bytes": 4652725,
+      "zlib3_bits_per_byte": 4.437184
+    },
+    {
+      "index": 39,
+      "from_bytes": 327155712,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1398071,
+      "model_bits_per_byte_approx": 1.333304,
+      "zlib3_bytes": 4272074,
+      "zlib3_bits_per_byte": 4.074167
+    },
+    {
+      "index": 40,
+      "from_bytes": 335544320,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1373038,
+      "model_bits_per_byte_approx": 1.309431,
+      "zlib3_bytes": 4247770,
+      "zlib3_bits_per_byte": 4.050989
+    },
+    {
+      "index": 41,
+      "from_bytes": 343932928,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1387308,
+      "model_bits_per_byte_approx": 1.32304,
+      "zlib3_bytes": 4294970,
+      "zlib3_bits_per_byte": 4.096003
+    },
+    {
+      "index": 42,
+      "from_bytes": 352321536,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1341170,
+      "model_bits_per_byte_approx": 1.279039,
+      "zlib3_bytes": 4207951,
+      "zlib3_bits_per_byte": 4.013015
+    },
+    {
+      "index": 43,
+      "from_bytes": 360710144,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1341403,
+      "model_bits_per_byte_approx": 1.279261,
+      "zlib3_bytes": 4175040,
+      "zlib3_bits_per_byte": 3.981628
+    },
+    {
+      "index": 44,
+      "from_bytes": 369098752,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1450567,
+      "model_bits_per_byte_approx": 1.383369,
+      "zlib3_bytes": 4401204,
+      "zlib3_bits_per_byte": 4.197315
+    },
+    {
+      "index": 45,
+      "from_bytes": 377487360,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1408695,
+      "model_bits_per_byte_approx": 1.343436,
+      "zlib3_bytes": 4401545,
+      "zlib3_bits_per_byte": 4.19764
+    },
+    {
+      "index": 46,
+      "from_bytes": 385875968,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1375504,
+      "model_bits_per_byte_approx": 1.311783,
+      "zlib3_bytes": 4462413,
+      "zlib3_bits_per_byte": 4.255689
+    },
+    {
+      "index": 47,
+      "from_bytes": 394264576,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1335484,
+      "model_bits_per_byte_approx": 1.273617,
+      "zlib3_bytes": 4107931,
+      "zlib3_bits_per_byte": 3.917628
+    },
+    {
+      "index": 48,
+      "from_bytes": 402653184,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1257899,
+      "model_bits_per_byte_approx": 1.199626,
+      "zlib3_bytes": 4083796,
+      "zlib3_bits_per_byte": 3.894611
+    },
+    {
+      "index": 49,
+      "from_bytes": 411041792,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1296986,
+      "model_bits_per_byte_approx": 1.236903,
+      "zlib3_bytes": 4171147,
+      "zlib3_bits_per_byte": 3.977916
+    },
+    {
+      "index": 50,
+      "from_bytes": 419430400,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1386021,
+      "model_bits_per_byte_approx": 1.321812,
+      "zlib3_bytes": 4174209,
+      "zlib3_bits_per_byte": 3.980836
+    },
+    {
+      "index": 51,
+      "from_bytes": 427819008,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1306087,
+      "model_bits_per_byte_approx": 1.245581,
+      "zlib3_bytes": 4169802,
+      "zlib3_bits_per_byte": 3.976633
+    },
+    {
+      "index": 52,
+      "from_bytes": 436207616,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1203392,
+      "model_bits_per_byte_approx": 1.147644,
+      "zlib3_bytes": 3876066,
+      "zlib3_bits_per_byte": 3.696505
+    },
+    {
+      "index": 53,
+      "from_bytes": 444596224,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1125713,
+      "model_bits_per_byte_approx": 1.073564,
+      "zlib3_bytes": 3652937,
+      "zlib3_bits_per_byte": 3.483712
+    },
+    {
+      "index": 54,
+      "from_bytes": 452984832,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1221464,
+      "model_bits_per_byte_approx": 1.164879,
+      "zlib3_bytes": 3880119,
+      "zlib3_bits_per_byte": 3.70037
+    },
+    {
+      "index": 55,
+      "from_bytes": 461373440,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1077007,
+      "model_bits_per_byte_approx": 1.027114,
+      "zlib3_bytes": 3758890,
+      "zlib3_bits_per_byte": 3.584757
+    },
+    {
+      "index": 56,
+      "from_bytes": 469762048,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1085555,
+      "model_bits_per_byte_approx": 1.035266,
+      "zlib3_bytes": 3746701,
+      "zlib3_bits_per_byte": 3.573133
+    },
+    {
+      "index": 57,
+      "from_bytes": 478150656,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 892563,
+      "model_bits_per_byte_approx": 0.851215,
+      "zlib3_bytes": 3287122,
+      "zlib3_bits_per_byte": 3.134844
+    },
+    {
+      "index": 58,
+      "from_bytes": 486539264,
+      "input_bytes": 8388608,
+      "model_output_bytes_approx": 1138100,
+      "model_bits_per_byte_approx": 1.085376,
+      "zlib3_bytes": 3307656,
+      "zlib3_bits_per_byte": 3.154427
+    },
+    {
+      "index": 59,
+      "from_bytes": 494927872,
+      "input_bytes": 6134409,
+      "model_output_bytes_approx": 834815,
+      "model_bits_per_byte_approx": 1.088699,
+      "zlib3_bytes": 2925668,
+      "zlib3_bits_per_byte": 3.81542
+    }
+  ],
+  "official_hutter_score": null
+}
