@@ -1,0 +1,42 @@
+{
+  "project": "OMEGA-R",
+  "version": "v0.18",
+  "github_run_id": 44956092485,
+  "github_run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44956092485",
+  "job_id": 137004435917,
+  "workflow_conclusion": "success",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "experiment": "BUILD_ONLY_EQUAL_SOURCE_COMPARISON",
+  "params": {
+    "baseline_QpE3": 990,
+    "candidate_QpE3": 999
+  },
+  "builds": [
+    {
+      "mode": "baseline",
+      "build_wall_seconds": 437.396,
+      "comp9_bytes": 4042424,
+      "comp9_sha256": "333b183e88a71064da31606e0a3e78dfc3006cc7095c183fb50ee6f43d509531"
+    },
+    {
+      "mode": "candidate",
+      "build_wall_seconds": 416.264,
+      "comp9_bytes": 4042433,
+      "comp9_sha256": "74418b6329eee1767791ae5501dfa0a4319ae927bd55ddfe48fcb529ac44968b"
+    }
+  ],
+  "delta_comp9_bytes": 9,
+  "source": {
+    "upstream_code_copied_into_repository": false,
+    "license": "GPL-3.0",
+    "artifact_id": 14728461421
+  },
+  "restrictions": {
+    "enwik9_full_run": false,
+    "archive9_created": false,
+    "lossless_canonical_roundtrip": false,
+    "score_S": null,
+    "official_validation": false
+  },
+  "verdict": "KEEP_COMPILABILITY_ONLY_HOLD_COMPETITION_GAIN"
+}
