@@ -1,0 +1,114 @@
+name: "OMÉGA-R v0.19 — flux réel post-prétraitement (une fois)"
+on:
+  push:
+    branches:
+      - research/omr19-genuine-stream
+    paths:
+      - .github/workflows/omr19-genuine-stream-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  instrument-production-input:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Nine adversarial tests on instrumentation and byte profile
+        run: python3 -m unittest discover -s Hutter_OmegaR/v19 -p 'test_*.py' -v
+      - name: Install build prerequisites for Linux x86-64
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version
+      - name: Fetch pinned GPL upstream, check source and instrument scratch copy
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr19-upstream
+          git -C /tmp/omr19-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v19/production_stream_probe.py --upstream /tmp/omr19-upstream --output /tmp/omr19-instrumented
+      - name: Compile instrumented real upstream -e path (NOT a contest binary)
+        run: |
+          cd /tmp/omr19-instrumented
+          /usr/bin/time -f 'BUILD_WALL_S=%e BUILD_MAX_RSS_KIB=%M' -o /tmp/omr19-build-time.log bash build.sh >/tmp/omr19-build.stdout 2>/tmp/omr19-build.stderr
+          test -x comp9
+          sha256sum comp9 > /tmp/omr19-probe-binary.sha256
+      - name: Fetch and SHA-256 verify canonical 1GB enwik9, do not upload it
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr19-enwik9.zip
+          python3 - <<'PY'
+          import hashlib,shutil,zipfile
+          from pathlib import Path
+          src=Path('/tmp/omr19-enwik9.zip')
+          dst=Path('/tmp/omr19-enwik9')
+          with zipfile.ZipFile(src) as z:
+              members=[x for x in z.infolist() if not x.is_dir()]
+              assert len(members)==1 and members[0].filename=='enwik9'
+              assert members[0].file_size==1_000_000_000
+              with z.open(members[0]) as fi, dst.open('wb') as fo:
+                  shutil.copyfileobj(fi,fo,4<<20)
+          assert dst.stat().st_size==1_000_000_000
+          d=hashlib.sha256()
+          with dst.open('rb') as f:
+              for part in iter(lambda:f.read(4<<20),b''):d.update(part)
+          assert d.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          print('CANONICAL_ENWIK9_VERIFIED_NOT_PUBLISHED')
+          src.unlink()
+          PY
+      - name: Execute genuine -e preprocessing and capture coder input BEFORE arithmetic coder
+        run: |
+          mkdir -p /tmp/omr19-run
+          cd /tmp/omr19-run
+          ln -s /tmp/omr19-enwik9 enwik9
+          OMR19_PROBE_PRODUCTION_STREAM=1 /usr/bin/time -f 'PROBE_WALL_S=%e PROBE_MAX_RSS_KIB=%M' -o /tmp/omr19-probe-time.log /tmp/omr19-instrumented/comp9 >/tmp/omr19-probe.stdout 2>/tmp/omr19-probe.stderr
+          grep -F 'OMR19_REAL_CODER_INPUT=archive9.cmix.temp' /tmp/omr19-probe.stderr
+          test -s archive9.cmix.temp
+          test ! -e archive9
+          echo 'PRE_CODER_STREAM_REAL; NO archive9; no competition score'
+      - name: Profile actual produced stream; save metadata only
+        run: |
+          python3 Hutter_OmegaR/v19/profile_true_stream.py /tmp/omr19-run/archive9.cmix.temp --output /tmp/omr19-stream-profile.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          p=Path('/tmp/omr19-stream-profile.json')
+          d=json.loads(p.read_text())
+          assert d['status']=='REAL_STREAM_PROFILED_NOT_CODED'
+          assert d['stream_bytes']>1_000_000
+          assert d['archive9'] is None and d['official_hutter_score'] is None
+          if d['stream_bytes']!=501_062_281:
+              print('NOTE: stream length differs from upstream published 501062281; inspect stage',d['stream_bytes'])
+          else:print('Genuine coder stream length matches upstream description')
+          dictfile=Path('/tmp/omr19-run/.dict')
+          if dictfile.exists():
+              h=hashlib.sha256(dictfile.read_bytes()).hexdigest()
+              d['derived_dictionary_sha256']=h
+              d['derived_dictionary_matches_v18']=(h=='0ab9f2d2733003577b53b206791f382fd31b91eff9975041b2173bb5585c5535')
+          else:d['derived_dictionary_missing']=True
+          d['upstream_commit']='35d1957a5074db802fc134126afc77b76d931761'
+          d['corpus_sha256']='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          d['never_contest_archive']=True
+          p.write_text(json.dumps(d,indent=2)+'\n')
+          print('STREAM_SHA256',d['stream_sha256'])
+          print('STREAM_BYTES',d['stream_bytes'])
+          PY
+      - name: Artifact only hashes, profiles, runtime metadata (NO corpus/weights/dictionary)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr19-real-stream-metadata
+          path: |
+            /tmp/omr19_probe_preflight.json
+            /tmp/omr19-build-time.log
+            /tmp/omr19-probe-time.log
+            /tmp/omr19-stream-profile.json
+            /tmp/omr19-probe.stderr
+            /tmp/omr19-build.stderr
+            /tmp/omr19-probe-binary.sha256
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove entire 1GB corpus and transformed streams from runner
+        if: always()
+        run: rm -f /tmp/omr19-enwik9 /tmp/omr19-enwik9.zip /tmp/omr19-run/archive9.cmix.temp
