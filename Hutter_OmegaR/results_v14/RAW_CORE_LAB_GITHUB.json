@@ -6,16 +6,16 @@
   "entire_enwik9_tested": false,
   "hutter_prize_score": null,
   "competition_submission_sent": false,
-  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948098491",
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948332114",
   "status_prior_to_reporting": "failure",
-  "updated_at_utc": "2026-11-21T20:47:45.608418+00:00",
+  "updated_at_utc": "2026-11-21T20:51:15.588085+00:00",
   "patch": {
     "project": "OMÉGA-R v0.14 experimental raw core coder",
     "upstream": "https://github.com/marwoelk/cmix-neif-2.0",
     "license": "GPL-3.0",
     "head_commit": "35d1957a5074db802fc134126afc77b76d931761",
     "runner_original_git_blob": "4f9ee4adfeef37069eecf95bf8efb4c0d03cf09b",
-    "runner_patched_git_blob": "035357b6c97bc15581b42a888b22566b8c4e064d",
+    "runner_patched_git_blob": "2218ff2814efd71750677cc359fb7aa16f40496b",
     "changed_files": [
       "src/runner.cpp"
     ],
@@ -23,5 +23,24 @@
     "hutter_score": null,
     "upstream_modified": true
   },
-  "status": "failed_or_incomplete"
+  "sample": {
+    "scope": "LOSSY_VOCABULARY_PROJECTION_RESEARCH_ONLY",
+    "hutter_prize_score": null,
+    "source_bytes": 1000000000,
+    "source_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+    "raw_prefix_bytes_examined": 4194304,
+    "sample_bytes": 65536,
+    "sample_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
+    "frozen_vocabulary_size": 208,
+    "excluded_bytes_from_raw_prefix": 210547,
+    "normalization_is_lossy": true,
+    "official_score_eligible": false
+  },
+  "status": "failed_or_incomplete",
+  "failure": {
+    "status": "error",
+    "reason": "./cmix exited 255: E553\nE256\nCommand exited with non-zero status 255\n__OMR14__0.00 8128 0.00 0.00\n",
+    "prize_score": null
+  },
+  "encode.log_tail": "E553\nE256\nCommand exited with non-zero status 255\n__OMR14__0.00 8128 0.00 0.00\n"
 }
