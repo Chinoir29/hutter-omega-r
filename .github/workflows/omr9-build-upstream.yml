@@ -38,9 +38,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p reports
-          git clone --depth 1 https://github.com/marwoelk/cmix-neif-2.0.git upstream
-          cd upstream
           expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          cd upstream
           actual="$(git rev-parse HEAD)"
           printf '%s\n' "$actual" | tee ../reports/upstream_commit.txt
           test "$actual" = "$expected"
