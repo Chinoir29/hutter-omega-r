@@ -1,0 +1,47 @@
+name: "OMÉGA-R v0.18 — preflight production pinned"
+on:
+  push:
+    branches:
+      - research/omr18-production-preflight
+    paths:
+      - .github/workflows/omr18-source-preflight.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-pinned-production-route:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout project version
+        uses: actions/checkout@v4
+      - name: Run seven v0.18 adversarial source tests
+        run: python3 -m unittest discover -s Hutter_OmegaR/v18 -p 'test_*.py' -v
+      - name: Fetch exact GPL-3.0 upstream revision (not republished)
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr18-upstream
+          git -C /tmp/omr18-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Validate actual upstream blobs, dictionary and decoder contract, and prepare distinct A/B trees
+        run: |
+          python3 Hutter_OmegaR/v18/production_ab.py --upstream /tmp/omr18-upstream --work /tmp/omr18-source-ab
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          result=json.loads(Path('/tmp/omr18-source-ab/preflight.json').read_text())
+          assert result['experiment']['status']=='SOURCE_PREPARED_NOT_BENCHMARKED'
+          assert result['experiment']['baseline']==990
+          assert result['experiment']['candidate']==999
+          assert result['experiment']['data_comparison'] is None
+          assert result['experiment']['competition_score'] is None
+          print('PINNED_SOURCE_PREFLIGHT_OK; NO_PRODUCTION_BUILD; NO_HUTTER_SCORE')
+          PY
+      - name: Archive only original audit metadata; no GPL source or weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr18-preflight-audit
+          path: /tmp/omr18-source-ab/preflight.json
+          if-no-files-found: ignore
+          retention-days: 14
