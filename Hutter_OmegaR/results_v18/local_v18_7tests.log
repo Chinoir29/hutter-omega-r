@@ -1,0 +1,12 @@
+test_clone_does_not_modify_source (test_production_ab.ProductionGateTests.test_clone_does_not_modify_source) ... ok
+test_git_blob_algorithm (test_production_ab.ProductionGateTests.test_git_blob_algorithm) ... ok
+test_reject_ambiguous_patch (test_production_ab.ProductionGateTests.test_reject_ambiguous_patch) ... ok
+test_reject_mismatched_predictor (test_production_ab.ProductionGateTests.test_reject_mismatched_predictor) ... ok
+test_reject_missing_dictionary_path (test_production_ab.ProductionGateTests.test_reject_missing_dictionary_path) ... ok
+test_reject_noncanonical_corpus_before_run (test_production_ab.ProductionGateTests.test_reject_noncanonical_corpus_before_run) ... ok
+test_source_contract_fixture (test_production_ab.ProductionGateTests.test_source_contract_fixture) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.006s
+
+OK
