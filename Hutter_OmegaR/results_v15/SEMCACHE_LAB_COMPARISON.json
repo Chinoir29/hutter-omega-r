@@ -1,0 +1,17 @@
+{
+  "project": "OMÉGA-R v0.15 SEMCACHE A/B laboratory",
+  "status": "not_run",
+  "revision": "35d1957a5074db802fc134126afc77b76d931761",
+  "thresholds": [
+    990,
+    980,
+    970
+  ],
+  "sample_bytes": 65536,
+  "sample_sha256": "c7fdfc7a3f1249269ec25541155b50a88ce8fcb06643198074cb06fd61daa604",
+  "laboratory_only": true,
+  "prize_score": null,
+  "committee_validated": false,
+  "submission_sent": false,
+  "note": "Placeholder. No compression result recorded yet."
+}
