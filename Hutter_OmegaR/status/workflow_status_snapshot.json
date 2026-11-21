@@ -1,22 +1,22 @@
 {
   "project": "Hutter OMEGA-R",
-  "query_at_utc": "2026-11-21T20:47:33.509839+00:00",
+  "query_at_utc": "2026-11-21T20:54:48.633547+00:00",
   "scope": "GitHub Actions metadata only: no corpus, no executables, no credentials",
   "competition_submission_sent": false,
   "workflows": {
     "omr14-raw-core-lab.yml": [
       {
-        "run_id": 44948098491,
-        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948098491",
+        "run_id": 44948698647,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948698647",
         "status": "in_progress",
         "conclusion": null,
-        "created_at": "2026-11-21T20:47:07Z",
-        "updated_at": "2026-11-21T20:47:11Z",
-        "head_sha": "1029c056d801ee245a740b7a429ff29a4e27a07f",
+        "created_at": "2026-11-21T20:54:07Z",
+        "updated_at": "2026-11-21T20:54:11Z",
+        "head_sha": "132ab648bb353905c6d07bbcef0b9052e5dcc9f6",
         "event": "push",
         "jobs": [
           {
-            "id": 136979769545,
+            "id": 136981622034,
             "name": "laboratory",
             "status": "in_progress",
             "conclusion": null,
@@ -27,6 +27,64 @@
           }
         ],
         "artifacts": []
+      },
+      {
+        "run_id": 44948332114,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948332114",
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2026-11-21T20:49:49Z",
+        "updated_at": "2026-11-21T20:51:21Z",
+        "head_sha": "871f6f512cca38793b0ba94012772775b5da4cb3",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136980493032,
+            "name": "laboratory",
+            "status": "completed",
+            "conclusion": "failure",
+            "active_steps": [],
+            "failed_steps": [
+              "Tester le codage-décompression du laboratoire"
+            ]
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 14724179831,
+            "name": "omr14-laboratory-only",
+            "size_in_bytes": 8097
+          }
+        ]
+      },
+      {
+        "run_id": 44948098491,
+        "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44948098491",
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2026-11-21T20:47:07Z",
+        "updated_at": "2026-11-21T20:47:49Z",
+        "head_sha": "1029c056d801ee245a740b7a429ff29a4e27a07f",
+        "event": "push",
+        "jobs": [
+          {
+            "id": 136979769545,
+            "name": "laboratory",
+            "status": "completed",
+            "conclusion": "failure",
+            "active_steps": [],
+            "failed_steps": [
+              "Compiler le moteur complet sans autopackaging"
+            ]
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 14723999984,
+            "name": "omr14-laboratory-only",
+            "size_in_bytes": 5042
+          }
+        ]
       }
     ],
     "omr13-semcache-build.yml": [
