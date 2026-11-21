@@ -49,3 +49,11 @@ Une modification du contexte lexical, à huit tables inchangées (minuscules ASC
 - [Code de génération de la variante](Hutter_OmegaR/v11/make_candidate.py)
 
 **Décision scientifique :** maintenir v0.6 comme référence expérimentale, explorer les variantes légères sur enwik8 et réserver les ambitions de première place à une amélioration substantielle, validée et admissible d'une architecture compétitive. Ne jamais attribuer à OMÉGA-R le score d'un concurrent.
+
+## Itération v0.12 — canary du compresseur compétitif
+
+La compilation depuis les sources GPL-3.0 de `cmix-neif 2.0` a été reproduite. Pour éviter de mobiliser une compression complète de ~49 heures sans prétest, nous avons construit un banc d'essai **sur un échantillon XML complet extrait du vrai `enwik9` authentifié**. Il reconstruit un fichier source à partir de pages entières, puis teste la compression `-e` et l'archive autonome dans des répertoires isolés.
+
+- [Source et méthode](Hutter_OmegaR/v12/README.md) ; [extracteur vérifié localement](Hutter_OmegaR/v12/extract_wiki_pages.py) ; [banc d'essai testé localement avec un simulateur, pas encore avec le modèle amont](Hutter_OmegaR/v12/run_upstream_canary.py).
+- [Workflow en cours de vérification](.github/workflows/omr12-cmix-neif-canary.yml) ; [état du canary](Hutter_OmegaR/results_v12/UPSTREAM_CANARY_GITHUB.json).
+- **Aucun score Hutter Prize n'est produit sur cet échantillon**, et aucun gain de compression de ce concurrent n'est attribué à OMÉGA-R.
