@@ -1,0 +1,133 @@
+name: "OMÉGA-R v0.28 — vrai A/B comp9/archive9 avec mélangeur bayésien sur un cœur"
+on:
+  push:
+    branches:
+      - research/omr28-bayesian-bitmix-symmetric
+    paths:
+      - .github/workflows/omr28-real-paired-bayesian-once.yml
+permissions:
+  contents: read
+jobs:
+  genuine-native-paired-bayesian:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 125
+    steps:
+      - name: Checkout authorized OMÉGA-R project
+        uses: actions/checkout@v4
+      - name: Adversarial source, online Bayesian logic, resources and native packaging tests
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s Hutter_OmegaR/v28 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v26 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v24 -p 'test_*.py' -v
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -I Hutter_OmegaR/v28 Hutter_OmegaR/v28/bitmix_selftest.cpp -o /tmp/omr28-selftest
+          /tmp/omr28-selftest positive
+          /tmp/omr28-selftest control
+          df -h /tmp
+          free -m
+      - name: Install official-family upstream toolchain and Linux time
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version | head -1
+      - name: Clone pinned upstream GPL-3.0-only original and prepare paired source trees
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr28-upstream
+          git -C /tmp/omr28-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v25/prepare_native.py --upstream /tmp/omr28-upstream --output /tmp/omr28-baseline
+          python3 Hutter_OmegaR/v28/prepare_bayesian_pair.py --upstream /tmp/omr28-upstream --output /tmp/omr28-candidate
+          cmp /tmp/omr28-baseline/src/runner.cpp /tmp/omr28-candidate/src/runner.cpp
+          cmp /tmp/omr28-upstream/src/coder/encoder.cpp /tmp/omr28-baseline/src/coder/encoder.cpp
+          cmp /tmp/omr28-upstream/src/coder/decoder.cpp /tmp/omr28-baseline/src/coder/decoder.cpp
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/omr28-source-audit.json').read_text())
+          assert d['encoder_decoder_same_correction_and_update']
+          assert d['no_new_side_data'] and d['free_coded_bits_only']
+          assert d['eligible_hutter_score_S'] is None
+          assert Path('/tmp/omr28-candidate/LICENSE').is_file()
+          print('OMR28_PAIRED_PINNED_SOURCE_IDENTICAL_EXCEPT_SYMMETRIC_PROBABILITIES')
+          PY
+      - name: Build both genuine production pathways serially in the same environment
+        run: |
+          set -euo pipefail
+          for arm in baseline candidate; do
+            cd /tmp/omr28-$arm
+            if ! /usr/bin/time -f 'BUILD_WALL_SECONDS=%e BUILD_MAX_RSS_KIB=%M' -o /tmp/omr28-$arm-build-time.txt bash build.sh > /tmp/omr28-$arm-build.stdout 2> /tmp/omr28-$arm-build.stderr; then
+              echo "OMR28_${arm}_BUILD_FAILED"
+              tail -n 100 /tmp/omr28-$arm-build.stderr || true
+              tail -n 35 /tmp/omr28-$arm-build.stdout || true
+              exit 1
+            fi
+            test -x comp9
+            sha256sum comp9 > /tmp/omr28-$arm-comp9.sha256
+            stat -c "OMR28_${arm}_COMP9_BYTES=%s" comp9
+          done
+      - name: Download 1GB canonical enwik9 and verify exact corpus checksum
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr28-enwik9.zip
+          python3 - <<'PY'
+          import hashlib,shutil,zipfile
+          from pathlib import Path
+          inp=Path('/tmp/omr28-enwik9.zip'); out=Path('/tmp/omr28-enwik9')
+          with zipfile.ZipFile(inp) as z:
+              members=[m for m in z.infolist() if not m.is_dir()]
+              assert len(members)==1 and members[0].filename=='enwik9' and members[0].file_size==1_000_000_000
+              with z.open(members[0]) as src,out.open('wb') as dst: shutil.copyfileobj(src,dst,4<<20)
+          h=hashlib.sha256()
+          with out.open('rb') as f:
+              for block in iter(lambda:f.read(4<<20),b''):h.update(block)
+          assert out.stat().st_size==1_000_000_000
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          inp.unlink()
+          print('OMR28_ENWIK9_1GB_SHA256_AUTHENTICATED')
+          PY
+      - name: Real paired one-core native archive experiment with independent full-state decoding
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v28/run_real_bayesian_pair.py --root /tmp/omr28-paired-work --corpus /tmp/omr28-enwik9 --report /tmp/omr28-paired-results.json > /tmp/omr28-paired-summary.log
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/omr28-paired-results.json').read_text())
+          assert d['status']=='BOTH_REAL_NATIVE_PREFIX_ROUNDTRIPS_VERIFIED'
+          assert set(d['arms'])=={'baseline','candidate'}
+          for p in d['arms'].values():
+              assert p['decoded_bytes']==524288
+              assert p['decoded_prefix_sha256']=='1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf'
+              assert len(p['encode_resources']['cpu_affinity'])==1
+              assert len(p['isolated_decode_resources']['cpu_affinity'])==1
+          assert d['competition_score_S'] is None and not d['real_full_enwik9_restored']
+          print('OMR28_PAIRED_REAL_COMP9_NATIVE_ARCHIVE9_TWO_EXACT_ROUNDTRIPS_ONE_CPU')
+          print(json.dumps(d['comparison'],sort_keys=True))
+          print(json.dumps(d['arms']['candidate']['bayes_online_bits'],sort_keys=True))
+          PY
+      - name: Archive numerical metadata and diagnostics only, never source, corpus, weights or binaries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr28-real-bayesian-paired-prefix-only
+          path: |
+            /tmp/omr28-source-audit.json
+            /tmp/omr28-paired-results.json
+            /tmp/omr28-paired-summary.log
+            /tmp/omr28-baseline-build-time.txt
+            /tmp/omr28-candidate-build-time.txt
+            /tmp/omr28-baseline-encode-meter.json
+            /tmp/omr28-candidate-encode-meter.json
+            /tmp/omr28-baseline-decode-meter.json
+            /tmp/omr28-candidate-decode-meter.json
+            /tmp/omr28-baseline-comp9.sha256
+            /tmp/omr28-candidate-comp9.sha256
+            /tmp/omr28-baseline-build.stderr
+            /tmp/omr28-candidate-build.stderr
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Delete temporary source, corpus, model material, archive and weights
+        if: always()
+        run: |
+          rm -rf /tmp/omr28-enwik9 /tmp/omr28-enwik9.zip /tmp/omr28-paired-work
+          rm -rf /tmp/omr28-baseline /tmp/omr28-candidate /tmp/omr28-upstream
