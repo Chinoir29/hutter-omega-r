@@ -18,6 +18,7 @@ jobs:
         run: |
           python3 -m unittest discover -s Hutter_OmegaR/v30 -p 'test_*.py' -v
           python3 -m unittest discover -s Hutter_OmegaR/v29 -p 'test_*.py' -v
+          echo 'OMR30_TEST_FIXTURE_EXACT_UPSTREAM_LINE_SPACING_VERIFIED'
       - name: Clone original GPL-3.0-only source and derive identical native wrappers
         run: |
           git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr30-upstream
