@@ -1,0 +1,145 @@
+name: "OMÉGA-R v0.25 — comp9 natif vers archive9 autonome de préfixe"
+on:
+  push:
+    branches:
+      - research/omr25-native-archive-path
+    paths:
+      - .github/workflows/omr25-real-native-prefix-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  native-prefix-archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - name: Verify v25 native production route and v24 independent decoder regressions
+        uses: actions/checkout@v4
+      - name: Adversarial source and isolated-execution tests
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v24 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v23 -p 'test_*.py' -v
+      - name: Install upstream Linux x86-64 toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version | head -1
+      - name: Clone exact third-party GPL-3.0-only revision and prepare the native path
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr25-upstream
+          git -C /tmp/omr25-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v25/prepare_native.py --upstream /tmp/omr25-upstream --output /tmp/omr25-research
+          cmp /tmp/omr25-upstream/src/coder/encoder.cpp /tmp/omr25-research/src/coder/encoder.cpp
+          cmp /tmp/omr25-upstream/src/coder/decoder.cpp /tmp/omr25-research/src/coder/decoder.cpp
+          python3 - <<'PY'
+          from pathlib import Path
+          c=Path('/tmp/omr25-research/src/runner.cpp').read_text()
+          assert 'getFileSize("omr24-decoded-prefix.bin")' not in c
+          assert c.count('rename(temp_path.c_str(), "archive9")')==1
+          assert c.count('setenv("OMR23_PREFIX_DECODE", "524288", 1)')==1
+          assert 'std::rename(output_path.c_str(), "omr21-coded-prefix.bin")' not in c
+          print('OMR25_NATIVE_PRODUCTION_AND_COMPACT_DECODER_SOURCE_VERIFIED')
+          PY
+      - name: Compile real comp9 with native archive creation and compact decoder CUT guard
+        run: |
+          cd /tmp/omr25-research
+          if ! /usr/bin/time -f 'BUILD_WALL_S=%e BUILD_MAX_RSS_KIB=%M' -o /tmp/omr25-build-time.log bash build.sh >/tmp/omr25-build.stdout 2>/tmp/omr25-build.stderr; then
+            echo 'OMR25_COMPILE_FAILURE'
+            tail -n 130 /tmp/omr25-build.stderr || true
+            tail -n 30 /tmp/omr25-build.stdout || true
+            exit 1
+          fi
+          test -x comp9
+          sha256sum comp9 > /tmp/omr25-comp9.sha256
+      - name: Retrieve and authenticate the canonical 1GB Wikipedia data
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr25-enwik9.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile,hashlib,shutil
+          z=Path('/tmp/omr25-enwik9.zip');out=Path('/tmp/omr25-enwik9')
+          with zipfile.ZipFile(z) as a:
+              ms=[m for m in a.infolist() if not m.is_dir()]
+              assert len(ms)==1 and ms[0].filename=='enwik9' and ms[0].file_size==1_000_000_000
+              with a.open(ms[0]) as src,out.open('wb') as dest: shutil.copyfileobj(src,dest,4<<20)
+          h=hashlib.sha256()
+          with out.open('rb') as src:
+              for b in iter(lambda:src.read(4<<20),b''):h.update(b)
+          assert out.stat().st_size==1_000_000_000
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          z.unlink()
+          print('OMR25_ENWIK9_CANONICAL_1GB_SHA_VERIFIED')
+          PY
+      - name: Run actual no-argument comp9 to produce native 524288-byte research archive9
+        run: |
+          set -euo pipefail
+          mkdir /tmp/omr25-run
+          cd /tmp/omr25-run
+          ln -s /tmp/omr25-enwik9 enwik9
+          if ! OMR21_SHADOW_PREFIX_BYTES=524288 timeout 2000 /usr/bin/time -f 'ENCODE_WALL_S=%e ENCODE_MAX_RSS_KIB=%M' -o /tmp/omr25-encode-time.log /tmp/omr25-research/comp9 >/tmp/omr25-encode.stdout 2>/tmp/omr25-encode.stderr; then
+            echo 'OMR25_NATIVE_PRODUCTION_FAILED'
+            tail -n 80 /tmp/omr25-encode.stderr || true
+            exit 1
+          fi
+          grep -F 'OMR21_PREFIX_ACTUAL_CODED_STREAM_BYTES=501062281' /tmp/omr25-encode.stderr
+          test -x archive9
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,struct
+          out=Path('archive9')
+          n=out.stat().st_size
+          with out.open('rb') as f:
+              assert f.read(4)==b'\x7fELF'
+              f.seek(-8,2)
+              raw=f.read(8)
+          coded,weights=struct.unpack('<ii',raw)
+          stub=n-coded-weights-8
+          assert coded==158153 and weights==3744629 and stub>10000, (n,coded,weights,stub)
+          sha=hashlib.sha256()
+          with out.open('rb') as f:
+              for b in iter(lambda:f.read(4<<20),b''): sha.update(b)
+          record={'status':'NATIVE_ARCHIVE9_CREATED_NOT_YET_VERIFIED','upstream_commit':'35d1957a5074db802fc134126afc77b76d931761',
+              'archive9_bytes':n,'archive9_sha256':sha.hexdigest(),'compact_stub_bytes':stub,
+              'weights_bytes':weights,'coded_prefix_bytes':coded,'trailer_bytes':8,
+              'preprocessed_prefix_bytes':524288,'whole_enwik9_restored':False,
+              'official_hutter_score':None}
+          Path('/tmp/omr25-native-archive-metadata.json').write_text(json.dumps(record,indent=2)+'\n')
+          print('OMR25_NATIVE_COMP9_ARCHIVE_CONSTRUCTION_OK',json.dumps(record))
+          PY
+      - name: Decode the native archive in a new EMPTY directory without arguments or original data
+        run: |
+          python3 Hutter_OmegaR/v24/run_isolated.py --archive /tmp/omr25-run/archive9 --work /tmp/omr25-empty --report /tmp/omr25-isolated.json --timeout 1200
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/omr25-isolated.json').read_text())
+          assert r['status']=='INDEPENDENT_ZERO_ARG_PRECODER_PREFIX_RESTORED'
+          assert r['started_files']==['archive9']
+          assert r['actual_decoded_bytes']==524288
+          assert r['actual_decoded_sha256']=='1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf'
+          assert r['hutter_score_S'] is None and r['whole_enwik9_restored'] is False
+          print('OMR25_COMP9_NATIVE_ARCHIVE9_ZERO_ARG_PREFIX_SHA256_VERIFIED')
+          PY
+      - name: Preserve only measurements, no corpus/weights/third-party binaries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr25-native-archive-prefix-metadata
+          path: |
+            /tmp/omr24-source-audit.json
+            /tmp/omr25-source-audit.json
+            /tmp/omr25-native-archive-metadata.json
+            /tmp/omr25-isolated.json
+            /tmp/omr25-build-time.log
+            /tmp/omr25-encode-time.log
+            /tmp/omr25-comp9.sha256
+            /tmp/omr25-build.stderr
+            /tmp/omr25-encode.stderr
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove all external source data and model material
+        if: always()
+        run: |
+          rm -rf /tmp/omr25-enwik9 /tmp/omr25-enwik9.zip /tmp/omr25-run /tmp/omr25-empty
