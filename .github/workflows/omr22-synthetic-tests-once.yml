@@ -1,4 +1,4 @@
-name: OMÉGA-R v0.22 — trois contre-épreuves C++ (une fois)
+name: OMÉGA-R v0.22 — quatre contre-épreuves C++ (une fois)
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
 jobs:
-  three-controls:
+  four-controls:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -17,7 +17,7 @@ jobs:
       - name: Compile and execute three independent deterministic C++ controls
         run: |
           set -euo pipefail
-          for kind in biased calibrated heterogeneous; do
+          for kind in biased calibrated heterogeneous replay; do
             g++ -std=c++17 -O2 -Wall -Wextra -Werror -I Hutter_OmegaR/v22 Hutter_OmegaR/v22/test_temperature_$kind.cpp -o /tmp/omr22-test-$kind
             /tmp/omr22-test-$kind > /tmp/omr22-$kind.stdout 2> /tmp/omr22-$kind.stderr
             grep -F 'OMR22_' /tmp/omr22-$kind.stdout
@@ -26,7 +26,7 @@ jobs:
           import json,re
           from pathlib import Path
           d={}
-          for kind in ('biased','calibrated','heterogeneous'):
+          for kind in ('biased','calibrated','heterogeneous','replay'):
               s=Path('/tmp/omr22-'+kind+'.stderr').read_text()
               report=json.loads(re.search(r'OMR22_TEMPERATURE_RESULT (\{.*\})',s).group(1))
               assert report['train_bits']==262144 and report['coded_bits']==400000
@@ -37,5 +37,5 @@ jobs:
           assert d['calibrated']['position_train_choices']==[0]*8
           assert d['heterogeneous']['position_train_choices']==[6,5,6,5,6,5,6,5]
           assert d['heterogeneous']['position_holdout_gain_bits']>d['heterogeneous']['global_holdout_gain_bits']
-          print('OMR22_THREE_CPP_CONTROLS_VERIFIED; SYNTHETIC_ONLY')
+          print('OMR22_FOUR_CPP_CONTROLS_VERIFIED; SYNTHETIC_ONLY')
           PY
