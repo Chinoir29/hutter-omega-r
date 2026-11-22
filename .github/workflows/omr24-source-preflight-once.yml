@@ -1,0 +1,51 @@
+name: "OMÉGA-R v0.24 — préflight archive de préfixe autonome"
+on:
+  push:
+    branches:
+      - research/omr24-selfcontained-prefix-archive
+    paths:
+      - .github/workflows/omr24-source-preflight-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-source-and-archive-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout research project
+        uses: actions/checkout@v4
+      - name: Nine synthetic adversarial tests of source insertion and archive container
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v24 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v23 -p 'test_*.py' -v
+      - name: Fetch upstream GPL-3.0-only source at pinned commit
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr24-upstream
+          git -C /tmp/omr24-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Apply v0.24 instrument to pinned real original C++ source, preserve notices
+        run: |
+          python3 Hutter_OmegaR/v24/prepare_selfextract.py --upstream /tmp/omr24-upstream --output /tmp/omr24-prepared
+          cmp /tmp/omr24-upstream/src/coder/encoder.cpp /tmp/omr24-prepared/src/coder/encoder.cpp
+          cmp /tmp/omr24-upstream/src/coder/decoder.cpp /tmp/omr24-prepared/src/coder/decoder.cpp
+          test -s /tmp/omr24-source-audit.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/omr24-source-audit.json').read_text())
+          assert a['status']=='V24_SOURCE_PREPARED_NOT_BUILT'
+          assert a['encoder_decoder_unmodified'] is True
+          assert a['prefix_preprocessed_bytes']==524288
+          assert a['whole_enwik9_restored'] is False
+          assert a['official_score_S'] is None
+          print('OMR24_SOURCE_PIN_AND_ZERO_ARG_PATCH_OK')
+          PY
+      - name: Store only verification metadata, not copied GPL source or weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr24-source-preflight
+          path: /tmp/omr24-source-audit.json
+          retention-days: 14
+          if-no-files-found: ignore
