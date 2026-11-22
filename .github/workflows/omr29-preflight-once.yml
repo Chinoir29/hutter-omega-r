@@ -1,0 +1,81 @@
+name: "OMÉGA-R v0.29 — préflight calibration hiérarchique + double calcul"
+on:
+  push:
+    branches:
+      - research/omr29-hierarchical-floor-calibration
+    paths:
+      - .github/workflows/omr29-preflight-once.yml
+permissions:
+  contents: read
+jobs:
+  floor-hierarchy-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Checkout original OMÉGA-R research source
+        uses: actions/checkout@v4
+      - name: Run eight adversarial Python source and reference tests
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v29 -p 'test_*.py' -v
+      - name: Fetch upstream GPL-3.0 source exactly at pinned SHA, construct native baseline and candidate
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr29-upstream
+          git -C /tmp/omr29-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v25/prepare_native.py --upstream /tmp/omr29-upstream --output /tmp/omr29-baseline
+          python3 Hutter_OmegaR/v29/prepare_floor_pool.py --upstream /tmp/omr29-upstream --output /tmp/omr29-candidate
+          cmp /tmp/omr29-baseline/src/runner.cpp /tmp/omr29-candidate/src/runner.cpp
+          cmp /tmp/omr29-baseline/src/coder/encoder.cpp /tmp/omr29-candidate/src/coder/encoder.cpp
+          cmp /tmp/omr29-baseline/src/coder/decoder.cpp /tmp/omr29-candidate/src/coder/decoder.cpp
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/omr29-source-audit.json').read_text())
+          assert a['status']=='POOLED_CALIBRATOR_SOURCE_PREPARED_NOT_YET_BUILT'
+          assert a['symmetric_shared_header'] and a['causal_integer_arithmetic_only']
+          assert a['parent_bins']==16 and a['contest_score_S'] is None
+          assert hashlib.sha256(Path('/tmp/omr29-baseline/src/floor_stage.h').read_bytes()).hexdigest()==a['baseline_floor_sha256']
+          assert hashlib.sha256(Path('/tmp/omr29-candidate/src/floor_stage.h').read_bytes()).hexdigest()==a['candidate_floor_sha256']
+          print('OMR29_REAL_FLOOR_STAGE_PINNED_AND_PATCHED')
+          PY
+      - name: Compile same C++ reference harness against both genuine source variants
+        run: |
+          for arm in baseline candidate; do
+            g++ -std=c++17 -O2 -Wall -Wextra -Wno-attributes -I /tmp/omr29-$arm/src Hutter_OmegaR/v29/floor_pool_selftest.cpp -o /tmp/omr29-$arm-floor-test
+            for mode in mismatch baseline; do
+              case $mode in mismatch) arg=m;; baseline) arg=b;; esac
+              /tmp/omr29-$arm-floor-test "$arg" > /tmp/omr29-$arm-$mode.log
+              cat /tmp/omr29-$arm-$mode.log
+            done
+          done
+      - name: Independent Python big-int implementation checks every q32 output from C++ on 1.6 million events
+        run: |
+          python3 Hutter_OmegaR/v29/floor_pool_reference.py \
+            /tmp/omr29-candidate-mismatch.log \
+            /tmp/omr29-baseline-mismatch.log \
+            /tmp/omr29-candidate-baseline.log \
+            /tmp/omr29-baseline-baseline.log > /tmp/omr29-independent-reference.json
+          cat /tmp/omr29-independent-reference.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/omr29-independent-reference.json').read_text())
+          assert d['status']=='INDEPENDENT_CPP_PYTHON_Q32_EXACT'
+          print('OMR29_FULL_CPP_PYTHON_BIT_PROBABILITIES_MATCHED; TRUE_WIKI_RESULT_STILL_UNKNOWN')
+          PY
+      - name: Retain only source checks, candidate synthetic stats and exact program hashes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr29-floor-hierarchy-source-preflight
+          path: |
+            /tmp/omr29-source-audit.json
+            /tmp/omr29-independent-reference.json
+            /tmp/omr29-baseline-mismatch.log
+            /tmp/omr29-candidate-mismatch.log
+            /tmp/omr29-baseline-baseline.log
+            /tmp/omr29-candidate-baseline.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Erase upstream GPL code from runner
+        if: always()
+        run: rm -rf /tmp/omr29-upstream /tmp/omr29-baseline /tmp/omr29-candidate
