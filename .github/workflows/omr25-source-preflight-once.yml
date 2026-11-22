@@ -1,0 +1,53 @@
+name: "OMÉGA-R v0.25 — préflight conditionnement natif"
+on:
+  push:
+    branches:
+      - research/omr25-native-archive-path
+    paths:
+      - .github/workflows/omr25-source-preflight-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate-original-comp9-assembly-route:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout authorized project
+        uses: actions/checkout@v4
+      - name: Test five native source transforms and nine previous isolated tests
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v24 -p 'test_*.py' -v
+      - name: Pin original GPL-3.0-only project
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr25-upstream
+          git -C /tmp/omr25-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Prepare actual v0.25 native archive sources with no upstream changes
+        run: |
+          python3 Hutter_OmegaR/v25/prepare_native.py --upstream /tmp/omr25-upstream --output /tmp/omr25-native
+          cmp /tmp/omr25-upstream/src/coder/encoder.cpp /tmp/omr25-native/src/coder/encoder.cpp
+          cmp /tmp/omr25-upstream/src/coder/decoder.cpp /tmp/omr25-native/src/coder/decoder.cpp
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          record=json.loads(Path('/tmp/omr25-source-audit.json').read_text())
+          assert record['status']=='NATIVE_PARTIAL_ARCHIVE_PRODUCTION_PATH_PREPARED_NOT_EXECUTED'
+          assert record['native_comp9_assembles_archive9'] is True
+          assert record['official_score_S'] is None
+          p=Path('/tmp/omr25-native/src/runner.cpp').read_text()
+          assert 'rename(temp_path.c_str(), "archive9")' in p
+          assert 'rename(output_path.c_str(), "omr21-coded-prefix.bin")' not in p
+          print('OMR25_REAL_NATIVE_CODE_PATH_PINNED_NOT_YET_BUILT')
+          PY
+      - name: Archive provenance metadata only; no GPL source or weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr25-native-source-preflight
+          path: |
+            /tmp/omr24-source-audit.json
+            /tmp/omr25-source-audit.json
+          retention-days: 14
+          if-no-files-found: ignore
