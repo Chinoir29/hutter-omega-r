@@ -2,7 +2,7 @@
 
 ## Portée
 
-Ce banc exécutable n'est pas un compresseur. Il établit un témoin local de ressources pour les prochains binaires candidats. Il épingle le programme sur un seul cœur CPU Linux grâce à sched_setaffinity, échantillonne le RSS additionné des membres du même groupe de processus, et surveille les helpers qui survivent temporairement au lanceur. L'espace disque est compté comme l'augmentation des blocs réellement alloués dans le répertoire de travail.
+Ce banc exécutable n'est pas un compresseur. Il établit un témoin local de ressources pour les prochains binaires candidats. Il épingle le programme sur un seul cœur CPU Linux grâce à sched_setaffinity, échantillonne le RSS additionné des membres du même groupe de processus, et surveille les helpers qui survivent temporairement au lanceur. L'espace disque inclut l'augmentation des blocs réellement alloués dans le répertoire de travail ET les fichiers anonymes tmpfile() encore ouverts sous /tmp, détectés dans les descripteurs /proc des processus du groupe. Cela évite un sous-comptage important des temporaires de cmix.
 
 La mesure n'est **pas une certification Hutter** : les pics très courts peuvent être manqués et les limites de mémoire/disque doivent être validées dans le cadre du jury. Règlement : https://prize.hutter1.net/hrules.htm.
 
@@ -25,3 +25,5 @@ Les rapports et journaux sont obligatoirement créés **hors du répertoire test
 - [CI 44972224375](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44972224375) : 8 tests réussis, dont un enfant qui survit à la sortie du processus lanceur.
 
 Les fichiers sont autonomes et n'incluent aucun corpus, poids ni code tiers. La constitution OMÉGA-R originale demeure inchangée, et aucune victoire n'est revendiquée.
+
+- [CI 44972422878](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44972422878) : **9 tests réussis**, notamment un fichier temporaire sous /tmp supprimé de l'annuaire mais encore ouvert, et correctement comptabilisé.
