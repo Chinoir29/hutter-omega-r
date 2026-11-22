@@ -1,0 +1,60 @@
+{
+  "version": "OMÉGA-R v0.28",
+  "classification": "REAL_NATIVE_PAIRED_ARITHMETIC_ROUNDTRIP_NEGATIVE_NET_SCORE",
+  "run_id": 44976256308,
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44976256308",
+  "action_head_sha": "b84c15e9c79c7540e7a6bf1e0592a61874c0b7b4",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "status": "completed",
+  "conclusion": "success",
+  "artifact_id": 14736173843,
+  "genuine_enwik9": {
+    "bytes": 1000000000,
+    "sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc"
+  },
+  "precoder_prefix_bytes": 524288,
+  "prefix_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+  "baseline": {
+    "comp9_bytes": 4037576,
+    "archive9_bytes": 4079636,
+    "arithmetic_payload_bytes": 158153,
+    "independent_sha256_roundtrip": true,
+    "one_cpu": true,
+    "rss_encode_peak_bytes": 7722090496,
+    "disk_encode_peak_bytes": 5076963328,
+    "encode_wall_seconds": 403.825,
+    "decode_wall_seconds": 70.4291
+  },
+  "candidate": {
+    "comp9_bytes": 4038107,
+    "archive9_bytes": 4080045,
+    "arithmetic_payload_bytes": 158135,
+    "independent_sha256_roundtrip": true,
+    "one_cpu": true,
+    "rss_encode_peak_bytes": 7722090496,
+    "disk_encode_peak_bytes": 5076963328,
+    "encode_wall_seconds": 408.5728,
+    "decode_wall_seconds": 70.5305
+  },
+  "bayesian_diagnostic": {
+    "coded_bits": 4071047,
+    "active_contexts": 167,
+    "changed_probabilities": 673323,
+    "baseline_ideal_bits": 1265181.8700229626,
+    "candidate_ideal_bits": 1265050.1461631956,
+    "ideal_gain_bits": 131.723859767
+  },
+  "comparison": {
+    "arithmetic_bytes_saved": 18,
+    "comp9_extra_bytes": 531,
+    "archive9_extra_bytes": 409,
+    "combined_experimental_baseline_bytes": 8117212,
+    "combined_experimental_candidate_bytes": 8118152,
+    "net_regression_bytes": 940
+  },
+  "decision": "REJECT_BAYESIAN_MIXTURE_AS_NET_SIZE_OPTIMIZATION_ON_THIS_PREFIX; KEEP_AS_SYMMETRIC_ARITHMETIC_INSTRUMENT",
+  "full_enwik9_restored": false,
+  "official_Hutter_S": null,
+  "jury_validation": false,
+  "notes": "Both arcs encoded and decoded same real preprocessed 524288-byte prefix independently, not a legal Hutter Prize result. Model's log-loss improvement not enough to overcome code and decoder cost; do not extrapolate to all 501MB."
+}
