@@ -33,6 +33,8 @@ jobs:
                            if p.is_file() and p.suffix in ('.py','.md','.cpp','.h','.json')]
           selected += list(Path('.github/workflows').glob('omr31-*.yml'))
           selected += list(Path('.github/workflows').glob('omr32-*.yml'))
+          if Path('Hutter_OmegaR/results_v30').exists():
+              selected += list(Path('Hutter_OmegaR/results_v30').glob('*.json'))
           if Path('Hutter_OmegaR/results_v31').exists():
               selected += list(Path('Hutter_OmegaR/results_v31').glob('*.json'))
           if Path('Hutter_OmegaR/results_v32').exists():
@@ -46,6 +48,8 @@ jobs:
               'Hutter_OmegaR/v32/prepare_extended_prefix.py',
               'Hutter_OmegaR/v32/run_native_extended.py',
               'Hutter_OmegaR/v32/README.md',
+              'Hutter_OmegaR/results_v30/REAL_COMPACT_GAIN_45075993000.json',
+              'Hutter_OmegaR/results_v31/REAL_PHASE_AND_JOIN_45077280163.json',
           ]
           assert set(required).issubset({str(x) for x in selected})
           assert len(selected)>=20
