@@ -1,0 +1,62 @@
+name: "OMÉGA-R v0.32 — chemin natif de préfixes étendus 8 à 64 Mio"
+on:
+  push:
+    branches:
+      - research/omr32-extended-native-prefix
+    paths:
+      - .github/workflows/omr32-preflight-once.yml
+permissions:
+  contents: read
+jobs:
+  source-guard-extended-native-prefix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout authorized source
+        uses: actions/checkout@v4
+      - name: Run all extended-preprocessor, page-phase and native-route test gates
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v32 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v31 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
+      - name: Clone original GPL-3.0-only source at verified commit
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr32-upstream
+          git -C /tmp/omr32-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Build both 8 MiB and 32 MiB source trees while preserving native self-extraction
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v32/prepare_extended_prefix.py --upstream /tmp/omr32-upstream --output /tmp/omr32-8MiB --prefix-bytes 8388608
+          python3 Hutter_OmegaR/v32/prepare_extended_prefix.py --upstream /tmp/omr32-upstream --output /tmp/omr32-32MiB --prefix-bytes 33554432
+          cmp /tmp/omr32-upstream/src/coder/encoder.cpp /tmp/omr32-8MiB/src/coder/encoder.cpp
+          cmp /tmp/omr32-upstream/src/coder/decoder.cpp /tmp/omr32-8MiB/src/coder/decoder.cpp
+          cmp /tmp/omr32-upstream/src/coder/encoder.cpp /tmp/omr32-32MiB/src/coder/encoder.cpp
+          cmp /tmp/omr32-upstream/src/coder/decoder.cpp /tmp/omr32-32MiB/src/coder/decoder.cpp
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for suffix,expected in (('8MiB',8388608),('32MiB',33554432)):
+              r=json.loads(Path('/tmp/omr32-source-audit.json').read_text()) if suffix=='32MiB' else None
+              src=Path('/tmp/omr32-'+suffix+'/src/runner.cpp').read_text()
+              assert src.count('67108864ull')==3
+              assert src.count('setenv("OMR23_PREFIX_DECODE", "'+str(expected)+'", 1)')==1
+              assert src.count('rename(temp_path.c_str(), "archive9")')==1
+              assert 'omr23-reference-prefix.bin' in src
+              assert 'omr24-decoded-prefix.bin' in src
+              assert 'omr21-coded-prefix.bin' not in src
+          assert r['status']=='VARIABLE_NATIVE_PREFIX_SOURCE_PREPARED_NOT_EXECUTED'
+          assert r['fixed_internal_decoder_cap_bytes']==33554432
+          assert r['whole_enwik9_restored'] is False and r['eligible_Hutter_score_S'] is None
+          print('OMR32_TWO_PINNED_TRUE_NATIVE_LONG_PREFIX_SOURCES_PREPARED_NO_BINARY_YET')
+          PY
+      - name: Keep source checks only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr32-source-only-long-prefix-preflight
+          path: /tmp/omr32-source-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Erase temporary third-party GPL code
+        if: always()
+        run: rm -rf /tmp/omr32-upstream /tmp/omr32-8MiB /tmp/omr32-32MiB
