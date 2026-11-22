@@ -25,3 +25,12 @@ Préflight #44971140540 : réussite des cinq tests propres à v0.25, des régres
 **HOLD** : source préflight seulement, ou échec du décodage autonome. **REJECT** : compilation impossible, divergences de flux ou d'état, ressources cachées, coût supplémentaire non comptabilisé.
 
 Le but terminal reste comp9 + archive9 autonomes, restitution bit pour bit des 1 000 000 000 octets de enwik9, limites officielles de temps/RAM/disque et validation du jury. La constitution originale n'est pas modifiée.
+
+
+## Mise à jour des dépendances : v0.24 désormais réussie
+
+Le verrou d'autonomie du décodeur sur 524 288 octets du flux prétraité est **levé en v0.24** par l'expérience #44970630686 : archive assemblée 4 079 649 octets, exécution de ce fichier seul en dossier vierge, sortie 524 288 octets de SHA-256 `1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf`.
+
+La v0.25 teste désormais un objectif matériellement différent : que **le code `comp9` natif lui-même** assemble ce fichier `archive9` sans assembleur Python externe. Son exécution réelle est [#44971506635](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44971506635). Aucun résultat n'est présumé avant contrôle du journal et des SHA.
+
+**Limite :** ces archives ont pour sortie le préfixe du flux déjà prétraité, non le corpus intégral `enwik9`. Pas de score ni de validation réglementaire.
