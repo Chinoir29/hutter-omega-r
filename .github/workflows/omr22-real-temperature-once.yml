@@ -1,0 +1,119 @@
+name: OMÉGA-R v0.22 — vrais bits cmix et spécialistes de température
+on:
+  push:
+    branches:
+      - research/omr22-logit-temperature
+    paths:
+      - .github/workflows/omr22-real-temperature-once.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  true-coded-prefix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout original project
+        uses: actions/checkout@v4
+      - name: Run contradictory biased and calibrated tests
+        run: |
+          set -euo pipefail
+          for kind in biased calibrated; do
+            g++ -std=c++17 -O2 -Wall -Wextra -Werror -I Hutter_OmegaR/v22 Hutter_OmegaR/v22/test_temperature_$kind.cpp -o /tmp/omr22-test-$kind
+            /tmp/omr22-test-$kind >/tmp/omr22-$kind.stdout 2>/tmp/omr22-$kind.stderr
+            grep -F 'OMR22_' /tmp/omr22-$kind.stdout
+          done
+      - name: Install Ubuntu tools and record versions
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version | head -1
+          dpkg-query -W clang-18 libclang-rt-18-dev lld-18 gcc-13
+      - name: Checkout pinned GPL-3.0-only cmix-neif-2.0 and add read-only observer
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr22-upstream
+          git -C /tmp/omr22-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v21/prepare_shadow.py --upstream /tmp/omr22-upstream --output /tmp/omr22-research --header Hutter_OmegaR/v22/omr22_temperature.h
+          test -s /tmp/omr22-research/src/omr21_shadow.h
+      - name: Compile true upstream arithmetic coding path with observer
+        run: |
+          cd /tmp/omr22-research
+          /usr/bin/time -f 'BUILD_WALL=%e BUILD_RSS_KIB=%M' -o /tmp/omr22-build-time.log bash build.sh >/tmp/omr22-build.stdout 2>/tmp/omr22-build.stderr
+          test -x comp9
+          sha256sum comp9 >/tmp/omr22-probe-comp9.sha256
+      - name: Authenticate 1GB public Wikipedia benchmark; never upload its bytes
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr22-enwik9.zip
+          python3 - <<'PY'
+          import shutil,hashlib,zipfile
+          from pathlib import Path
+          src=Path('/tmp/omr22-enwik9.zip'); dst=Path('/tmp/omr22-enwik9')
+          with zipfile.ZipFile(src) as z:
+              members=[m for m in z.infolist() if not m.is_dir()]
+              assert len(members)==1 and members[0].filename=='enwik9' and members[0].file_size==1_000_000_000
+              with z.open(members[0]) as fi, dst.open('wb') as fo:shutil.copyfileobj(fi,fo,4<<20)
+          h=hashlib.sha256()
+          with dst.open('rb') as f:
+              for chunk in iter(lambda:f.read(4<<20),b''):h.update(chunk)
+          assert dst.stat().st_size==1_000_000_000
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          src.unlink()
+          print('OMR22_CANONICAL_ENWIK9_VERIFIED')
+          PY
+      - name: True code first 524288 stream bytes and verify original v0.21 arithmetic SHA
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/omr22-run
+          cd /tmp/omr22-run
+          ln -s /tmp/omr22-enwik9 enwik9
+          OMR21_SHADOW_PREFIX_BYTES=524288 timeout 2100 /usr/bin/time -f 'ENCODE_WALL=%e ENCODE_RSS_KIB=%M' -o /tmp/omr22-code-time.log /tmp/omr22-research/comp9 >/tmp/omr22-code.stdout 2>/tmp/omr22-code.stderr
+          grep -F 'OMR21_PREFIX_ACTUAL_CODED_STREAM_BYTES=501062281' /tmp/omr22-code.stderr
+          test ! -e archive9
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re
+          raw=Path('/tmp/omr22-run/omr21-coded-prefix.bin')
+          assert raw.is_file() and raw.stat().st_size==158153, 'unexpected arithmetic payload size'
+          sha=hashlib.sha256(raw.read_bytes()).hexdigest()
+          assert sha=='836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3', 'observer mutated true arithmetic bits'
+          log=Path('/tmp/omr22-code.stderr').read_text(errors='replace')
+          records=re.findall(r'OMR22_TEMPERATURE_RESULT (\{[^\r\n]+\})',log)
+          assert len(records)==1,(len(records),log[-1000:])
+          obs=json.loads(records[0])
+          assert (obs['coded_bits'],obs['train_bits'],obs['holdout_bits'])==(4071047,262144,3808903)
+          assert not obs['real_probabilities_changed']
+          assert obs['temperatures']==[1.,.93,.97,1.03,1.07,.85,1.15]
+          assert obs['global_train_choice']==min(range(7),key=lambda j:(obs['train_loss_bits'][j],j))
+          assert len(obs['position_train_choices'])==8
+          assert abs(obs['global_holdout_gain_bits']-(obs['holdout_loss_bits'][0]-obs['holdout_loss_bits'][obs['global_train_choice']]))<0.001
+          gain0=obs['global_holdout_gain_bits'];gain1=obs['position_holdout_gain_bits']
+          decision='VALIDATE_ON_INDEPENDENT_DATA_BEFORE_PRODUCTION' if gain0>512 or gain1>512 else 'REJECT_TEMPERATURE_ON_REAL_PREFIX'
+          result={'status':'REAL_CMIX_PREFIX_SHADOW_VALID','source_commit':'35d1957a5074db802fc134126afc77b76d931761',
+                  'actual_preprocessed_stream_bytes':501062281,'prefix_stream_bytes':524288,'coded_payload_bytes':raw.stat().st_size,
+                  'coded_payload_sha256':sha,'matches_v21_control_bit_exact':True,
+                  'shadow':obs,'decision':decision,
+                  'limitations':{'official_hutter_score':None,'archive9_created':False,'enwik9_fully_reconstructed':False,
+                                 'algorithm_integrated_in_decoder':False}}
+          Path('/tmp/omr22-result.json').write_text(json.dumps(result,indent=2)+'\n')
+          print('OMR22_MATCHES_V21_TRUE_CODED_SHA256')
+          print('OMR22_GLOBAL_GAIN_BITS',gain0,'POSITION_GAIN_BITS',gain1,'DECISION',decision)
+          raw.unlink()
+          PY
+      - name: Preserve only measurement metadata and checksums
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr22-real-cmix-temperature-metrics
+          path: |
+            /tmp/omr22-result.json
+            /tmp/omr21-source-audit-shadow.json
+            /tmp/omr22-build-time.log
+            /tmp/omr22-code-time.log
+            /tmp/omr22-biased.stderr
+            /tmp/omr22-calibrated.stderr
+            /tmp/omr22-probe-comp9.sha256
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Delete temporary corpus, raw code and weights
+        if: always()
+        run: rm -rf /tmp/omr22-enwik9 /tmp/omr22-enwik9.zip /tmp/omr22-run
