@@ -1,0 +1,37 @@
+{
+  "project": "OMÉGA-R v0.32",
+  "evidence_status": "SOURCE_AND_LOCAL_LOGIC_ONLY_NO_REAL_LONG_PREFIX_RESULT_YET",
+  "source_branch": "research/omr32-extended-native-prefix",
+  "proof_run_id": 45078221105,
+  "proof_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/45078221105",
+  "proof_conclusion": "completed_success",
+  "proof_artifact_id": 14775813790,
+  "pinned_upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "source_guards_passed": 15,
+  "phase_and_cost_guards_passed": 18,
+  "predecessor_native_guards_passed": 5,
+  "total_preflight_tests_passed": 38,
+  "autonomous_source_manifest_files": 35,
+  "independent_local_unit_tests_passed": 38,
+  "checked_long_caps_bytes": [
+    8388608,
+    33554432
+  ],
+  "absolute_max_source_cap_bytes": 67108864,
+  "explicitly_preserves_original_encoder_decoder_source": true,
+  "native_packager_unmodified": true,
+  "zero_arg_internal_decoder_cap_adjusted": true,
+  "real_prefix_from_canonical_full_enwik9_preprocessing": true,
+  "reference_file_before_coding": "omr23-reference-prefix.bin",
+  "isolated_output": "omr24-decoded-prefix.bin",
+  "selected_real_benchmark_cap_bytes": 33554432,
+  "page_marker_context": {
+    "first_exact_marker_at_byte": 15282110,
+    "markers_in_32MiB_from_v31_real_map": 75134
+  },
+  "full_real_long_benchmark_run_id": 45078631320,
+  "full_real_benchmark_status_at_creation": "RUNNING_NO_SUCCESS_CLAIM",
+  "official_Hutter_score_S": null,
+  "original_enwik9_completely_restored": false,
+  "constitution_original_sha256": "b56b689584c01943aca8127b7f0b09745a5abe6fd17c2b9e6d27c1cca8453e9f"
+}
