@@ -12,7 +12,7 @@ class PhaseJoinTests(unittest.TestCase):
             "source_git_commit":p.UPSTREAM,
             "stream_sha256":p.STREAM_SHA,
             "total_exact_page_markers":7,
-            "first_marker_offset":100,
+            "first_marker_offset":10,
             "first_marker_chunk":0,
             "chunks":[
               {"index":0,"start_byte":0,"end_byte_exclusive":16,"page_anchors":1},
