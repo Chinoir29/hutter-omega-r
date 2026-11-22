@@ -1,0 +1,52 @@
+{
+  "version": "v0.21",
+  "classification": "REAL_CMIX_PREFIX_SHADOW_LOGLOSS_NEGATIVE",
+  "source": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44963170463",
+  "verified_at": "2026-11-22",
+  "run_id": 44963170463,
+  "artifact_id": 14731231666,
+  "source_sha": "6a8a1f59eaeb1129e8789dd8afbed3a85f1e3854",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "original_corpus_bytes": 1000000000,
+  "original_corpus_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "precoder_stream_bytes": 501062281,
+  "coded_input_prefix_bytes": 524288,
+  "arithmetic_output_bytes": 158153,
+  "arithmetic_output_sha256": "836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3",
+  "control_shadow_bit_identical": true,
+  "coded_bits": 4071047,
+  "train_bits": 262144,
+  "holdout_bits": 3808903,
+  "train_loss_bits": [
+    60929.7547637539,
+    61010.3514999184,
+    61132.75206704,
+    61359.8775211676
+  ],
+  "holdout_loss_bits": [
+    1204252.1152591682,
+    1206121.5455563306,
+    1208942.4257149822,
+    1213043.946088359
+  ],
+  "train_best_variant": 0,
+  "holdout_regret_bits_vs_identity": [
+    0,
+    1869.4302971624,
+    4690.310455814,
+    8791.8308291908
+  ],
+  "decision": "REJECT_EMA_RESIDUAL_CORRECTION_AS_REAL_PREDICTOR",
+  "confirm_other_metrics": {
+    "control_build_wall_s": 419.86,
+    "shadow_build_wall_s": 407.04,
+    "control_coding_wall_s": 410.09,
+    "shadow_coding_wall_s": 411.16,
+    "peak_rss_kib": 7541996
+  },
+  "score_S": null,
+  "enwik9_reconstructed": false,
+  "archive9_produced": false,
+  "official_validation": false,
+  "retained_evidence": "Github Actions artifact 14731231666; no raw corpus, weights or third-party binary published"
+}
