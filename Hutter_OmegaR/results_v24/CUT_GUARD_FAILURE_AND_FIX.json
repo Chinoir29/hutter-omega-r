@@ -1,0 +1,22 @@
+{
+  "classification": "REPRODUCED_NEGATIVE_BUILD_AND_PRECISE_CAUSE",
+  "version": "v0.24",
+  "failed_runs": [
+    44970334096,
+    44970467307
+  ],
+  "diagnostic_run": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44970467307",
+  "failure_stage": "Production build, own packer cut_dpath decoder reachability check",
+  "cut_guard": "cut_dpath: *** 1 DUDS *** (decoder reaches function stripped with encoder-only block)",
+  "function": "runner.o:(.text._Z11getFileSizePKc)",
+  "offending_source": "v24 STOP_EARLY called getFileSize from argc==1 decoding branch",
+  "guard_bug": "cut_dpath.py also raises NameError: name 'missing' is not defined while attempting to report failure; not the underlying eligibility problem",
+  "remedy": "Remove getFileSize call from decoder-only branch, keep independent external sha256/length check after restoration",
+  "source_fix_commit": "4ddec292723bed65157269c053065ca08da886bb",
+  "regression_test_commit": "d915e2dc1acd848eff649c5b750b430e262b646e",
+  "third_party_source_modified": false,
+  "full_corpus_processed": false,
+  "archive_produced": false,
+  "official_score_S": null,
+  "decision": "RECONCEIVE_AND_RETRY_AFTER_STRUCTURAL_CHANGE"
+}
