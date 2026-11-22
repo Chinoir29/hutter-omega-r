@@ -1,0 +1,77 @@
+name: "OMÉGA-R v0.32 — export complet code original pour reprise autonome"
+on:
+  push:
+    branches:
+      - research/omr32-extended-native-prefix
+    paths:
+      - .github/workflows/omr32-owned-source-export-once.yml
+permissions:
+  contents: read
+jobs:
+  verified-owned-source-snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Run v32 and v31 independent evidence tests plus native dependencies
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v32 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v31 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
+      - name: Package only user-owned research and exact SHA-256 manifest
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,zipfile
+          from pathlib import Path
+          selected=[]
+          for path in ('Hutter_OmegaR/v21','Hutter_OmegaR/v23',
+                       'Hutter_OmegaR/v24','Hutter_OmegaR/v25',
+                       'Hutter_OmegaR/v26','Hutter_OmegaR/v31',
+                       'Hutter_OmegaR/v32'):
+              selected += [p for p in Path(path).rglob('*')
+                           if p.is_file() and p.suffix in ('.py','.md','.cpp','.h','.json')]
+          selected += list(Path('.github/workflows').glob('omr31-*.yml'))
+          selected += list(Path('.github/workflows').glob('omr32-*.yml'))
+          if Path('Hutter_OmegaR/results_v31').exists():
+              selected += list(Path('Hutter_OmegaR/results_v31').glob('*.json'))
+          if Path('Hutter_OmegaR/results_v32').exists():
+              selected += list(Path('Hutter_OmegaR/results_v32').glob('*.json'))
+          selected=sorted(set(selected),key=str)
+          required=[
+              'Hutter_OmegaR/v25/prepare_native.py',
+              'Hutter_OmegaR/v26/one_core_resource_meter.py',
+              'Hutter_OmegaR/v31/phase_map.py',
+              'Hutter_OmegaR/v31/join_phase_cost.py',
+              'Hutter_OmegaR/v32/prepare_extended_prefix.py',
+              'Hutter_OmegaR/v32/run_native_extended.py',
+              'Hutter_OmegaR/v32/README.md',
+          ]
+          assert set(required).issubset({str(x) for x in selected})
+          assert len(selected)>=20
+          manifest={'scope':'OMR32_OWNED_SOURCE_METADATA_ONLY',
+                    'upstream_commit':'35d1957a5074db802fc134126afc77b76d931761',
+                    'raw_wikipedia_or_weights_or_derived_upstream_binary_embedded':False,
+                    'files':{}}
+          with zipfile.ZipFile('/tmp/omr32-owned-source.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in selected:
+                  data=p.read_bytes()
+                  assert 0<len(data)<180000
+                  z.writestr(str(p),data)
+                  manifest['files'][str(p)]={'bytes':len(data),
+                                            'sha256':hashlib.sha256(data).hexdigest()}
+              z.writestr('SOURCE_MANIFEST.json',json.dumps(manifest,indent=2))
+          with zipfile.ZipFile('/tmp/omr32-owned-source.zip') as z:
+              assert z.testzip() is None
+              for path,rec in manifest['files'].items():
+                  data=z.read(path)
+                  assert len(data)==rec['bytes'] and hashlib.sha256(data).hexdigest()==rec['sha256']
+          print('OMR32_FILE_COUNT_VERIFIED',len(selected))
+          print('OMR32_SOURCE_ZIP_SHA256',hashlib.sha256(Path('/tmp/omr32-owned-source.zip').read_bytes()).hexdigest())
+          PY
+      - name: Upload only original sources and public evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr32-owned-code-and-manifest
+          path: /tmp/omr32-owned-source.zip
+          retention-days: 14
