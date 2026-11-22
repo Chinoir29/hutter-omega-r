@@ -24,6 +24,7 @@ jobs:
           root=Path('Hutter_OmegaR/v31')
           selected=sorted([p for p in root.iterdir() if p.is_file() and p.suffix in ('.py','.md','.json')],key=str)
           selected.append(Path('Hutter_OmegaR/v19/production_stream_probe.py'))
+          selected.append(Path('Hutter_OmegaR/results_v20/REFERENCE_CMIX_COST_MAP.json'))
           selected += sorted(Path('.github/workflows').glob('omr31-*.yml'),key=str)
           if Path('Hutter_OmegaR/results_v31').is_dir():
               selected += sorted(Path('Hutter_OmegaR/results_v31').glob('*.json'),key=str)
@@ -33,7 +34,7 @@ jobs:
                     'Hutter_OmegaR/v31/README.md',
                     'Hutter_OmegaR/v19/production_stream_probe.py'}
           assert required.issubset({str(p) for p in selected})
-          assert len(selected) >= 8
+          assert len(selected) >= 9
           manifest={'source_class':'OMR31_OWNED_CODE_AND_METADATA_ONLY',
                     'source_commit':'35d1957a5074db802fc134126afc77b76d931761',
                     'raw_corpus_or_weights_embedded':False,
