@@ -1,0 +1,54 @@
+{
+  "version": "OMÉGA-R v0.24",
+  "classification": "REPRODUCED_INDEPENDENT_ZERO_ARG_PREFIX_EXTRACTOR_NOT_ENWIK9",
+  "github_workflow_run": 44970630686,
+  "github_run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44970630686",
+  "github_artifact_id": 14733828330,
+  "github_artifact_zip_sha256": "8a5c60cb4c6e39517bf1d53922338226423872652991d23d43c943284f06ce7d",
+  "status": "completed",
+  "conclusion": "success",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "canonical_enwik9_bytes": 1000000000,
+  "canonical_enwik9_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "upstream_precoder_total_bytes": 501062281,
+  "exact_precoder_prefix_bytes": 524288,
+  "precoder_prefix_reference_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+  "arithmetic_prefix_bytes": 158153,
+  "arithmetic_prefix_sha256": "836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3",
+  "archive_components": {
+    "decoder_stub_bytes": 176859,
+    "embedded_weights_bytes": 3744629,
+    "embedded_weights_sha256": "729694cba4969b7d833686ed3f597ff04d3b226da849d5f8004ec020a0ed9563",
+    "arithmetic_prefix_bytes": 158153,
+    "trailer_bytes": 8
+  },
+  "archive_bytes": 4079649,
+  "archive_sha256": "caf27b2303e0f709f200ca97e6b72fb2661d1aa42bab37e8d7f73c5799325c8a",
+  "independent_decode": {
+    "workdir_initial_contents": [
+      "archive9"
+    ],
+    "command": "./archive9",
+    "argv": [],
+    "no_original_corpus_present": true,
+    "no_preexisting_sidecars": true,
+    "environment": "minimal PATH/HOME/LC_ALL/LANG/TZ, without prefix-control variable",
+    "returncode": 0,
+    "timed_out": false,
+    "wall_seconds": 85.923,
+    "decoded_bytes": 524288,
+    "decoded_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf"
+  },
+  "prior_failed_runs": [
+    44970334096,
+    44970467307
+  ],
+  "cause": "The decoder called getFileSize, classified encoder-only by cut_dpath; corrected without disabling the guard",
+  "status_eligible_Hutter": "NOT_ELIGIBLE_PREFIX_ONLY",
+  "restored_whole_enwik9": false,
+  "prize_S": null,
+  "official_validation": false,
+  "decision": "KEEP_AS_R3_PARTIAL_SELF_CONTAINED_PRECODER_PREFIX",
+  "no_raw_data_or_weights_published": true,
+  "next_operation": "Test native comp9 produced archive9 in run 44971506635; then incorporate whole corpus inverse pipeline without unsafe shortcuts."
+}
