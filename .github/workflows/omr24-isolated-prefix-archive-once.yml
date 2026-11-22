@@ -37,6 +37,13 @@ jobs:
           python3 Hutter_OmegaR/v24/prepare_selfextract.py --upstream /tmp/omr24-upstream --output /tmp/omr24-research
           cmp /tmp/omr24-upstream/src/coder/encoder.cpp /tmp/omr24-research/src/coder/encoder.cpp
           cmp /tmp/omr24-upstream/src/coder/decoder.cpp /tmp/omr24-research/src/coder/decoder.cpp
+          python3 - <<'PY'
+          from pathlib import Path
+          code=Path('/tmp/omr24-research/src/runner.cpp').read_text()
+          assert 'getFileSize("omr24-decoded-prefix.bin")' not in code
+          assert 'setenv("OMR23_PREFIX_DECODE", "524288", 1)' in code
+          print('OMR24_CUT_GUARD_PREVENTION_NO_ENCODER_ONLY_CALL')
+          PY
 
       - name: Compile authentic arithmetic model with research-only self-extraction prefix exit
         run: |
