@@ -59,7 +59,7 @@ jobs:
           for arm in baseline candidate; do
             g++ -std=c++17 -O2 -I /tmp/omr30-$arm/src /tmp/omr30-size.cpp -o /tmp/omr30-$arm-size
             /tmp/omr30-$arm-size > /tmp/omr30-$arm-stage-bytes.txt
-            echo "OMR30_$arm_STAGE_BYTES=$(cat /tmp/omr30-$arm-stage-bytes.txt)"
+            echo "OMR30_${arm}_STAGE_BYTES=$(cat /tmp/omr30-$arm-stage-bytes.txt)"
           done
       - name: Independently verify each one of 1.6 million C++ predicted Q32 values in Python
         run: |
