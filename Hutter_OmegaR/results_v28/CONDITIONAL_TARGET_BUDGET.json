@@ -1,0 +1,27 @@
+{
+  "version": "OMÉGA-R v0.28",
+  "classification": "CONDITIONAL_SCALING_BUDGET_NOT_A_MEASURED_GAIN",
+  "official_2026_11_22": {
+    "website": "https://prize.hutter1.net/",
+    "last_awarded_S_bytes": 100424672,
+    "minimum_1pct_as_website_printed": "S < 99'420'425"
+  },
+  "third_party_unawarded_concrete_candidate": {
+    "name": "cmix-neif-2.0",
+    "source_commit": "35d1957a5074db802fc134126afc77b76d931761",
+    "author_reported_S_bytes": 93388956,
+    "award_status": "NOT_AWARDED_REFERENCE_AT_TIME_OF_CHECK"
+  },
+  "if_third_party_candidate_eventually_awarded": {
+    "max_integer_S_for_at_least_1pct_improvement": 92455066,
+    "required_total_saving_vs_candidate_bytes": 933890,
+    "known_true_precoder_stream_bytes": 501062281,
+    "heuristic_equivalent_uniform_saving_bits_per_precoder_byte": 0.014910561587452638,
+    "half_mebibyte_prefix_bytes": 524288,
+    "hypothetical_linear_per_524288_byte_sample_ideal_saving_bits": 7817.428513562369,
+    "hypothetical_average_bits_per_freely_coded_bit": 0.0019202501257200835,
+    "warning": "The first 524288 preprocessed bytes are metadata-heavy and NOT representative of entire enwik9; neither expected improvement nor definitive criterion follows from uniform scaling."
+  },
+  "current_v28_hutter_score_S": null,
+  "preprocessed_prefix_integration_does_not_prove_full_corpus_restoration": true
+}
