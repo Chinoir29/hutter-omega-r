@@ -1,0 +1,74 @@
+{
+  "version": "OMÉGA-R v0.27",
+  "classification": "VERIFIED_NEGATIVE_SECONDARY_WEIGHT_COMPRESSION",
+  "run_id": 44972762089,
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44972762089",
+  "job_status": "completed/success",
+  "head_sha_at_execution": "d226f5b02289b4ea5bfea86950b8d1cbecf18e05",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "embedded_weights": {
+    "bytes": 3744629,
+    "sha256": "729694cba4969b7d833686ed3f597ff04d3b226da849d5f8004ec020a0ed9563",
+    "empirical_byte_entropy_bits": 7.999944,
+    "approximate_number_of_copies_in_S": 2
+  },
+  "experiment": {
+    "transforms": [
+      "identity",
+      "xor_prev",
+      "lanes4"
+    ],
+    "codecs": [
+      "gzip9",
+      "bzip2_9",
+      "xz9e",
+      "zstd19",
+      "brotli11"
+    ],
+    "roundtrips_exact": 15,
+    "tests_adversarial_pass": 7,
+    "sizes_by_transform_codec": {
+      "identity": {
+        "brotli11": 3744638,
+        "zstd19": 3744726,
+        "xz9e": 3744876,
+        "gzip9": 3745222,
+        "bzip2_9": 3761191
+      },
+      "lanes4": {
+        "brotli11": 3744638,
+        "zstd19": 3744726,
+        "xz9e": 3744876,
+        "gzip9": 3745222,
+        "bzip2_9": 3761022
+      },
+      "xor_prev": {
+        "brotli11": 3744638,
+        "zstd19": 3744726,
+        "xz9e": 3744876,
+        "gzip9": 3745222,
+        "bzip2_9": 3761402
+      }
+    },
+    "best": {
+      "transform": "identity",
+      "codec": "brotli11",
+      "bytes": 3744638,
+      "payload_delta_bytes": 9,
+      "two_copy_delta_bytes": 18,
+      "sha256": "971ea1ce76a5b824058ea4de3196a34ede01feed2ac3306951b3c0d3f1311d4c"
+    },
+    "method": "Each wrapper decoded, inverted and compared byte for byte plus SHA-256 against original .c5.",
+    "artifact_id": 14733873077,
+    "artifact_zip_sha256": "9a7686115e41aaf0c881019ea95729fccc05cb76b2fde06fbaeeafab4bcc8d23"
+  },
+  "decision": "REJECT_BROTLI_ZSTD_XZ_GZIP_BZIP2_SECONDARY_COMPRESSION_OF_C5",
+  "constraints": {
+    "no_original_weight_or_corpus_data_published": true,
+    "no_decompressor_compiled_or_embedded": true,
+    "actual_S": null,
+    "no_full_corpus_test": true,
+    "official_jury_validation": false
+  },
+  "next_strategy": "Revisit learned representation or predictive model only; do not repeat the unchanged wrapper experiment."
+}
