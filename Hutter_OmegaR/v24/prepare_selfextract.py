@@ -30,7 +30,7 @@ STOP_EARLY = '''    // OMR24: an independent archive9 run has decoded the genuin
     // Deliberately skip all whole-corpus postprocessing (unavailable on a prefix).
     if (rename("omr23-decoded-prefix.bin", "omr24-decoded-prefix.bin") != 0)
       return Help();
-    if (getFileSize("omr24-decoded-prefix.bin") != 524288ULL) return Help();
+    // The length is independently checked after execution; avoid encoder-only getFileSize.
     goto print_end_message;
 '''
 
