@@ -1,0 +1,65 @@
+name: "OMÉGA-R v0.27 — recompression réversible des poids"
+on:
+  push:
+    branches:
+      - research/omr27-weight-container-ab
+    paths:
+      - .github/workflows/omr27-weights-repack-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compare-weight-wrappers:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout project code
+        uses: actions/checkout@v4
+      - name: Install five free compression codecs
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gzip xz-utils bzip2 zstd brotli
+      - name: Run adversarial tests without any third-party data
+        run: python3 -m unittest discover -s Hutter_OmegaR/v27 -p 'test_*.py' -v
+      - name: Fetch exact GPL-3.0 upstream revision with local weight container
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr27-upstream
+          git -C /tmp/omr27-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          test -s /tmp/omr27-upstream/LICENSE
+      - name: Authenticate original weight bytes, compare 15 reversible options and verify each decoded SHA
+        run: |
+          /usr/bin/time -f 'OMR27_WALL=%e MAX_RSS_KIB=%M' -o /tmp/omr27-time.log \
+            python3 Hutter_OmegaR/v27/weight_repack_probe.py \
+            --weights /tmp/omr27-upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5 \
+            --report /tmp/omr27-weight-sizes-only.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          d=json.loads(Path('/tmp/omr27-weight-sizes-only.json').read_text())
+          assert d['status']=='SOURCE_WEIGHTS_REPACK_CROSSCHECKED'
+          assert d['source_sha256']=='729694cba4969b7d833686ed3f597ff04d3b226da849d5f8004ec020a0ed9563'
+          assert d['source_bytes']==3744629 and d['num_lossless_experiments']==15
+          assert all(x['roundtrip_sha256_exact'] for x in d['results'])
+          assert d['official_hutter_S'] is None
+          print('OMR27_PINNED_15_LOSSLESS_CHECKS_PASS')
+          print('OMR27_BEST',json.dumps(d['best'],sort_keys=True))
+          b=d['best']
+          if b['saving_per_executable_bytes']<=0:
+              print('OMR27_DECISION_REJECT_ALREADY_COMPRESSED_CONTAINER')
+          else:
+              print('OMR27_DECISION_HOLD_REQUIRE_DECOMPRESSOR_CODE_SIZE_AND_REAL_COMP9_ARCHIVE9')
+          PY
+      - name: Publish only numerical tests / sizes / hash, not weight bytes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr27-weight-container-repack-metadata-only
+          path: |
+            /tmp/omr27-weight-sizes-only.json
+            /tmp/omr27-time.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Delete downloaded upstream materials and any transient data
+        if: always()
+        run: rm -rf /tmp/omr27-upstream
