@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Checkout authorized sources
         uses: actions/checkout@v4
-      - name: Run eight adversarial tests and verify orphan-process tracking
+      - name: Run nine adversarial tests including deleted tmpfile fds
         run: |
           python3 -m compileall -q Hutter_OmegaR/v26
           python3 -m unittest discover -s Hutter_OmegaR/v26 -p 'test_*.py' -v
-          echo 'OMR26_8_TESTS_CPU_ONLY_PROCESS_GROUP_RSS_NO_OFFICIAL_SCORE'
+          echo 'OMR26_9_TESTS_CPU_GROUP_RSS_DELETED_TMPFILE_NO_OFFICIAL_SCORE'
       - name: Archive only stdout test counts and host environment
         if: always()
         run: |
