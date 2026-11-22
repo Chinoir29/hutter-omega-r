@@ -1,0 +1,71 @@
+name: "OMÉGA-R v0.29 — sauvegarde autonome code original et preuves"
+on:
+  push:
+    branches:
+      - research/omr29-hierarchical-floor-calibration
+    paths:
+      - .github/workflows/omr29-owned-source-export-once.yml
+permissions:
+  contents: read
+jobs:
+  reproducible-owned-code-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout authorized research repository
+        uses: actions/checkout@v4
+      - name: Build a strict SHA-256 manifest and owned-source package only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,zipfile
+          allowed=[
+              'Hutter_OmegaR/v21','Hutter_OmegaR/v23','Hutter_OmegaR/v24',
+              'Hutter_OmegaR/v25','Hutter_OmegaR/v26','Hutter_OmegaR/v28',
+              'Hutter_OmegaR/v29','Hutter_OmegaR/results_v28','Hutter_OmegaR/results_v29'
+          ]
+          sources=[]
+          for dirname in allowed:
+              root=Path(dirname)
+              if not root.is_dir():continue
+              for p in root.rglob('*'):
+                  if p.is_file() and p.suffix in ('.py','.cpp','.h','.md','.json','.txt'):
+                      sources.append(p)
+          sources += list(Path('.github/workflows').glob('omr29-*.yml'))
+          sources=sorted(set(sources),key=str)
+          assert len(sources)>=30,len(sources)
+          for required in ('Hutter_OmegaR/v21/prepare_shadow.py',
+                           'Hutter_OmegaR/v23/prepare_roundtrip.py',
+                           'Hutter_OmegaR/v24/prepare_selfextract.py',
+                           'Hutter_OmegaR/v25/prepare_native.py',
+                           'Hutter_OmegaR/v26/one_core_resource_meter.py',
+                           'Hutter_OmegaR/v28/run_real_bayesian_pair.py',
+                           'Hutter_OmegaR/v29/prepare_floor_pool.py',
+                           'Hutter_OmegaR/v29/run_real_floor_pair.py',
+                           'Hutter_OmegaR/results_v28/REAL_PAIRED_44976256308.json',
+                           'Hutter_OmegaR/results_v29/PREFLIGHT_45061700701.json'):
+              assert Path(required) in sources,required
+          manifest={'status':'OWNED_RESEARCH_ONLY','upstream_pinned':'35d1957a5074db802fc134126afc77b76d931761',
+                    'contains_corpus_or_weights_or_third_party_binary':False,'files':{}}
+          with zipfile.ZipFile('/tmp/omr29-owned-source.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in sources:
+                  raw=p.read_bytes()
+                  assert len(raw)<150000,str(p)
+                  manifest['files'][str(p)]={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+                  z.writestr(str(p),raw)
+              z.writestr('SOURCE_MANIFEST.json',json.dumps(manifest,indent=2))
+          with zipfile.ZipFile('/tmp/omr29-owned-source.zip') as z:
+              assert z.testzip() is None
+              assert len(z.namelist())==len(sources)+1
+              for k,d in manifest['files'].items():
+                  raw=z.read(k)
+                  assert len(raw)==d['bytes'] and hashlib.sha256(raw).hexdigest()==d['sha256']
+          print('OMR29_REPRODUCIBLE_FILES',len(sources))
+          print('OMR29_OWNED_SOURCE_ZIP_SHA256',hashlib.sha256(Path('/tmp/omr29-owned-source.zip').read_bytes()).hexdigest())
+          PY
+      - name: Upload source and hash only, never corpus / weights / executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr29-owned-source-complete-manifest
+          path: /tmp/omr29-owned-source.zip
+          retention-days: 14
