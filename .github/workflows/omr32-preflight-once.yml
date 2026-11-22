@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout authorized source
         uses: actions/checkout@v4
-      - name: Run all extended-preprocessor, page-phase and native-route test gates
+      - name: Run 38 extended-preprocessor, byte-identical roundtrip, page-phase and native-route test gates
         run: |
           python3 -m unittest discover -s Hutter_OmegaR/v32 -p 'test_*.py' -v
           python3 -m unittest discover -s Hutter_OmegaR/v31 -p 'test_*.py' -v
