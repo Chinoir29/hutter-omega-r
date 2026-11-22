@@ -1,0 +1,65 @@
+{
+  "version": "OMEGA-R v0.25",
+  "classification": "VERIFIED_NATIVE_COMP9_TO_SELFCONTAINED_ARCHIVE9_FOR_PREPROCESSED_PREFIX",
+  "run_id": 44971506635,
+  "run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44971506635",
+  "execution_commit": "a1e16d67b6350fce9a7b05394a6777b696c87682",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "github_artifact_id": 14734675565,
+  "github_artifact_zip_sha256": "c5c2228b5a4b203b9ec3d9b6ed7b447d27981570cbd6f5aa04b896246fea8fcc",
+  "conclusion": "completed/success",
+  "corpus": {
+    "bytes": 1000000000,
+    "sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc"
+  },
+  "compressed_input": {
+    "type": "real preprocessed enwik9 stream prefix",
+    "input_prefix_bytes": 524288,
+    "total_precoder_stream_bytes": 501062281
+  },
+  "produced_archive": {
+    "name": "archive9",
+    "built_natively_by": "comp9 -e production path",
+    "bytes": 4079636,
+    "sha256": "50b4c161f524f3464a589ea44d527b7851f524ac03c1379a886376d933e81309",
+    "stub_bytes": 176846,
+    "embedded_weights_bytes": 3744629,
+    "coded_prefix_bytes": 158153,
+    "trailer_bytes": 8
+  },
+  "independent_decoding": {
+    "environment": "new directory initially containing only archive9",
+    "command": "./archive9",
+    "arguments": [],
+    "returncode": 0,
+    "wall_seconds": 64.025,
+    "actual_decoded_bytes": 524288,
+    "actual_decoded_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+    "reference_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+    "bitwise_identical": true
+  },
+  "build": {
+    "wall_seconds": 357.68,
+    "max_rss_kib": 4557376
+  },
+  "compress": {
+    "wall_seconds": 352.22,
+    "max_rss_kib": 7541364
+  },
+  "compare_v24": {
+    "python_assembled_archive_bytes": 4079649,
+    "native_archive_bytes": 4079636,
+    "archive_size_difference_native_minus_python": -13,
+    "claim": "packaging-size difference only; no Hutter score effect demonstrated"
+  },
+  "limitations": {
+    "this_output_is_not_original_enwik9": true,
+    "entire_corpus_not_restored": true,
+    "comp9_binary_bytes_not_retained_in_this_run": true,
+    "resource_limits_not_certified": true,
+    "eligible_S": null,
+    "jury_validation": false,
+    "no_submissions": true
+  },
+  "decision": "KEEP_NATIVE_COMP9_ARCHIVE9_AUTONOMOUS_PREFIX_CAPABILITY; NEXT_USE_LONGER_PREFIX_AND_FULL_LOSSLESS_PIPELINE_BEFORE_SCORE_CLAIMS"
+}
