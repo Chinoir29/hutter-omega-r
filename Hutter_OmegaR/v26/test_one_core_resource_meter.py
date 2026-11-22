@@ -34,6 +34,29 @@ class MonitorTests(unittest.TestCase):
             self.assertTrue((root / "audit.json").exists())
             self.assertEqual(result, json.loads((root / "audit.json").read_text()))
 
+    def test_keeps_monitoring_orphaned_helper_after_leader_exit(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            work = root / "work"
+            work.mkdir()
+            helper = (
+                "import pathlib,time;"
+                "time.sleep(0.3);"
+                "pathlib.Path('helper_done').write_text('yes')"
+            )
+            launcher = (
+                "import subprocess,sys;"
+                f"subprocess.Popen([sys.executable,'-c',{helper!r}],"
+                " stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,"
+                " stderr=subprocess.DEVNULL,close_fds=True)"
+            )
+            result = run([sys.executable, "-c", launcher], work,
+                         root / "audit.json", timeout_s=5, sample_s=0.03)
+            self.assertEqual(result["status"], "FINISHED")
+            self.assertEqual((work / "helper_done").read_text(), "yes")
+            self.assertTrue(result["process_group_tracked_after_leader_exit"])
+            self.assertGreater(result["wall_seconds"], 0.20)
+
     def test_timeout_is_reported_not_silently_successful(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
