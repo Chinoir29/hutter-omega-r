@@ -59,21 +59,28 @@ def proc_parent_and_rss(pid: int) -> tuple[int, int] | None:
         return None
 
 
-def tree_rss(root_pid: int) -> tuple[int, int]:
-    """Observed RSS summed over target and descendants, including helpers."""
-    info: dict[int, tuple[int, int]] = {}
+def group_rss(group_id: int) -> tuple[int, int]:
+    """RSS of all members of one isolated POSIX process group, even if parent exited.
+
+    Unlike a PPID tree scan this retains descendants that have been orphaned
+    and reparented after the main command terminates.
+    """
+    rss = 0
+    alive = 0
     for name in os.listdir("/proc"):
-        if name.isdecimal():
-            parsed = proc_parent_and_rss(int(name))
-            if parsed is not None:
-                info[int(name)] = parsed
-    active = {root_pid}
-    for _ in range(32):  # depth guard
-        grown = active | {pid for pid, (parent, _) in info.items() if parent in active}
-        if len(grown) == len(active):
-            break
-        active = grown
-    return sum(info[p][1] for p in active if p in info), len(active)
+        if not name.isdecimal():
+            continue
+        pid = int(name)
+        try:
+            if os.getpgid(pid) != group_id:
+                continue
+        except (ProcessLookupError, PermissionError):
+            continue
+        info = proc_parent_and_rss(pid)
+        if info is not None:
+            rss += info[1]
+            alive += 1
+    return rss, alive
 
 
 def run(command: list[str], cwd: Path, report: Path, *, timeout_s: int = 120,
@@ -115,11 +122,11 @@ def run(command: list[str], cwd: Path, report: Path, *, timeout_s: int = 120,
                              preexec_fn=pin)
         try:
             while True:
-                rss, nproc = tree_rss(p.pid)
+                rss, nproc = group_rss(p.pid)
                 peak_rss = max(peak_rss, rss)
                 peak_pids = max(peak_pids, nproc)
                 peak_disk_delta = max(peak_disk_delta, max(0, allocated_bytes(cwd) - initial_disk))
-                if p.poll() is not None:
+                if p.poll() is not None and nproc == 0:
                     break
                 if time.monotonic() - start >= timeout_s:
                     stopped_by_timeout = True
@@ -140,6 +147,7 @@ def run(command: list[str], cwd: Path, report: Path, *, timeout_s: int = 120,
         "argv_length_bytes": sum(len(a.encode("utf-8")) for a in command[1:]),
         "cpu_affinity": [selected],
         "child_process_affinity_inherited": True,
+        "process_group_tracked_after_leader_exit": True,
         "wall_seconds": round(seconds, 4),
         "child_user_cpu_seconds": round(ru1.ru_utime - ru0.ru_utime, 4),
         "child_system_cpu_seconds": round(ru1.ru_stime - ru0.ru_stime, 4),
