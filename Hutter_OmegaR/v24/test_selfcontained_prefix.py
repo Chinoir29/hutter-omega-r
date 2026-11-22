@@ -29,6 +29,11 @@ void f() {
         self.assertIn(b'goto print_end_message;', out)
         self.assertLess(out.index(b'setenv('), out.index(b'input_path = ".ready4cmix_decomp";'))
         self.assertLess(out.index(b'goto print_end_message;'), out.index(b'split4Decomp();'))
+    def test_decoder_never_calls_encoder_only_size_helper(self):
+        out = p.augment_runner(self.fixture())
+        self.assertNotIn(b"getFileSize(", out)
+        self.assertIn(b'rename("omr23-decoded-prefix.bin", "omr24-decoded-prefix.bin")', out)
+
     def test_no_v23_hooks_rejected(self):
         with self.assertRaisesRegex(ValueError, 'V23_DECODE'):
             p.augment_runner(b'    split4Decomp();\n')
