@@ -1,0 +1,129 @@
+name: OMÉGA-R v0.23 — vrai préfixe encodeur/décodeur cmix
+on:
+  push:
+    branches:
+      - research/omr23-cmix-prefix-roundtrip
+    paths:
+      - .github/workflows/omr23-canonical-prefix-roundtrip-once.yml
+permissions:
+  contents: read
+jobs:
+  genuine-arithmetic-roundtrip:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - name: Checkout authorized research project
+        uses: actions/checkout@v4
+      - name: Run pinned source and adversarial insertion tests
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v23 -p 'test_*.py' -v
+      - name: Install official-family toolchain without payments
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version | head -1
+          dpkg-query -W clang-18 libclang-rt-18-dev lld-18 gcc-13
+      - name: Pin exact GPL-3.0-only upstream and prepare both real-codec paths
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr23-upstream
+          git -C /tmp/omr23-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v23/prepare_roundtrip.py --upstream /tmp/omr23-upstream --output /tmp/omr23-research
+          cmp /tmp/omr23-upstream/src/coder/encoder.cpp /tmp/omr23-research/src/coder/encoder.cpp
+          cmp /tmp/omr23-upstream/src/coder/decoder.cpp /tmp/omr23-research/src/coder/decoder.cpp
+      - name: Compile identical authentic coder and decoder C++ without altering probabilities
+        run: |
+          cd /tmp/omr23-research
+          /usr/bin/time -f 'BUILD_WALL=%e BUILD_RSS_KIB=%M' -o /tmp/omr23-build-time.log bash build.sh >/tmp/omr23-build.stdout 2>/tmp/omr23-build.stderr
+          test -x comp9
+          sha256sum comp9 >/tmp/omr23-binary.sha256
+      - name: Download canonical public corpus; verify all 1GB and delete download ZIP
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr23-enwik9.zip
+          python3 - <<'PY'
+          import zipfile,hashlib,shutil
+          from pathlib import Path
+          zpath=Path('/tmp/omr23-enwik9.zip');out=Path('/tmp/omr23-enwik9')
+          with zipfile.ZipFile(zpath) as z:
+              m=[x for x in z.infolist() if not x.is_dir()]
+              assert len(m)==1 and m[0].filename=='enwik9' and m[0].file_size==1_000_000_000
+              with z.open(m[0]) as s,out.open('wb') as d:shutil.copyfileobj(s,d,4<<20)
+          h=hashlib.sha256()
+          with out.open('rb') as f:
+              for b in iter(lambda:f.read(4<<20),b''):h.update(b)
+          assert out.stat().st_size==1_000_000_000
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          zpath.unlink()
+          print('OMR23_CANONICAL_ENWIK9_FULL_SHA256_PASS')
+          PY
+      - name: Encode exactly first 524288 genuine preprocessed bytes and record reference
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/omr23-run
+          cd /tmp/omr23-run
+          ln -s /tmp/omr23-enwik9 enwik9
+          OMR21_SHADOW_PREFIX_BYTES=524288 timeout 2000 /usr/bin/time -f 'ENCODE_WALL=%e ENCODE_RSS_KIB=%M' -o /tmp/omr23-encode-time.log /tmp/omr23-research/comp9 > /tmp/omr23-encode.stdout 2>/tmp/omr23-encode.stderr
+          grep -F 'OMR21_PREFIX_ACTUAL_CODED_STREAM_BYTES=501062281' /tmp/omr23-encode.stderr
+          test -s omr21-coded-prefix.bin
+          test ! -e archive9
+          test "$(wc -c < omr23-reference-prefix.bin)" = "524288"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          f=Path('omr21-coded-prefix.bin')
+          assert f.stat().st_size==158153
+          assert hashlib.sha256(f.read_bytes()).hexdigest()=='836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3'
+          print('OMR23_REAL_COMPRESSOR_PREFIX_MATCHES_V21_ARITHMETIC_SHA')
+          PY
+      - name: Run original decoder on EXACT partial arithmetic stream in the same production workdir
+        run: |
+          set -euo pipefail
+          cd /tmp/omr23-run
+          OMR23_PREFIX_DECODE=524288 timeout 2000 /usr/bin/time -f 'DECODE_WALL=%e DECODE_RSS_KIB=%M' -o /tmp/omr23-decode-time.log /tmp/omr23-research/comp9 -d omr21-coded-prefix.bin omr23-unused-decoded > /tmp/omr23-decode.stdout 2>/tmp/omr23-decode.stderr
+          test -s omr23-decoded-prefix.bin
+          test "$(wc -c < omr23-decoded-prefix.bin)" = "524288"
+      - name: Independent byte-for-byte SHA256 check; no Hutter archive claimed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          root=Path('/tmp/omr23-run')
+          ref=root/'omr23-reference-prefix.bin'; decoded=root/'omr23-decoded-prefix.bin';coded=root/'omr21-coded-prefix.bin'
+          assert ref.is_file() and decoded.is_file() and coded.is_file()
+          def hashfile(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+          h0=hashfile(ref);h1=hashfile(decoded)
+          assert ref.read_bytes()==decoded.read_bytes()
+          assert h0==h1 and ref.stat().st_size==decoded.stat().st_size==524288
+          assert coded.stat().st_size==158153
+          r={'status':'GENUINE_CMIX_PREFIX_ENCODE_DECODE_BIT_IDENTICAL',
+             'input_corpus_bytes':1000000000,'source_corpus_sha256':'159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc',
+             'upstream_commit':'35d1957a5074db802fc134126afc77b76d931761',
+             'transformed_stream_bytes':501062281,'prefix_bytes':524288,
+             'reference_prefix_sha256':h0,'decoded_prefix_sha256':h1,
+             'coded_payload_sha256':hashfile(coded),'coded_payload_bytes':coded.stat().st_size,
+             'original_coder_encoder_unchanged':True,'original_coder_decoder_unchanged':True,
+             'decode_environment':'same working directory as compressor, using its generated temporary model files',
+             'autonomous_archive9':False,'whole_enwik9_restored':False,'hutter_prize_score':None,'official_validation':False}
+          Path('/tmp/omr23-real-roundtrip.json').write_text(json.dumps(r,indent=2)+'\n')
+          print('OMR23_REAL_CODER_DECODER_PREFIX_SHA256_MATCHED')
+          print(json.dumps(r,indent=2))
+          for p in (ref,decoded,coded):p.unlink()
+          PY
+      - name: Retain only model-independent SHA/size measurements and diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr23-real-cmix-prefix-roundtrip-metadata
+          path: |
+            /tmp/omr23-preflight.json
+            /tmp/omr23-real-roundtrip.json
+            /tmp/omr23-build-time.log
+            /tmp/omr23-encode-time.log
+            /tmp/omr23-decode-time.log
+            /tmp/omr23-encode.stderr
+            /tmp/omr23-decode.stderr
+            /tmp/omr23-binary.sha256
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Erase corpus, model weights and any coded samples from runner filesystem
+        if: always()
+        run: rm -rf /tmp/omr23-enwik9 /tmp/omr23-enwik9.zip /tmp/omr23-run
