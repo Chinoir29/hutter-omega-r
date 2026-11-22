@@ -1,0 +1,17 @@
+{
+  "project": "OMÉGA-R",
+  "version": "v0.25",
+  "verification": "SECOND_LOCAL_REPRODUCIBILITY_CHECK",
+  "snapshot": "GitHub Actions #44971321182 artifact 14732849858",
+  "owner_source_archive": "omr24_25_sources.zip",
+  "source_manifest_files": 16,
+  "source_manifest_valid_files": 16,
+  "python_version": "3.13",
+  "v24_unit_tests_passed": 9,
+  "v25_unit_tests_passed": 5,
+  "source_file_validation": "all 16 entries: exact bytes and SHA-256",
+  "sensitive_material_in_snapshot": false,
+  "native_archive9_created_during_check": false,
+  "eligible_score_S": null,
+  "real_pipeline_status": "GitHub Actions #44970630686 (v24), #44971506635 (v25) analyzed separately; no result assumed"
+}
