@@ -1,0 +1,26 @@
+{
+  "version": "OMÉGA-R v0.23",
+  "status": "GENUINE_CMIX_PREFIX_ENCODE_DECODE_BIT_IDENTICAL",
+  "source": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44967704622",
+  "run_id": 44967704622,
+  "artifact_id": 14733120313,
+  "job_id": 137040368583,
+  "execution_commit": "8d3c7145f8f1d6ff4d4cc53c4feb956d24d2997f",
+  "conclusion": "success",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "corpus": {
+    "bytes": 1000000000,
+    "sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc"
+  },
+  "precoder_stream_total_bytes": 501062281,
+  "tested_prefix_bytes": 524288,
+  "reference_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+  "decoded_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+  "coded_payload_bytes": 158153,
+  "coded_payload_sha256": "836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3",
+  "conditions": "Encoder and decoder original arithmetic implementations, same working directory, temporary model data present",
+  "independent_zero_arg_archive": false,
+  "whole_enwik9_reconstructed": false,
+  "eligible_score_S": null,
+  "official_validation": false
+}
