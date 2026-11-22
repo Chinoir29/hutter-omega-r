@@ -1,0 +1,29 @@
+{
+  "version": "OMÉGA-R v0.25",
+  "evidence": "SOURCE_CONSTRUCTION_ONLY",
+  "repo": "Chinoir29/hutter-omega-r",
+  "branch": "research/omr25-native-archive-path",
+  "github_run_id": 44971140540,
+  "github_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44971140540",
+  "job_id": 137050958559,
+  "github_artifact_id": 14733363285,
+  "conclusion": "success",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "tests": {
+    "v25_adversarial": 5,
+    "v24_regressions": 9,
+    "real_upstream_pinning": true,
+    "encoder_original_unchanged": true,
+    "decoder_original_unchanged": true,
+    "native_packager_hook_present": true
+  },
+  "previous_failure": {
+    "run_id": 44971086414,
+    "cause": "incorrect indentation-specific assertion in synthetic test; corrected",
+    "code_drift": false
+  },
+  "whole_enwik9_reconstructed": false,
+  "native_archive9_produced": false,
+  "eligible_S": null,
+  "decision": "KEEP_NATIVE_SOURCE_PATH_AS_PREPARED_NOT_YET_PROVEN_EXECUTABLE"
+}
