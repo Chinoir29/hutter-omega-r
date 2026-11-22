@@ -1,0 +1,52 @@
+name: "OMÉGA-R v0.25 — export sources propriétaires de recherche"
+on:
+  push:
+    branches:
+      - research/omr25-native-archive-path
+    paths:
+      - .github/workflows/omr25-export-owned-sources-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export-only-original-research:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout research repository
+        uses: actions/checkout@v4
+      - name: Bundle only OMÉGA-R-owned text source and logs, excluding external licensed binaries
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,zipfile
+          roots=[Path('Hutter_OmegaR/v24'),Path('Hutter_OmegaR/v25'),Path('Hutter_OmegaR/results_v24'),Path('Hutter_OmegaR/results_v25')]
+          files=[]
+          for root in roots:
+              for p in root.rglob('*'):
+                  if p.is_file() and p.suffix in {'.py','.md','.json','.txt'} and p.stat().st_size<100000:
+                      files.append(p)
+          files += list(Path('.github/workflows').glob('omr24-*.yml'))
+          files += list(Path('.github/workflows').glob('omr25-*.yml'))
+          files=sorted(set(files),key=str)
+          assert len(files)>=11
+          manifest={'status':'OWNED_TEXT_ONLY_NO_CORPUS_NO_MODEL','files':{}}
+          with zipfile.ZipFile('/tmp/omr24_25_sources.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in files:
+                  body=p.read_bytes()
+                  z.writestr(str(p),body)
+                  manifest['files'][str(p)]={'bytes':len(body),'sha256':hashlib.sha256(body).hexdigest()}
+              z.writestr('SOURCE_MANIFEST.json',json.dumps(manifest,indent=2))
+          with zipfile.ZipFile('/tmp/omr24_25_sources.zip') as z:
+              assert z.testzip() is None
+              assert all(n.startswith(('Hutter_OmegaR/v24/','Hutter_OmegaR/v25/','Hutter_OmegaR/results_v24/','Hutter_OmegaR/results_v25/','.github/workflows/','SOURCE_MANIFEST.json')) for n in z.namelist())
+          print('OMR25_SOURCE_BUNDLE_FILES',len(files))
+          print('OMR25_SOURCE_BUNDLE_SHA256',hashlib.sha256(Path('/tmp/omr24_25_sources.zip').read_bytes()).hexdigest())
+          PY
+      - name: Preserve allowed source only
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr24-25-owned-text-source-bundle
+          path: /tmp/omr24_25_sources.zip
+          retention-days: 14
