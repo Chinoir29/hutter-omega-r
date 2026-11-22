@@ -1,0 +1,35 @@
+{
+  "mission": "OMEGA-R",
+  "version": "v0.22",
+  "status": "pre_measurement_reference_from_v0.21",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "reference_run_id": 44963170463,
+  "comparison_scope": "first 524288 genuine precoder stream bytes, 4071047 real arithmetic-coded bits",
+  "actual_reference_arithmetic_payload_bytes": 158153,
+  "actual_arithmetic_payload_bits": 1265224,
+  "observed_cross_entropy_bits": 1265181.870022922,
+  "observed_code_vs_logloss_difference_bits": 42.129977077944204,
+  "reference_arithmetic_sha256": "836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3",
+  "note": "Difference includes stream header, finite precision, finalization; no universal bound, does not measure Hutter score.",
+  "experiment_v22": {
+    "hypothesis": "static logit temperature may reduce code length even when v21 causal EMA residuals regressed",
+    "temperature_factors": [
+      1,
+      0.93,
+      0.97,
+      1.03,
+      1.07,
+      0.85,
+      1.15
+    ],
+    "training_coded_bits": 262144,
+    "holdout_rest_coded_bits_expected": 3808903,
+    "global_selector": "min training loss; tie to first",
+    "bit_position_selector": "min training loss within each bit position k=0..7",
+    "acceptance_threshold_bits": 512,
+    "acceptance_interpretation": "exploratory only; requires separate fresh stream confirmation and symmetric decoding",
+    "code_probability_must_remain_identical": true,
+    "maximum_number_alternatives": 7
+  },
+  "target_score": null
+}
