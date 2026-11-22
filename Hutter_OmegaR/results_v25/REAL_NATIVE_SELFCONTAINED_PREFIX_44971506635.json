@@ -1,0 +1,70 @@
+{
+  "version": "OMÉGA-R v0.25",
+  "date_utc": "2026-11-22",
+  "classification": "REPRODUCED_NATIVE_COMP9_ARCHIVE9_ZERO_ARGUMENT_PRECODER_PREFIX_ONLY",
+  "workflow_run_id": 44971506635,
+  "workflow_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44971506635",
+  "workflow_commit": "a1e16d67b6350fce9a7b05394a6777b696c87682",
+  "job_id": 137052099715,
+  "status": "completed",
+  "conclusion": "success",
+  "artifact_id": 14734675565,
+  "artifact_zip_sha256": "c5c2228b5a4b203b9ec3d9b6ed7b447d27981570cbd6f5aa04b896246fea8fcc",
+  "upstream_repo": "marwoelk/cmix-neif-2.0",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "upstream_license": "GPL-3.0-only",
+  "input_corpus_bytes": 1000000000,
+  "input_corpus_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "upstream_precoder_stream_bytes": 501062281,
+  "actual_precoder_input_prefix_bytes": 524288,
+  "compressed_prefix_bytes": 158153,
+  "native_archive_build": true,
+  "native_archive_bytes": 4079636,
+  "native_archive_sha256": "50b4c161f524f3464a589ea44d527b7851f524ac03c1379a886376d933e81309",
+  "native_archive_components": {
+    "decoder_stub_bytes": 176846,
+    "embedded_weights_bytes": 3744629,
+    "compressed_arithmetic_prefix_bytes": 158153,
+    "trailer_bytes": 8,
+    "all_costs_counted_in_archive": true
+  },
+  "original_comp9_sha256": "f20fcb1d9f6e967ecfa35b0bbad2b3e7d92edc2c4cc7db0813c24045aa78eb11",
+  "production_measurements": {
+    "build_wall_seconds": 357.68,
+    "build_peak_rss_kib": 4557376,
+    "compress_wall_seconds": 352.22,
+    "compress_peak_rss_kib": 7541364,
+    "isolated_decode_wall_seconds": 64.025,
+    "isolated_decode_peak_rss_kib": null
+  },
+  "independent_zero_argument_decode": {
+    "working_directory_initial_file_names": [
+      "archive9"
+    ],
+    "command": "./archive9",
+    "extra_environment_required": false,
+    "preexisting_corpus_required": false,
+    "preexisting_weights_required": false,
+    "preexisting_dictionary_required": false,
+    "returncode": 0,
+    "timed_out": false,
+    "output_bytes": 524288,
+    "output_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+    "reference_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+    "bit_identical": true
+  },
+  "comparator": {
+    "v24_external_python_assembly_archive_bytes": 4079649,
+    "v25_native_archive_bytes": 4079636,
+    "v25_decoder_stub_byte_saving": 13,
+    "caveat": "13-byte difference is only for research builds; not a competitive performance claim"
+  },
+  "whole_enwik9_restored": false,
+  "contest_eligible_comp9_archive9_pair": false,
+  "official_hutter_S": null,
+  "official_jury_validation": false,
+  "submitted_to_jury": false,
+  "third_party_source_or_weights_redistributed": false,
+  "decision": "KEEP_NATIVE_PRODUCTION_TO_AUTONOMOUS_PREFIX_AS_R3; BEGIN_FULL_CORPUS_ALGORITHM_RESEARCH",
+  "next_operation": "Preserve exact results and source; construct production-compatible actual lossless optimization with symmetrical encoder/decoder tests and realistic score accounting. Only then plan full 1GB restoration/time/RAM/disk tests."
+}
