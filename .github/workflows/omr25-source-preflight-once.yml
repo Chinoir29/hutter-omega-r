@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout authorized project
         uses: actions/checkout@v4
-      - name: Test five native source transforms and nine previous isolated tests
+      - name: Test five native packaging invariants and nine previous isolated regressions
         run: |
           python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
           python3 -m unittest discover -s Hutter_OmegaR/v24 -p 'test_*.py' -v
