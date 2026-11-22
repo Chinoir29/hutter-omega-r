@@ -45,3 +45,27 @@ Les octets du texte, la liste des pages, les poids, les binaires de production t
 Les fenêtres de données centrales **ne sont pas des préfixes indépendants** : relancer un prédicteur initialisé à un offset central n'est pas une reproduction du flux de l'amont. Toute véritable comparaison devra conserver l'historique du codeur et du décodeur, ou annoncer clairement un benchmark à états réinitialisés.
 
 **Aucune soumission, aucune victoire, aucun S réglementaire.** Le record officiel récompensé actuellement référencé est 100 424 672 octets ; le candidat externe à 93 388 956 est une déclaration tierce, non un prix déjà validé.
+
+
+### Croisement avec le coût de codage réellement publié par le concurrent
+
+Le nouveau `join_phase_cost.py` combine **deux sources distinctes** sur
+exactement les mêmes fenêtres de 8 Mio :
+
+- des **comptages exacts** de marqueurs obtenus par notre expérience v0.31 sur le vrai flux ;
+- les **coûts publiés** dans `doc/stream_rate.tsv` de l'amont, précédemment reprojetés par OMÉGA-R v0.20 sur les 60 fenêtres, avec interpolation explicite à partir de 1 000 lignes.
+
+La fonction refuse de combiner des commits, SHA ou limites de fenêtres
+différents. Elle classe, après la première fenêtre contenant un marqueur,
+les régions qui contiennent effectivement des marqueurs par coût approximatif
+de codage du modèle. Elle calcule aussi une corrélation descriptive entre
+densité des marqueurs et bits/octets publiés : **aucune inférence causale**.
+
+Les candidats ainsi sélectionnés sont des **fenêtres à tester avec tout
+l'historique précédent du modèle**. Réinitialiser simplement le prédicteur
+au début de chaque fenêtre changerait l'expérience et ne reproduirait
+pas les performances du concurrent. Les tests adversariaux de
+`test_join_phase_cost.py` vérifient le refus des associations non sourcées.
+
+Cette construction apporte une carte de priorités, pas une réduction
+de taille démontrée ni un score Hutter.
