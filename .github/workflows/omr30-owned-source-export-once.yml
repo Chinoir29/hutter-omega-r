@@ -1,0 +1,78 @@
+name: "OMÉGA-R v0.30 — export intégral des sources et preuves autorisées"
+on:
+  push:
+    branches:
+      - research/omr30-compact-calibration-replacement
+    paths:
+      - .github/workflows/omr30-owned-source-export-once.yml
+permissions:
+  contents: read
+jobs:
+  original-source-bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout user-owned source repository
+        uses: actions/checkout@v4
+      - name: Build allowlisted original code snapshot with exact per-file SHA-256
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,zipfile
+          roots=[
+            'Hutter_OmegaR/v21','Hutter_OmegaR/v23','Hutter_OmegaR/v24',
+            'Hutter_OmegaR/v25','Hutter_OmegaR/v26','Hutter_OmegaR/v28',
+            'Hutter_OmegaR/v29','Hutter_OmegaR/v30',
+            'Hutter_OmegaR/results_v28','Hutter_OmegaR/results_v29',
+            'Hutter_OmegaR/results_v30']
+          allow_ext={'.py','.h','.cpp','.md','.json','.txt'}
+          collected=[]
+          for root in roots:
+              p=Path(root)
+              if p.is_dir():
+                  collected.extend(x for x in p.rglob('*') if x.is_file() and x.suffix in allow_ext)
+          collected += list(Path('.github/workflows').glob('omr29-*.yml'))
+          collected += list(Path('.github/workflows').glob('omr30-*.yml'))
+          collected=sorted(set(collected),key=str)
+          required=[
+           'Hutter_OmegaR/v21/prepare_shadow.py',
+           'Hutter_OmegaR/v23/prepare_roundtrip.py',
+           'Hutter_OmegaR/v24/prepare_selfextract.py',
+           'Hutter_OmegaR/v25/prepare_native.py',
+           'Hutter_OmegaR/v26/one_core_resource_meter.py',
+           'Hutter_OmegaR/v28/run_real_bayesian_pair.py',
+           'Hutter_OmegaR/v29/floor_pool_reference.py',
+           'Hutter_OmegaR/v29/README.md',
+           'Hutter_OmegaR/v30/prepare_compact_stage.py',
+           'Hutter_OmegaR/v30/compact_reference.py',
+           'Hutter_OmegaR/v30/run_real_compact_pair.py',
+           'Hutter_OmegaR/results_v29/REAL_PAIRED_45061877899.json',
+           'Hutter_OmegaR/results_v30/PREFLIGHT_45075871377.json']
+          for name in required: assert Path(name) in collected,name
+          assert len(collected)>=40,len(collected)
+          manifest={'classification':'OMR30_USER_OWNED_RESEARCH_ONLY',
+             'upstream_commit':'35d1957a5074db802fc134126afc77b76d931761',
+             'third_party_binaries_or_model_weights_or_corpus_included':False,'files':{}}
+          with zipfile.ZipFile('/tmp/omr30-owned-source.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in collected:
+                  raw=p.read_bytes()
+                  assert 0 < len(raw)<200000,(str(p),len(raw))
+                  z.writestr(str(p),raw)
+                  manifest['files'][str(p)]={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+              z.writestr('SOURCE_MANIFEST.json',json.dumps(manifest,indent=2))
+          with zipfile.ZipFile('/tmp/omr30-owned-source.zip') as z:
+              assert z.testzip() is None
+              assert len(z.namelist())==len(collected)+1
+              for name,meta in manifest['files'].items():
+                  raw=z.read(name)
+                  assert len(raw)==meta['bytes']
+                  assert hashlib.sha256(raw).hexdigest()==meta['sha256']
+          print('OMR30_OWNED_CODE_FILES_VERIFIED',len(collected))
+          print('OMR30_SOURCE_ZIP_SHA256',hashlib.sha256(Path('/tmp/omr30-owned-source.zip').read_bytes()).hexdigest())
+          PY
+      - name: Upload only sources, metadata and SHA manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr30-owned-research-sources-verified
+          path: /tmp/omr30-owned-source.zip
+          retention-days: 14
