@@ -1,0 +1,131 @@
+name: "OMÉGA-R v0.29 — A/B natif calibrateur hiérarchique, CPU unique"
+on:
+  push:
+    branches:
+      - research/omr29-hierarchical-floor-calibration
+    paths:
+      - .github/workflows/omr29-real-onecpu-once.yml
+permissions:
+  contents: read
+jobs:
+  true-native-two-arm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 105
+    steps:
+      - name: Checkout original and accumulated research
+        uses: actions/checkout@v4
+      - name: Execute adversarial and predecessor test suites
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s Hutter_OmegaR/v29 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v28 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v26 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v24 -p 'test_*.py' -v
+          df -h /tmp
+          free -m
+      - name: Install original cmix-neif toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version | head -1
+      - name: Pin exactly upstream GPL-3.0-only and prepare both native research trees
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr29-upstream
+          git -C /tmp/omr29-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v25/prepare_native.py --upstream /tmp/omr29-upstream --output /tmp/omr29-baseline
+          python3 Hutter_OmegaR/v29/prepare_floor_pool.py --upstream /tmp/omr29-upstream --output /tmp/omr29-candidate
+          cmp /tmp/omr29-baseline/src/runner.cpp /tmp/omr29-candidate/src/runner.cpp
+          cmp /tmp/omr29-baseline/src/coder/encoder.cpp /tmp/omr29-candidate/src/coder/encoder.cpp
+          cmp /tmp/omr29-baseline/src/coder/decoder.cpp /tmp/omr29-candidate/src/coder/decoder.cpp
+          cmp /tmp/omr29-upstream/src/floor_stage.h /tmp/omr29-baseline/src/floor_stage.h
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          rec=json.loads(Path('/tmp/omr29-source-audit.json').read_text())
+          assert rec['causal_integer_arithmetic_only']
+          assert rec['symmetric_shared_header']
+          assert rec['no_new_decoder_side_data']
+          assert rec['contest_score_S'] is None
+          print('OMR29_TWO_NATIVE_TREES_DIFFER_ONLY_IN_SHARED_FLOOR_STAGE')
+          PY
+      - name: Build two true production comp9 binaries serially, preserve errors
+        run: |
+          set -euo pipefail
+          for arm in baseline candidate; do
+            cd /tmp/omr29-$arm
+            if ! /usr/bin/time -f 'BUILD_WALL_S=%e BUILD_RSS_KIB=%M' -o /tmp/omr29-$arm-build-time.log bash build.sh > /tmp/omr29-$arm-build.stdout 2> /tmp/omr29-$arm-build.stderr; then
+              echo "OMR29_${arm}_BUILD_FAILED"
+              tail -n 120 /tmp/omr29-$arm-build.stderr || true
+              tail -n 25 /tmp/omr29-$arm-build.stdout || true
+              exit 1
+            fi
+            test -x comp9
+            sha256sum comp9 > /tmp/omr29-$arm-comp9.sha256
+            stat -c "OMR29_${arm}_COMP9_BYTES=%s" comp9
+          done
+      - name: Authenticate full public 1GB enwik9 with exact SHA256 before any compression
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr29-enwik9.zip
+          python3 - <<'PY'
+          import zipfile,hashlib,shutil
+          from pathlib import Path
+          inp=Path('/tmp/omr29-enwik9.zip');out=Path('/tmp/omr29-enwik9')
+          with zipfile.ZipFile(inp) as archive:
+              contents=[m for m in archive.infolist() if not m.is_dir()]
+              assert len(contents)==1 and contents[0].filename=='enwik9' and contents[0].file_size==1000000000
+              with archive.open(contents[0]) as src,out.open('wb') as dst:shutil.copyfileobj(src,dst,4<<20)
+          h=hashlib.sha256()
+          with out.open('rb') as s:
+              for chunk in iter(lambda:s.read(4<<20),b''):h.update(chunk)
+          assert out.stat().st_size==1000000000
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          inp.unlink()
+          print('OMR29_OFFICIAL_ENWIK9_CANONICAL_SHA_MATCH')
+          PY
+      - name: Paired authentic comp9/archive9 and zero-argument decoding, measured on one CPU
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v29/run_real_floor_pair.py \
+            --root /tmp/omr29-two-arm-work \
+            --corpus /tmp/omr29-enwik9 \
+            --report /tmp/omr29-real-paired.json > /tmp/omr29-real-summary.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          rec=json.loads(Path('/tmp/omr29-real-paired.json').read_text())
+          assert rec['status']=='TWO_INDEPENDENT_REAL_NATIVE_PREFIX_ROUNDTRIPS_VERIFIED'
+          assert all(v['recovered_bytes']==524288 for v in rec['arms'].values())
+          assert all(v['recovered_sha256']=='1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf' for v in rec['arms'].values())
+          assert all(len(v['compress']['cpu_affinity'])==1 and len(v['decode']['cpu_affinity'])==1 for v in rec['arms'].values())
+          assert rec['contest_S'] is None and not rec['entire_enwik9_reconstructed']
+          print('OMR29_REAL_2X_COMP9_ARCHIVE9_ISOLATED_SHA256_PASS_ON_ONE_CPU')
+          print(json.dumps(rec['comparison'],sort_keys=True))
+          PY
+      - name: Preserve only metrics/hashes, never GPL code binaries, model weights or Wikipedia bytes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr29-true-native-floor-pooling-paired-metadata
+          path: |
+            /tmp/omr29-source-audit.json
+            /tmp/omr29-real-paired.json
+            /tmp/omr29-real-summary.log
+            /tmp/omr29-baseline-build-time.log
+            /tmp/omr29-candidate-build-time.log
+            /tmp/omr29-baseline-encode.json
+            /tmp/omr29-candidate-encode.json
+            /tmp/omr29-baseline-decode.json
+            /tmp/omr29-candidate-decode.json
+            /tmp/omr29-baseline-comp9.sha256
+            /tmp/omr29-candidate-comp9.sha256
+            /tmp/omr29-baseline-build.stderr
+            /tmp/omr29-candidate-build.stderr
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Delete all source, Wikipedia, model files, archives and weights in sandbox
+        if: always()
+        run: |
+          rm -rf /tmp/omr29-enwik9 /tmp/omr29-enwik9.zip /tmp/omr29-two-arm-work
+          rm -rf /tmp/omr29-baseline /tmp/omr29-candidate /tmp/omr29-upstream
