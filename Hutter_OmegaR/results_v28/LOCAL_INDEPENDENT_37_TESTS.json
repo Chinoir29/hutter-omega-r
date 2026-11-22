@@ -1,0 +1,38 @@
+{
+  "version": "OMÉGA-R v0.28",
+  "classification": "INDEPENDENT_LOCAL_VERIFICATION_OF_EXPORTED_SOURCE_NOT_GENUINE_COMPRESSION",
+  "github_source_export_run": 44976352972,
+  "github_source_export_artifact": 14736077025,
+  "github_preflight_run": 44976015823,
+  "exact_exported_source_files": 25,
+  "sha256_and_byte_length_verified_all": true,
+  "unit_tests_reproduced_locally": {
+    "v28": 14,
+    "v26": 9,
+    "v25": 5,
+    "v24": 9,
+    "total": 37,
+    "failures": 0
+  },
+  "cpp_selftest_compiler": "g++ -std=c++17 -O2 -Wall -Wextra -Werror",
+  "cpp_synthetic_results": {
+    "positive": {
+      "bits": 100000,
+      "groups": 1,
+      "source": "synthetic artificial 80% ones versus cmix probability 20%",
+      "ideal_gain_bits": 119990.369452,
+      "checksum": "a9b83e2d7ba2eab3"
+    },
+    "control": {
+      "bits": 250000,
+      "groups": 255,
+      "ideal_gain_bits": -238.457578,
+      "checksum": "3d1cd3c0ec79921f"
+    }
+  },
+  "status": "REAL_TWO_ARM_ENWIK9_PREFIX_EXPERIMENT_STILL_RUNNING",
+  "real_experiment_run_id": 44976256308,
+  "eligible_Hutter_S": null,
+  "full_enwik9_restored": false,
+  "preserved_constitution_original_sha256": "b56b689584c01943aca8127b7f0b09745a5abe6fd17c2b9e6d27c1cca8453e9f"
+}
