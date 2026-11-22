@@ -34,3 +34,20 @@ Le verrou d'autonomie du décodeur sur 524 288 octets du flux prétraité est **
 La v0.25 teste désormais un objectif matériellement différent : que **le code `comp9` natif lui-même** assemble ce fichier `archive9` sans assembleur Python externe. Son exécution réelle est [#44971506635](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44971506635). Aucun résultat n'est présumé avant contrôle du journal et des SHA.
 
 **Limite :** ces archives ont pour sortie le préfixe du flux déjà prétraité, non le corpus intégral `enwik9`. Pas de score ni de validation réglementaire.
+
+
+## Résultat terminal de cette expérience — SUCCÈS TECHNIQUE (22 novembre 2026)
+
+[GitHub Actions #44971506635](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44971506635) : toutes les étapes réussies. Le véritable exécutable `comp9` **instrumenté** a prétraité `enwik9` canonique, codé son préfixe de 524 288 octets en 158 153 octets, puis emprunté lui-même son chemin de conditionnement natif pour produire `archive9`. Aucune intervention de l'assembleur Python de la v0.24.
+
+- Archive native **4 079 636 octets**, SHA-256 `50b4c161f524f3464a589ea44d527b7851f524ac03c1379a886376d933e81309` ; décodeur 176 846, poids 3 744 629, flux arithmétique 158 153, en-tête 8 octets.
+- Construite par le binaire de recherche `comp9`, SHA-256 `f20fcb1d9f6e967ecfa35b0bbad2b3e7d92edc2c4cc7db0813c24045aa78eb11`. Ce n'est **pas** le compresseur officiel amont non modifié.
+- Démarrage de la seule archive dans un nouveau dossier contenant initialement `archive9`, sans argument ni variables d'expérimentation ni fichiers externes. Code retour 0.
+- Restitution bit pour bit de **524 288 octets du flux déjà prétraité** ; SHA-256 `1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf`, identique à la référence.
+- Temps sur runner GitHub Actions : construction 357,68 s, compression 352,22 s, décompression isolée 64,025 s. Ces durées ne sont **pas normalisées selon les règles du concours**.
+
+Comparée à l'archive préfixe v0.24 assemblée extérieurement (4 079 649 octets), la v0.25 est 13 octets plus petite en décodeur compact. Ce petit écart entre binaires de laboratoire n'implique pas une amélioration de score Hutter.
+
+Dossier de preuve : `Hutter_OmegaR/results_v25/REAL_NATIVE_SELFCONTAINED_PREFIX_44971506635.json` ; artefact de métadonnées GitHub **14734675565**.
+
+**KEEP R3 pour l'instrument natif. R4–R6 ne sont PAS atteints.** Le décompresseur restitue un préfixe du flux de production, et non les 1 000 000 000 octets du corpus original. Aucune archive Hutter complète, aucun score admissible S, aucune reconnaissance du jury. Ne pas extrapoler la vitesse, les ressources ou la compression du préfixe au corpus entier.
