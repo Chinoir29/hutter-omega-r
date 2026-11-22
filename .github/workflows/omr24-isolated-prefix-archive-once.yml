@@ -41,7 +41,12 @@ jobs:
       - name: Compile authentic arithmetic model with research-only self-extraction prefix exit
         run: |
           cd /tmp/omr24-research
-          /usr/bin/time -f 'BUILD_WALL_S=%e BUILD_RSS_KIB=%M' -o /tmp/omr24-build-time.log bash build.sh > /tmp/omr24-build.stdout 2> /tmp/omr24-build.stderr
+          if ! /usr/bin/time -f 'BUILD_WALL_S=%e BUILD_RSS_KIB=%M' -o /tmp/omr24-build-time.log bash build.sh > /tmp/omr24-build.stdout 2> /tmp/omr24-build.stderr; then
+            echo 'OMR24_COMPILER_OR_PACKER_FAILURE_DIAGNOSTICS'
+            tail -n 150 /tmp/omr24-build.stderr || true
+            tail -n 35 /tmp/omr24-build.stdout || true
+            exit 1
+          fi
           test -x comp9
           sha256sum comp9 > /tmp/omr24-build-binary.sha256
 
@@ -136,6 +141,8 @@ jobs:
             /tmp/omr24-archive-components.json
             /tmp/omr24-isolated-decode.json
             /tmp/omr24-build-time.log
+            /tmp/omr24-build.stderr
+            /tmp/omr24-build.stdout
             /tmp/omr24-encode-time.log
             /tmp/omr24-build-binary.sha256
           retention-days: 14
