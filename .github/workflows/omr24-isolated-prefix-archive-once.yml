@@ -1,0 +1,148 @@
+name: "OMÉGA-R v0.24 — archive de préfixe lancée seule"
+on:
+  push:
+    branches:
+      - research/omr24-selfcontained-prefix-archive
+    paths:
+      - .github/workflows/omr24-isolated-prefix-archive-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-isolated-prefix-archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - name: Checkout authorized original research source
+        uses: actions/checkout@v4
+
+      - name: Verify upstream integration and independent-run tests
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v24 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v23 -p 'test_*.py' -v
+          free -m
+          df -h /tmp
+
+      - name: Install free existing toolchain dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version | head -1
+
+      - name: Get pinned GPL-3.0-only source and create scratch research build
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr24-upstream
+          git -C /tmp/omr24-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v24/prepare_selfextract.py --upstream /tmp/omr24-upstream --output /tmp/omr24-research
+          cmp /tmp/omr24-upstream/src/coder/encoder.cpp /tmp/omr24-research/src/coder/encoder.cpp
+          cmp /tmp/omr24-upstream/src/coder/decoder.cpp /tmp/omr24-research/src/coder/decoder.cpp
+
+      - name: Compile authentic arithmetic model with research-only self-extraction prefix exit
+        run: |
+          cd /tmp/omr24-research
+          /usr/bin/time -f 'BUILD_WALL_S=%e BUILD_RSS_KIB=%M' -o /tmp/omr24-build-time.log bash build.sh > /tmp/omr24-build.stdout 2> /tmp/omr24-build.stderr
+          test -x comp9
+          sha256sum comp9 > /tmp/omr24-build-binary.sha256
+
+      - name: Download public enwik9 and authenticate full SHA256 before preprocessing
+        run: |
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr24-enwik9.zip
+          python3 - <<'PY'
+          import zipfile,hashlib,shutil
+          from pathlib import Path
+          archive=Path('/tmp/omr24-enwik9.zip')
+          out=Path('/tmp/omr24-enwik9')
+          with zipfile.ZipFile(archive) as z:
+              files=[f for f in z.infolist() if not f.is_dir()]
+              assert len(files)==1 and files[0].filename=='enwik9' and files[0].file_size==1_000_000_000
+              with z.open(files[0]) as src,out.open('wb') as dst:
+                  shutil.copyfileobj(src,dst,4<<20)
+          h=hashlib.sha256()
+          with out.open('rb') as f:
+              for x in iter(lambda:f.read(4<<20),b''):h.update(x)
+          assert out.stat().st_size==1_000_000_000
+          assert h.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          archive.unlink()
+          print('OMR24_PUBLIC_CORPUS_CANONICAL_SHA_VERIFIED')
+          PY
+
+      - name: Encode authentic 524288-byte pre-coder prefix and retain only local input checks
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/omr24-encode
+          cd /tmp/omr24-encode
+          ln -s /tmp/omr24-enwik9 enwik9
+          OMR21_SHADOW_PREFIX_BYTES=524288 timeout 2000 /usr/bin/time -f 'ENCODE_WALL_S=%e ENCODE_RSS_KIB=%M' -o /tmp/omr24-encode-time.log /tmp/omr24-research/comp9 > /tmp/omr24-encode.stdout 2> /tmp/omr24-encode.stderr
+          grep -F 'OMR21_PREFIX_ACTUAL_CODED_STREAM_BYTES=501062281' /tmp/omr24-encode.stderr
+          test -s .decomp_bin
+          test -s weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5
+          test -s omr21-coded-prefix.bin
+          test -s omr23-reference-prefix.bin
+          test ! -e archive9
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          wd=Path('/tmp/omr24-encode')
+          reference=wd/'omr23-reference-prefix.bin'
+          coded=wd/'omr21-coded-prefix.bin'
+          assert reference.stat().st_size==524288
+          assert hashlib.sha256(reference.read_bytes()).hexdigest()=='1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf'
+          assert coded.stat().st_size==158153
+          assert hashlib.sha256(coded.read_bytes()).hexdigest()=='836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3'
+          print('OMR24_REAL_524288_INPUT_AND_158153_ARITHMETIC_SHA_MATCHES_V23')
+          PY
+
+      - name: Assemble original binary container with only decoder stub, weights and coded prefix
+        run: |
+          python3 Hutter_OmegaR/v24/assemble_prefix_archive.py --dir /tmp/omr24-encode --out /tmp/omr24-experimental-archive --report /tmp/omr24-archive-components.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          meta=json.loads(Path('/tmp/omr24-archive-components.json').read_text())
+          assert meta['status']=='EXPERIMENTAL_PREFIX_ARCHIVE_BUILT_NOT_YET_EXECUTED'
+          assert meta['embedded_weights_bytes']==3744629
+          assert meta['arithmetic_prefix_bytes']==158153
+          assert meta['trailer_bytes']==8
+          assert meta['archive_bytes']==sum(meta[k] for k in ('decoder_stub_bytes','embedded_weights_bytes','arithmetic_prefix_bytes','trailer_bytes'))
+          assert meta['whole_enwik9_restored'] is False
+          print('OMR24_EXPERIMENTAL_ARCHIVE_SIZE_ALL_COMPONENTS_COUNTED',meta['archive_bytes'])
+          PY
+
+      - name: Decode from JUST archive9 in newly empty directory without args, env flags or corpus
+        run: |
+          python3 Hutter_OmegaR/v24/run_isolated.py --archive /tmp/omr24-experimental-archive --work /tmp/omr24-empty-directory --report /tmp/omr24-isolated-decode.json --timeout 1200
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/omr24-isolated-decode.json').read_text())
+          assert r['status']=='INDEPENDENT_ZERO_ARG_PRECODER_PREFIX_RESTORED'
+          assert r['started_files']==['archive9']
+          assert r['returncode']==0 and not r['timed_out']
+          assert r['actual_decoded_bytes']==524288
+          assert r['actual_decoded_sha256']=='1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf'
+          assert r['whole_enwik9_restored'] is False
+          assert r['hutter_score_S'] is None
+          print('OMR24_ZERO_ARG_ARCHIVE_ALONE_PREFIX_SHA256_VERIFIED; NO_HUTTER_PRIZE_SCORE')
+          PY
+
+      - name: Preserve only numerical metadata, never third-party binaries/corpus/weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr24-isolated-prefix-archive-metadata
+          path: |
+            /tmp/omr24-source-audit.json
+            /tmp/omr24-archive-components.json
+            /tmp/omr24-isolated-decode.json
+            /tmp/omr24-build-time.log
+            /tmp/omr24-encode-time.log
+            /tmp/omr24-build-binary.sha256
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Erase all raw public corpus, temporary model weights and archive
+        if: always()
+        run: |
+          rm -rf /tmp/omr24-enwik9 /tmp/omr24-enwik9.zip /tmp/omr24-encode /tmp/omr24-empty-directory
+          rm -f /tmp/omr24-experimental-archive
