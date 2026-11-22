@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Checkout authorized sources
         uses: actions/checkout@v4
-      - name: Run seven adversarial tests and compile-check
+      - name: Run eight adversarial tests and verify orphan-process tracking
         run: |
           python3 -m compileall -q Hutter_OmegaR/v26
           python3 -m unittest discover -s Hutter_OmegaR/v26 -p 'test_*.py' -v
-          echo 'OMR26_RESOURCE_MONITOR_TESTS_COMPLETE_NO_OFFICIAL_SCORE'
+          echo 'OMR26_8_TESTS_CPU_ONLY_PROCESS_GROUP_RSS_NO_OFFICIAL_SCORE'
       - name: Archive only stdout test counts and host environment
         if: always()
         run: |
