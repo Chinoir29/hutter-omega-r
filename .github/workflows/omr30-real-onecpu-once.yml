@@ -2,7 +2,7 @@ name: "OMÉGA-R v0.30 — remplacement compact floor, vrai A/B CPU unique"
 on:
   push:
     branches:
-      - research/omr30-hierarchical-floor-calibration
+      - research/omr30-compact-calibration-replacement
     paths:
       - .github/workflows/omr30-real-onecpu-once.yml
 permissions:
