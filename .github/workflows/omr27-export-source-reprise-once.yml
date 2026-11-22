@@ -1,0 +1,57 @@
+name: "OMÉGA-R v0.27 — sauvegarde sources et preuves vérifiées"
+on:
+  push:
+    branches:
+      - research/omr27-weight-container-ab
+    paths:
+      - .github/workflows/omr27-export-source-reprise-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export-research-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout authorized source branch
+        uses: actions/checkout@v4
+      - name: Create source-only reproducibility archive
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib,zipfile
+          base=Path('Hutter_OmegaR')
+          roots=[base/f'v{i}' for i in range(24,28)]+[base/f'results_v{i}' for i in range(24,28)]
+          files=[]
+          for d in roots:
+              for p in d.rglob('*'):
+                  if p.is_file() and p.suffix in {'.py','.md','.json','.txt'} and p.stat().st_size<100000:
+                      files.append(p)
+          for i in range(24,28):
+              files.extend(Path('.github/workflows').glob(f'omr{i}-*.yml'))
+          files=sorted(set(files),key=str)
+          assert len(files)>=23
+          assert all(p.stat().st_size<100000 for p in files)
+          manifest={'classification':'OMR27_OWNED_TEXT_ONLY','upstream_commit':'35d1957a5074db802fc134126afc77b76d931761','entries':{}}
+          out=Path('/tmp/omr24_27_sources_and_records.zip')
+          with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in files:
+                  body=p.read_bytes()
+                  manifest['entries'][str(p)]={'bytes':len(body),'sha256':hashlib.sha256(body).hexdigest()}
+                  z.writestr(str(p),body)
+              z.writestr('SOURCE_MANIFEST.json',json.dumps(manifest,indent=2)+'\n')
+          with zipfile.ZipFile(out) as z:
+              assert z.testzip() is None
+              for name,meta in manifest['entries'].items():
+                  assert hashlib.sha256(z.read(name)).hexdigest()==meta['sha256']
+          print('OMR27_EXPORT_SOURCE_FILES',len(files))
+          print('OMR27_EXPORT_SHA256',hashlib.sha256(out.read_bytes()).hexdigest())
+          print('OMR27_NO_WEIGHTS_CORPUS_OR_UPSTREAM_BINARY')
+          PY
+      - name: Preserve ONLY original text and measurement summaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr27-owned-source-and-evidence
+          path: /tmp/omr24_27_sources_and_records.zip
+          retention-days: 14
