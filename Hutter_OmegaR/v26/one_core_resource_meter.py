@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import resource
+import stat
 import signal
 import subprocess
 import sys
@@ -59,14 +60,17 @@ def proc_parent_and_rss(pid: int) -> tuple[int, int] | None:
         return None
 
 
-def group_rss(group_id: int) -> tuple[int, int]:
-    """RSS of all members of one isolated POSIX process group, even if parent exited.
+def group_usage(group_id: int) -> tuple[int, int, int]:
+    """RSS/process count plus allocated blocks of anonymous unlinked files.
 
-    Unlike a PPID tree scan this retains descendants that have been orphaned
-    and reparented after the main command terminates.
+    cmix uses tmpfile() under /tmp (outside the workdir). We also examine
+    /proc/PID/fd and count distinct deleted regular-file inodes, because
+    directory walking alone would systematically miss those bytes.
     """
     rss = 0
     alive = 0
+    unlinked_blocks = 0
+    seen: set[tuple[int, int]] = set()
     for name in os.listdir("/proc"):
         if not name.isdecimal():
             continue
@@ -77,10 +81,28 @@ def group_rss(group_id: int) -> tuple[int, int]:
         except (ProcessLookupError, PermissionError):
             continue
         info = proc_parent_and_rss(pid)
-        if info is not None:
-            rss += info[1]
-            alive += 1
-    return rss, alive
+        if info is None:
+            continue
+        rss += info[1]
+        alive += 1
+        fd_dir = Path(f"/proc/{pid}/fd")
+        try:
+            entries = list(fd_dir.iterdir())
+        except (PermissionError, FileNotFoundError, ProcessLookupError):
+            continue
+        for fd_path in entries:
+            try:
+                target = os.readlink(fd_path)
+                if "(deleted)" not in target:
+                    continue
+                meta = fd_path.stat()
+                key = (meta.st_dev, meta.st_ino)
+                if stat.S_ISREG(meta.st_mode) and key not in seen:
+                    seen.add(key)
+                    unlinked_blocks += meta.st_blocks * 512
+            except (FileNotFoundError, PermissionError, ProcessLookupError, OSError):
+                continue
+    return rss, alive, unlinked_blocks
 
 
 def run(command: list[str], cwd: Path, report: Path, *, timeout_s: int = 120,
@@ -122,10 +144,10 @@ def run(command: list[str], cwd: Path, report: Path, *, timeout_s: int = 120,
                              preexec_fn=pin)
         try:
             while True:
-                rss, nproc = group_rss(p.pid)
+                rss, nproc, anonymous_blocks = group_usage(p.pid)
                 peak_rss = max(peak_rss, rss)
                 peak_pids = max(peak_pids, nproc)
-                peak_disk_delta = max(peak_disk_delta, max(0, allocated_bytes(cwd) - initial_disk))
+                peak_disk_delta = max(peak_disk_delta, max(0, allocated_bytes(cwd) - initial_disk) + anonymous_blocks)
                 if p.poll() is not None and nproc == 0:
                     break
                 if time.monotonic() - start >= timeout_s:
@@ -154,6 +176,7 @@ def run(command: list[str], cwd: Path, report: Path, *, timeout_s: int = 120,
         "rss_sum_observed_peak_bytes": peak_rss,
         "concurrent_descendants_observed_peak": peak_pids,
         "disk_allocated_delta_observed_peak_bytes": peak_disk_delta,
+        "anonymous_tmpfile_fds_included": True,
         "sampling_interval_seconds": sample_s,
         "memory_limit_project_assumption_bytes": DEFAULT_MEMORY_LIMIT,
         "disk_limit_project_assumption_bytes": DEFAULT_DISK_LIMIT,
