@@ -1,0 +1,101 @@
+name: "OMÉGA-R v0.30 — remplacement structurel de la calibration haute confiance"
+on:
+  push:
+    branches:
+      - research/omr30-compact-calibration-replacement
+    paths:
+      - .github/workflows/omr30-preflight-once.yml
+permissions:
+  contents: read
+jobs:
+  compact-model-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout pinned original OMÉGA-R research
+        uses: actions/checkout@v4
+      - name: Run current and previous adversarial source gates
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v30 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v29 -p 'test_*.py' -v
+      - name: Clone original GPL-3.0-only source and derive identical native wrappers
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr30-upstream
+          git -C /tmp/omr30-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v25/prepare_native.py --upstream /tmp/omr30-upstream --output /tmp/omr30-baseline
+          python3 Hutter_OmegaR/v30/prepare_compact_stage.py --upstream /tmp/omr30-upstream --output /tmp/omr30-candidate
+          cmp /tmp/omr30-baseline/src/runner.cpp /tmp/omr30-candidate/src/runner.cpp
+          cmp /tmp/omr30-baseline/src/coder/encoder.cpp /tmp/omr30-candidate/src/coder/encoder.cpp
+          cmp /tmp/omr30-baseline/src/coder/decoder.cpp /tmp/omr30-candidate/src/coder/decoder.cpp
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/omr30-source-audit.json').read_text())
+          assert d['status']=='STRUCTURAL_REPLACEMENT_SOURCE_PREPARED_NOT_BUILT'
+          assert d['original_stage_cell_count']==11264
+          assert d['new_reliability_pool_count']==16
+          assert d['new_side_data_bytes']==0
+          assert d['same_native_comp9_archive9_runner']
+          assert d['official_hutter_score'] is None
+          print('OMR30_SOURCE_REPLACEMENT_PINNED_AND_SYMMETRIC')
+          PY
+      - name: Compile both actual floor stage implementations in separate C++ fixtures
+        run: |
+          set -euo pipefail
+          for arm in baseline candidate; do
+            g++ -std=c++17 -O2 -Wall -Wextra -Wno-attributes -I /tmp/omr30-$arm/src Hutter_OmegaR/v29/floor_pool_selftest.cpp -o /tmp/omr30-$arm-fixture
+            for mode in mismatch baseline; do
+              if [ "$mode" = "mismatch" ]; then code=m; else code=b; fi
+              /tmp/omr30-$arm-fixture "$code" >/tmp/omr30-$arm-$mode.log
+              cat /tmp/omr30-$arm-$mode.log
+            done
+          done
+          cat >/tmp/omr30-size.cpp <<'CPP'
+          #include "floor_stage.h"
+          #include <cstdio>
+          int main(){std::printf("%llu\n",(unsigned long long)sizeof(floor_stage::Stage));}
+          CPP
+          for arm in baseline candidate; do
+            g++ -std=c++17 -O2 -I /tmp/omr30-$arm/src /tmp/omr30-size.cpp -o /tmp/omr30-$arm-size
+            /tmp/omr30-$arm-size > /tmp/omr30-$arm-stage-bytes.txt
+            echo "OMR30_$arm_STAGE_BYTES=$(cat /tmp/omr30-$arm-stage-bytes.txt)"
+          done
+      - name: Independently verify each one of 1.6 million C++ predicted Q32 values in Python
+        run: |
+          python3 Hutter_OmegaR/v30/compact_reference.py \
+             /tmp/omr30-baseline-mismatch.log \
+             /tmp/omr30-candidate-mismatch.log \
+             /tmp/omr30-baseline-baseline.log \
+             /tmp/omr30-candidate-baseline.log > /tmp/omr30-independent-result.json
+          cat /tmp/omr30-independent-result.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/omr30-independent-result.json').read_text())
+          assert a['status']=='INDEPENDENT_NUMERIC_ALL_1P6M_BITS_MATCHED'
+          old=int(Path('/tmp/omr30-baseline-stage-bytes.txt').read_text().strip())
+          new=int(Path('/tmp/omr30-candidate-stage-bytes.txt').read_text().strip())
+          assert old>=90_112 and new<=512,(old,new)
+          a['baseline_stage_ram_bytes']=old
+          a['candidate_stage_ram_bytes']=new
+          a['per_instance_memory_saving_bytes']=old-new
+          Path('/tmp/omr30-independent-result.json').write_text(json.dumps(a,indent=2)+'\n')
+          print('OMR30_REAL_STAGE_MEMORY_REPLACEMENT_CONFIRMED',old,new)
+          PY
+      - name: Keep only meta-evidence, not upstream GPL source, corpus, weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr30-compact-floor-preflight-metadata
+          path: |
+            /tmp/omr30-source-audit.json
+            /tmp/omr30-independent-result.json
+            /tmp/omr30-baseline-mismatch.log
+            /tmp/omr30-candidate-mismatch.log
+            /tmp/omr30-baseline-baseline.log
+            /tmp/omr30-candidate-baseline.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Erase ephemeral GPL original source and modified code
+        if: always()
+        run: rm -rf /tmp/omr30-upstream /tmp/omr30-baseline /tmp/omr30-candidate
