@@ -1,0 +1,52 @@
+{
+  "version": "OMÉGA-R v0.29",
+  "run_id": 45061877899,
+  "url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/45061877899",
+  "run_status": "completed",
+  "conclusion": "success",
+  "artifact_id": 14770434069,
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "full_input_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "true_precoder_stream_bytes": 501062281,
+  "tested_precoder_prefix_bytes": 524288,
+  "exact_restored_prefix_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+  "status": "TWO_INDEPENDENT_REAL_NATIVE_PREFIX_ROUNDTRIPS_VERIFIED",
+  "preprocessed_prefix_only": true,
+  "native_archive9_zero_argument_isolated_roundtrips": 2,
+  "one_cpu_affinity_each_arm": true,
+  "original": {
+    "comp9_bytes": 4037576,
+    "comp9_sha256": "f20fcb1d9f6e967ecfa35b0bbad2b3e7d92edc2c4cc7db0813c24045aa78eb11",
+    "archive9_bytes": 4079636,
+    "archive9_sha256": "50b4c161f524f3464a589ea44d527b7851f524ac03c1379a886376d933e81309",
+    "arithmetic_bytes": 158153,
+    "compress_wall_seconds": 360.6498,
+    "decode_wall_seconds": 69.1956,
+    "peak_encode_rss_bytes": 7720927232,
+    "peak_encode_disk_bytes": 5076967424
+  },
+  "hierarchical_candidate": {
+    "comp9_bytes": 4037882,
+    "comp9_sha256": "8849e08f7558ce94ed63e59d3c3edbee49723e8907868ae3621b1fc432533207",
+    "archive9_bytes": 4079926,
+    "archive9_sha256": "0c9dfdaf0e971c42ac45695c356bf63feaa5f379911553c0be8c73b398599565",
+    "arithmetic_bytes": 158144,
+    "compress_wall_seconds": 360.9169,
+    "decode_wall_seconds": 68.0811,
+    "peak_encode_rss_bytes": 7720861696,
+    "peak_encode_disk_bytes": 5076963328
+  },
+  "comparison": {
+    "arithmetic_saving_bytes": 9,
+    "comp9_growth_bytes": 306,
+    "archive9_growth_bytes": 290,
+    "combined_baseline_bytes": 8117212,
+    "combined_candidate_bytes": 8117808,
+    "combined_regression_bytes": 596
+  },
+  "scientific_decision": "REJECT_AS_NET_SIZE_OPTIMIZATION_ON_THIS_TEST_PREFIX",
+  "full_enwik9_reconstructed": false,
+  "official_hutter_score_S": null,
+  "jury_validation": false,
+  "source_evidence": "Official GitHub Actions artifact 14770434069, omr29-real-paired.json; independent unzipping and structural checks performed."
+}
