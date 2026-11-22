@@ -27,6 +27,13 @@ jobs:
           grep -F 'OMR28_SELFTEST_OK mode=control' /tmp/omr28-control.stdout
           cat /tmp/omr28-positive.stdout
           cat /tmp/omr28-control.stdout
+          # Distinct Python bigint and C++ uint128 implementations must match.
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -I Hutter_OmegaR/v28 Hutter_OmegaR/v28/bitmix_trace.cpp -o /tmp/omr28-q32-trace
+          python3 Hutter_OmegaR/v28/bitmix_reference.py >/tmp/omr28-python-q32.txt
+          /tmp/omr28-q32-trace >/tmp/omr28-cpp-q32.txt
+          cmp /tmp/omr28-python-q32.txt /tmp/omr28-cpp-q32.txt
+          grep -F 'OMR28_Q32_CROSS_IMPL 01eabb1edfa3a2e1' /tmp/omr28-python-q32.txt
+          echo 'OMR28_PYTHON_CPP_FIXED_POINT_8192_STEPS_EXACTLY_IDENTICAL'
       - name: Clone exact GPL-3.0-only upstream commit, refuse source drift
         run: |
           git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr28-upstream
@@ -59,5 +66,7 @@ jobs:
             /tmp/omr28-control.stdout
             /tmp/omr28-positive.stderr
             /tmp/omr28-control.stderr
+            /tmp/omr28-python-q32.txt
+            /tmp/omr28-cpp-q32.txt
           retention-days: 14
           if-no-files-found: ignore
