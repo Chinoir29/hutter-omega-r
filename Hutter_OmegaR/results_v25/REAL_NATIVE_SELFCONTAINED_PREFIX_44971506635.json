@@ -28,7 +28,6 @@
     "trailer_bytes": 8,
     "all_costs_counted_in_archive": true
   },
-  "original_comp9_sha256": "f20fcb1d9f6e967ecfa35b0bbad2b3e7d92edc2c4cc7db0813c24045aa78eb11",
   "production_measurements": {
     "build_wall_seconds": 357.68,
     "build_peak_rss_kib": 4557376,
@@ -66,5 +65,6 @@
   "submitted_to_jury": false,
   "third_party_source_or_weights_redistributed": false,
   "decision": "KEEP_NATIVE_PRODUCTION_TO_AUTONOMOUS_PREFIX_AS_R3; BEGIN_FULL_CORPUS_ALGORITHM_RESEARCH",
-  "next_operation": "Preserve exact results and source; construct production-compatible actual lossless optimization with symmetrical encoder/decoder tests and realistic score accounting. Only then plan full 1GB restoration/time/RAM/disk tests."
+  "next_operation": "Preserve exact results and source; construct production-compatible actual lossless optimization with symmetrical encoder/decoder tests and realistic score accounting. Only then plan full 1GB restoration/time/RAM/disk tests.",
+  "instrumented_research_comp9_sha256": "f20fcb1d9f6e967ecfa35b0bbad2b3e7d92edc2c4cc7db0813c24045aa78eb11"
 }
