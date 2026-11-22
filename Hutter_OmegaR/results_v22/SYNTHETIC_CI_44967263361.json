@@ -1,0 +1,43 @@
+{
+  "project": "OMÉGA-R",
+  "version": "v0.22",
+  "date": "2026-11-22",
+  "status": "THREE_SYNTHETIC_CPP_CONTROLS_REPRODUCED_REMOTELY",
+  "github_run": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44967263361",
+  "run_id": 44967263361,
+  "job_id": 137039005192,
+  "run_commit": "67bfc4614469177ea36e0917b12ae7b47b27dcf9",
+  "conclusion": "success",
+  "executable_tests": [
+    "OMR22_BIASED_SPECIALIST_TEST_OK",
+    "OMR22_CALIBRATED_NULL_TEST_OK",
+    "OMR22_HETEROGENEOUS_POSITION_TEST_OK"
+  ],
+  "scripts": [
+    "Hutter_OmegaR/v22/test_temperature_biased.cpp",
+    "Hutter_OmegaR/v22/test_temperature_calibrated.cpp",
+    "Hutter_OmegaR/v22/test_temperature_heterogeneous.cpp"
+  ],
+  "synthetic_heterogeneous": {
+    "position_train_choices": [
+      6,
+      5,
+      6,
+      5,
+      6,
+      5,
+      6,
+      5
+    ],
+    "observed_global_holdout_gain_bits": 1126.53717916,
+    "observed_position_holdout_gain_bits": 6054.59101633
+  },
+  "limits": {
+    "enwik9_measured": false,
+    "hutter_score": null,
+    "archive9_created": false,
+    "real_decoder_tested": false,
+    "official_validation": false
+  },
+  "decision": "KEEP_ALGORITHM_AS_SYNTHETIC_INSTRUMENT_ONLY_PENDING_REAL_DATA"
+}
