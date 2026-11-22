@@ -18,7 +18,7 @@ struct Stage {
   Cell c[kCtx];
   int cur=-1;
 };
- 
+
 // Interval split with a 32-bit probability
 inline unsigned int Mid(unsigned int x1, unsigned int x2, uint32_t p32) {
  return x1 + (unsigned int)(((uint64_t)(x2 - x1) * (uint64_t)p32) >> 32);
