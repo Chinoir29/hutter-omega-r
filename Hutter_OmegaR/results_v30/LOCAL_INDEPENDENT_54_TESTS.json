@@ -1,0 +1,30 @@
+{
+  "version": "OMÉGA-R v0.30",
+  "evidence": "INDEPENDENT_LOCAL_CODE_AND_SHA_REPRODUCTION",
+  "exported_source_workflow_run": 45076184154,
+  "exported_source_artifact_id": 14774174658,
+  "exported_inner_zip_sha256": "21d48a65061a71341d1cef0a91011e66ad3fa2d49a46e58570eeb282d6173818",
+  "verification_source_file_count": 55,
+  "all_source_file_byte_lengths_and_sha256_match": true,
+  "local_python_tests": {
+    "v30": 9,
+    "v29": 8,
+    "v28": 14,
+    "v26": 9,
+    "v25": 5,
+    "v24": 9,
+    "total": 54,
+    "failed": 0
+  },
+  "public_corpus_or_weights_embedded_in_zip": false,
+  "original_constitution_sha256": "b56b689584c01943aca8127b7f0b09745a5abe6fd17c2b9e6d27c1cca8453e9f",
+  "preflight": {
+    "run_id": 45075871377,
+    "conclusion": "success",
+    "stage_ram_before_bytes": 90120,
+    "stage_ram_after_bytes": 272
+  },
+  "true_enwik9_test_run_id": 45075993000,
+  "true_enwik9_test_verdict_at_record_creation": "IN_PROGRESS",
+  "valid_Hutter_score_S": null
+}
