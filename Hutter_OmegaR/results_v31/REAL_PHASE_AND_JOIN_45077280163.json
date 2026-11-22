@@ -1,0 +1,70 @@
+{
+  "project": "OMÉGA-R v0.31",
+  "classification": "GENUINE_ENWIK9_PRECODER_PAGE_MARKER_MAP_PLUS_INTERPOLATED_PUBLISHED_CMIX_COST",
+  "real_source_run": 45077280163,
+  "real_run_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/45077280163",
+  "run_conclusion": "success",
+  "artifact_id": 14776032051,
+  "original_enwik9_bytes": 1000000000,
+  "original_enwik9_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "preprocessed_stream_bytes": 501062281,
+  "preprocessed_stream_sha256": "c35d3073eeba70f22a2e08a50202b53eb95466e3e9f1f2702f6f9b3f96fd8718",
+  "first_exact_page_anchor_offset_bytes": 15282110,
+  "frozen_marker_from_upstream_text_start_pack": "20204c2fdf984e0a",
+  "marker_total_exact": 243425,
+  "chunk_bytes": 8388608,
+  "chunk_count": 60,
+  "first_3_windows_marker_counts": [
+    0,
+    30031,
+    43168
+  ],
+  "last_5_windows_marker_counts": [
+    15424,
+    17556,
+    10218,
+    8456,
+    8278
+  ],
+  "upstream_doc_cost_map": {
+    "source": "marwoelk/cmix-neif-2.0/doc/stream_rate.tsv",
+    "source_blob": "2a042eb0b69a31b9033721485e364de13ee0f093",
+    "rows": 1000,
+    "actual_published_coded_output_bytes": 85417870,
+    "approximate_window_reallocation": "interpolated by overlaps; not directly re-encoded by OMÉGA-R at 8MiB windows"
+  },
+  "page_marker_density_to_published_model_bits_per_byte_pearson": -0.45575679057017926,
+  "costliest_page_windows_after_first_marker": [
+    {
+      "index": 26,
+      "start_byte": 218103808,
+      "page_markers": 2181,
+      "published_model_bits_per_byte_approx": 1.666035
+    },
+    {
+      "index": 27,
+      "start_byte": 226492416,
+      "page_markers": 2301,
+      "published_model_bits_per_byte_approx": 1.625118
+    },
+    {
+      "index": 25,
+      "start_byte": 209715200,
+      "page_markers": 1840,
+      "published_model_bits_per_byte_approx": 1.622838
+    },
+    {
+      "index": 30,
+      "start_byte": 251658240,
+      "page_markers": 1258,
+      "published_model_bits_per_byte_approx": 1.617849
+    }
+  ],
+  "first_page_prefix_16MiB_contains_pages": true,
+  "first_page_prefix_32MiB_contains_more_than_one_8MiB_page_window": true,
+  "decision": "USE_32M_NATIVE_CONTIGUOUS_PREFIX_IN_V32_AS_FIRST_STEP; LONG_TERM_TARGET_LARGE_HISTORY_COSTLY_WINDOWS_WITH_CONTEXT_PRESERVED",
+  "note": "First exact marker is not a complete formal parse of the meta automaton; published coder model cost is approximate after interpolation and is not an own true full compression benchmark.",
+  "whole_original_enwik9_restored": false,
+  "official_Hutter_score_S": null,
+  "submitted": false
+}
