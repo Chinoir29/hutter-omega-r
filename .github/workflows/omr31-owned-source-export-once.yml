@@ -1,0 +1,61 @@
+name: "OMÉGA-R v0.31 — sources complètes et preuves cartographiques"
+on:
+  push:
+    branches:
+      - research/omr31-genuine-stream-phase-map
+    paths:
+      - .github/workflows/omr31-owned-source-export-once.yml
+permissions:
+  contents: read
+jobs:
+  verified-owned-snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout research repository
+        uses: actions/checkout@v4
+      - name: Run page-phase source guard suite
+        run: python3 -m unittest discover -s Hutter_OmegaR/v31 -p 'test_*.py' -v
+      - name: Export ONLY project-authored code and approved summary reports
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,zipfile
+          from pathlib import Path
+          root=Path('Hutter_OmegaR/v31')
+          selected=sorted([p for p in root.iterdir() if p.is_file() and p.suffix in ('.py','.md','.json')],key=str)
+          selected.append(Path('Hutter_OmegaR/v19/production_stream_probe.py'))
+          selected += sorted(Path('.github/workflows').glob('omr31-*.yml'),key=str)
+          if Path('Hutter_OmegaR/results_v31').is_dir():
+              selected += sorted(Path('Hutter_OmegaR/results_v31').glob('*.json'),key=str)
+          selected=sorted(set(selected),key=str)
+          required={'Hutter_OmegaR/v31/phase_map.py',
+                    'Hutter_OmegaR/v31/test_phase_map.py',
+                    'Hutter_OmegaR/v31/README.md',
+                    'Hutter_OmegaR/v19/production_stream_probe.py'}
+          assert required.issubset({str(p) for p in selected})
+          assert len(selected) >= 6
+          manifest={'source_class':'OMR31_OWNED_CODE_AND_METADATA_ONLY',
+                    'source_commit':'35d1957a5074db802fc134126afc77b76d931761',
+                    'raw_corpus_or_weights_embedded':False,
+                    'files':{}}
+          with zipfile.ZipFile('/tmp/omr31-owned-code.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in selected:
+                  b=p.read_bytes()
+                  assert 0 < len(b)<100000
+                  z.writestr(str(p),b)
+                  manifest['files'][str(p)]={'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+              z.writestr('SOURCE_MANIFEST.json',json.dumps(manifest,indent=2))
+          with zipfile.ZipFile('/tmp/omr31-owned-code.zip') as z:
+              assert z.testzip() is None
+              for n,s in manifest['files'].items():
+                  raw=z.read(n)
+                  assert len(raw)==s['bytes'] and hashlib.sha256(raw).hexdigest()==s['sha256']
+          print('OMR31_HASHED_SOURCE_FILE_COUNT',len(selected))
+          print('OMR31_OWNED_BUNDLE_SHA256',hashlib.sha256(Path('/tmp/omr31-owned-code.zip').read_bytes()).hexdigest())
+          PY
+      - name: Upload source/metadata only with SHA manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr31-owned-code-and-phase-map-protocol
+          path: /tmp/omr31-owned-code.zip
+          retention-days: 14
