@@ -1,0 +1,30 @@
+name: "OMÉGA-R v0.26 — CPU unique et ressources vérifiables"
+on:
+  push:
+    branches:
+      - research/omr26-one-core-resource-meter
+    paths:
+      - .github/workflows/omr26-resource-meter-preflight-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resource-meter-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout authorized sources
+        uses: actions/checkout@v4
+      - name: Run seven adversarial tests and compile-check
+        run: |
+          python3 -m compileall -q Hutter_OmegaR/v26
+          python3 -m unittest discover -s Hutter_OmegaR/v26 -p 'test_*.py' -v
+          echo 'OMR26_RESOURCE_MONITOR_TESTS_COMPLETE_NO_OFFICIAL_SCORE'
+      - name: Archive only stdout test counts and host environment
+        if: always()
+        run: |
+          python3 --version
+          echo "CPU_AFFINITY_ALLOWED $(taskset -pc $$)"
+          echo 'NO_ENWIK9_READ_AND_NO_THIRD_PARTY_BINARIES'
