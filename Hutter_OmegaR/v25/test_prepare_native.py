@@ -28,7 +28,8 @@ void mainpath() {
     def test_native_release_packer_preserved(self):
         out=m.promote_runner(self.fixture()).decode()
         self.assertEqual(out.count(m.PACKER),1)
-        self.assertEqual(out.count("    return true;"),2)
+        self.assertEqual(out.count("return true;"),2)
+        self.assertEqual(out.count("    return true;"),1)
         self.assertNotIn(m.REMOVE,out)
         self.assertEqual(out.count("fclose(temp_in); fclose(data_out);"),1)
 
