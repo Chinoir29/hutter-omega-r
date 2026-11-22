@@ -1,3 +1,4 @@
+# v0.25 verified native archive result included; no third-party source or binary.
 name: "OMÉGA-R v0.25 — export sources propriétaires de recherche"
 on:
   push:
