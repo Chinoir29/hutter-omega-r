@@ -1,0 +1,60 @@
+name: "OMÉGA-R v0.28 — export des sources de recherche originales"
+on:
+  push:
+    branches:
+      - research/omr28-bayesian-bitmix-symmetric
+    paths:
+      - .github/workflows/omr28-export-owned-sources-once.yml
+permissions:
+  contents: read
+jobs:
+  export-original-research-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout authorized project
+        uses: actions/checkout@v4
+      - name: Bundle all necessary original Python/C++ code and SHA-256 manifest
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,zipfile
+          roots=[Path('Hutter_OmegaR/v28'),Path('Hutter_OmegaR/v26'),
+                 Path('Hutter_OmegaR/results_v28')]
+          includes=[]
+          for root in roots:
+              if root.is_dir():
+                  includes.extend(p for p in root.rglob('*') if p.is_file() and p.suffix in ('.py','.h','.cpp','.md','.json'))
+          for version in ('v21','v23','v24','v25'):
+              root=Path('Hutter_OmegaR')/version
+              includes.extend(p for p in root.rglob('*.py') if p.is_file())
+          includes.extend(Path('.github/workflows').glob('omr28-*.yml'))
+          includes=sorted(set(includes),key=str)
+          assert len(includes)>=20, len(includes)
+          assert any(str(p).endswith('prepare_native.py') for p in includes)
+          assert any(str(p).endswith('prepare_shadow.py') for p in includes)
+          assert any(str(p).endswith('one_core_resource_meter.py') for p in includes)
+          audit={'policy':'OMR28_OWNED_SOURCE_ONLY_NO_CORPUS_NO_WEIGHTS_NO_THIRD_PARTY_BINARY',
+                 'files':{}}
+          with zipfile.ZipFile('/tmp/omr28-owned-sources.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in includes:
+                  b=p.read_bytes()
+                  assert len(b)<150000
+                  z.writestr(str(p),b)
+                  audit['files'][str(p)]={'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+              z.writestr('SOURCE_MANIFEST.json',json.dumps(audit,indent=2))
+          with zipfile.ZipFile('/tmp/omr28-owned-sources.zip') as z:
+              assert z.testzip() is None
+              assert len(z.namelist())==len(includes)+1
+              for k,c in audit['files'].items():
+                  assert len(z.read(k))==c['bytes']
+                  assert hashlib.sha256(z.read(k)).hexdigest()==c['sha256']
+          print('OMR28_OWNED_SOURCE_FILES_VERIFIED',len(includes))
+          print('OMR28_OWNED_SOURCE_BUNDLE_SHA256',hashlib.sha256(Path('/tmp/omr28-owned-sources.zip').read_bytes()).hexdigest())
+          PY
+      - name: Upload only user-owned source ZIP with manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr28-owned-code-and-manifest
+          path: /tmp/omr28-owned-sources.zip
+          retention-days: 14
