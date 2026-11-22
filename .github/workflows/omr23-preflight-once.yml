@@ -1,0 +1,46 @@
+name: "OMÉGA-R v0.23 — préflight du vrai décodeur cmix"
+on:
+  push:
+    branches:
+      - research/omr23-cmix-prefix-roundtrip
+    paths:
+      - .github/workflows/omr23-preflight-once.yml
+permissions:
+  contents: read
+jobs:
+  verify-real-upstream-source-anchors:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test roundtrip source gates and preserve unmodified coder
+        run: |
+          python3 -m unittest discover -s Hutter_OmegaR/v23 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v21 -p 'test_*.py' -v
+      - name: Clone exact GPL-3.0-only reference code
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr23-original
+          git -C /tmp/omr23-original checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Patch the actual encoder and decoder loop without altering coder probability
+        run: |
+          python3 Hutter_OmegaR/v23/prepare_roundtrip.py --upstream /tmp/omr23-original --output /tmp/omr23-probe
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          base=Path('/tmp/omr23-original');new=Path('/tmp/omr23-probe')
+          assert (new/'src/coder/encoder.cpp').read_bytes()==(base/'src/coder/encoder.cpp').read_bytes()
+          assert (new/'src/coder/decoder.cpp').read_bytes()==(base/'src/coder/decoder.cpp').read_bytes()
+          code=(new/'src/runner.cpp').read_text()
+          assert code.count('OMR23_PREFIX_DECODE')==6
+          assert 'omr23-reference-prefix.bin' in code and 'omr23-decoded-prefix.bin' in code
+          x=json.loads(Path('/tmp/omr23-preflight.json').read_text())
+          assert x['official_score'] is None and not x['whole_enwik9_decoded']
+          print('OMR23_PINNED_REAL_ENCODER_DECODER_PROBE_PREPARED_NOT_EXECUTED')
+          PY
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr23-roundtrip-source-preflight
+          path: /tmp/omr23-preflight.json
+          retention-days: 14
+          if-no-files-found: ignore
