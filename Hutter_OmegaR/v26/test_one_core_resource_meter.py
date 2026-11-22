@@ -34,6 +34,22 @@ class MonitorTests(unittest.TestCase):
             self.assertTrue((root / "audit.json").exists())
             self.assertEqual(result, json.loads((root / "audit.json").read_text()))
 
+    def test_anonymous_tmpfile_outside_workdir_is_counted(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            work = root / "work"
+            work.mkdir()
+            code = (
+                "import tempfile,time;"
+                "p=tempfile.TemporaryFile(dir='/tmp');"
+                "p.write(b'X'*700000);p.flush();time.sleep(0.45)"
+            )
+            r = run([sys.executable, "-c", code], work, root / "audit.json",
+                    timeout_s=4, sample_s=0.03)
+            self.assertEqual(r["status"], "FINISHED")
+            self.assertTrue(r["anonymous_tmpfile_fds_included"])
+            self.assertGreaterEqual(r["disk_allocated_delta_observed_peak_bytes"], 500_000)
+
     def test_keeps_monitoring_orphaned_helper_after_leader_exit(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
