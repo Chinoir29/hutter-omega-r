@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout research repository
         uses: actions/checkout@v4
-      - name: Run page-phase source guard suite
+      - name: Run 18 page-phase and cost-join adversarial tests
         run: python3 -m unittest discover -s Hutter_OmegaR/v31 -p 'test_*.py' -v
       - name: Export ONLY project-authored code and approved summary reports
         run: |
@@ -33,7 +33,7 @@ jobs:
                     'Hutter_OmegaR/v31/README.md',
                     'Hutter_OmegaR/v19/production_stream_probe.py'}
           assert required.issubset({str(p) for p in selected})
-          assert len(selected) >= 6
+          assert len(selected) >= 8
           manifest={'source_class':'OMR31_OWNED_CODE_AND_METADATA_ONLY',
                     'source_commit':'35d1957a5074db802fc134126afc77b76d931761',
                     'raw_corpus_or_weights_embedded':False,
