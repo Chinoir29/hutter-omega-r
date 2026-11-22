@@ -30,6 +30,7 @@ jobs:
                       files.append(p)
           files += list(Path('.github/workflows').glob('omr24-*.yml'))
           files += list(Path('.github/workflows').glob('omr25-*.yml'))
+          files += [Path('Hutter_OmegaR/v21/prepare_shadow.py'), Path('Hutter_OmegaR/v23/prepare_roundtrip.py')]
           files=sorted(set(files),key=str)
           assert len(files)>=11
           manifest={'status':'OWNED_TEXT_ONLY_NO_CORPUS_NO_MODEL','files':{}}
