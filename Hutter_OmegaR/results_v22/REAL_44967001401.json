@@ -1,0 +1,71 @@
+{
+  "version": "v0.22",
+  "date_utc": "2026-11-22",
+  "classification": "REAL_CMIX_PREFIX_SHADOW_NEGATIVE",
+  "github_run": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44967001401",
+  "run_id": 44967001401,
+  "artifact_id": 14732796036,
+  "run_conclusion": "success",
+  "source_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "full_canonical_enwik9_verified": true,
+  "full_enwik9_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "true_coder_stream_length": 501062281,
+  "real_coder_prefix_length": 524288,
+  "actual_coded_prefix_bytes": 158153,
+  "actual_coded_sha256": "836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3",
+  "unchanged_vs_v21": true,
+  "coded_bits": 4071047,
+  "training_coded_bits": 262144,
+  "holdout_coded_bits": 3808903,
+  "temperatures": [
+    1,
+    0.93,
+    0.97,
+    1.03,
+    1.07,
+    0.85,
+    1.15
+  ],
+  "train_loss_bits": [
+    60929.75476375,
+    61088.19734606,
+    60978.31716107,
+    60907.58676921,
+    60915.60333113,
+    61488.80866699,
+    61045.54593416
+  ],
+  "holdout_loss_bits": [
+    1204252.11525917,
+    1205483.98067711,
+    1204551.84379375,
+    1204268.92771616,
+    1204748.98680948,
+    1209428.11657379,
+    1207126.44369192
+  ],
+  "selected_global_temperature": 1.03,
+  "selected_bitpos_modes": [
+    4,
+    6,
+    6,
+    2,
+    3,
+    3,
+    1,
+    2
+  ],
+  "global_holdout_gain_bits": -16.81245699,
+  "bitpos_holdout_gain_bits": -265.56762467,
+  "probe_build_wall_seconds": 360.23,
+  "probe_encode_wall_seconds": 346.67,
+  "probe_peak_rss_kib": 7541888,
+  "scientific_decision": "REJECT_STATIC_LOGIT_TEMPERATURE_ON_REAL_PREFIX",
+  "limitations": {
+    "no_full_corpus_restoration": true,
+    "no_independent_decoder_of_prefix_tested_in_v22": true,
+    "autonomous_archive9": false,
+    "competition_score": null,
+    "official_win": false
+  }
+}
