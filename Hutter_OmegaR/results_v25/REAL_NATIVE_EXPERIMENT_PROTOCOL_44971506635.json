@@ -1,0 +1,30 @@
+{
+  "project": "OMÉGA-R",
+  "version": "v0.25",
+  "github_run_id": 44971506635,
+  "github_url": "https://github.com/Chinoir29/hutter-omega-r/actions/runs/44971506635",
+  "branch": "research/omr25-native-archive-path",
+  "workflow_sha": "a1e16d67b6350fce9a7b05394a6777b696c87682",
+  "upstream_commit": "35d1957a5074db802fc134126afc77b76d931761",
+  "experiment_goal": "Run real no-argument comp9 over canonical enwik9 with research cap 524288 authentic PREPROCESSED bytes; let native comp9 pack archive9; launch it from empty directory to verify exact prefix SHA-256",
+  "preprocessed_prefix_bytes": 524288,
+  "expected_prefix_sha256": "1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf",
+  "expected_arithmetic_bytes": 158153,
+  "expected_weights_bytes": 3744629,
+  "corpus_source_sha256": "159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc",
+  "required_passing_checks": [
+    "upstream source pin and unchanged original arithmetic encoder decoder",
+    "real compiler CUT guard",
+    "authenticate all 1GB enwik9",
+    "native comp9 builds archive9",
+    "archive binary trailer accounting",
+    "isolated zero-argument decode from only archive9",
+    "exact SHA and length of decoded PREPROCESSED prefix"
+  ],
+  "classification": "EXPERIMENT_PROTOCOL_LAUNCHED_NO_RESULT_AS_OF_RECORD",
+  "hutter_score_S": null,
+  "whole_enwik9_restored": false,
+  "official_validation": false,
+  "external_files_published": false,
+  "decision": "AWAIT_EVIDENCE_KEEP_OR_RECONCEIVE"
+}
