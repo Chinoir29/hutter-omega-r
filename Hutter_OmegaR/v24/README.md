@@ -25,3 +25,20 @@ Expérience réelle GitHub #44970334096 : résultat à confirmer dans ses journa
 ## Droit d'auteur et gouvernance
 
 Les sources et exécutables modifiés restent sous GNU GPL-3.0-only (avec attribution, licence et notices originales conservées dans la copie éphémère). Le dépôt du projet ne republie ni sources complètes du concurrent, ni fichiers du corpus, ni poids, ni binaires tiers. Les artefacts GitHub Actions ne comprennent que les empreintes, tailles, mesures, informations de défaillance et protocoles. La constitution OMÉGA-R du dossier de reprise reste strictement inchangée.
+
+
+## Résultat exécuté et vérifié après correction — 22 novembre 2026
+
+**GitHub Actions #44970630686 : completed/success**, avec les étapes complètes de compilation (garde du décodeur conservé), vérification des 1 Go de enwik9, encodage du préfixe de 524 288 octets, assemblage expérimental, puis décodage de `archive9` **seule** dans un répertoire initialement vierge, sans argument ni variable de contrôle du préfixe.
+
+- Archive expérimentale : **4 079 649 octets**, SHA-256 `caf27b2303e0f709f200ca97e6b72fb2661d1aa42bab37e8d7f73c5799325c8a`.
+- Décodeur compact : 176 859 octets.
+- Poids embarqués : 3 744 629 octets.
+- Flux arithmétique du préfixe : 158 153 octets, SHA-256 `836a7f6eb3b439f3f682fe8c16252d5a10d44fcbabfdc053f0053ec217baa0d3`.
+- En-tête final : 8 octets.
+- Restauration autonome de **524 288 octets du flux prétraité**, identique octet par octet au préfixe de référence. SHA-256 `1d5b8c3b6448a8020084f64f5a75028b2ad42ce8434e7ac41979009f4c2932cf`. Durée du décodage isolé : **85,923 s** sur GitHub Actions.
+- Exécution sans erreur (code de retour 0), aucun fichier autre que `archive9` présent avant lancement, pas de corpus ni poids externe dans le répertoire de départ.
+
+Preuves de mesure : [run #44970630686](https://github.com/Chinoir29/hutter-omega-r/actions/runs/44970630686), artefact de métadonnées **14733828330**, rapport `Hutter_OmegaR/results_v24/ISOLATED_PREFIX_SUCCESS_44970630686.json`.
+
+**Interprétation : R3 sur le sous-problème de décodage autonome de préfixe**, pas une preuve de restitution de enwik9 entier. Les deux échecs de compilation antérieurs ont été conservés et leur cause supprimée sans désactiver les gardes. Aucun score admissible S ni victoire officielle.
