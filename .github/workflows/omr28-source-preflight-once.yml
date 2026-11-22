@@ -1,0 +1,63 @@
+name: "OMÉGA-R v0.28 — préflight du mélangeur bayésien symétrique"
+on:
+  push:
+    branches:
+      - research/omr28-bayesian-bitmix-symmetric
+    paths:
+      - .github/workflows/omr28-source-preflight-once.yml
+permissions:
+  contents: read
+jobs:
+  source-and-mathematical-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout only authorized project source
+        uses: actions/checkout@v4
+      - name: Execute seven independent source and Bayesian regret tests
+        run: python3 -m unittest discover -s Hutter_OmegaR/v28 -p 'test_*.py' -v
+      - name: Compile original C++ Q32 model and test both positive and control sequences
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -I Hutter_OmegaR/v28 Hutter_OmegaR/v28/bitmix_selftest.cpp -o /tmp/omr28-bayes-test
+          /tmp/omr28-bayes-test positive >/tmp/omr28-positive.stdout 2>/tmp/omr28-positive.stderr
+          /tmp/omr28-bayes-test control >/tmp/omr28-control.stdout 2>/tmp/omr28-control.stderr
+          /tmp/omr28-bayes-test positive >/tmp/omr28-positive-again.stdout 2>/tmp/omr28-positive-again.stderr
+          cmp /tmp/omr28-positive.stdout /tmp/omr28-positive-again.stdout
+          grep -F 'OMR28_SELFTEST_OK mode=positive' /tmp/omr28-positive.stdout
+          grep -F 'OMR28_SELFTEST_OK mode=control' /tmp/omr28-control.stdout
+          cat /tmp/omr28-positive.stdout
+          cat /tmp/omr28-control.stdout
+      - name: Clone exact GPL-3.0-only upstream commit, refuse source drift
+        run: |
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr28-upstream
+          git -C /tmp/omr28-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+      - name: Prepare real v25 native prefix route with both genuine coder paths instrumented
+        run: |
+          python3 Hutter_OmegaR/v28/prepare_bayesian_pair.py --upstream /tmp/omr28-upstream --output /tmp/omr28-prepared
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          record=json.loads(Path('/tmp/omr28-source-audit.json').read_text())
+          assert record['status']=='SYMMETRIC_PROBABILITY_CODE_PREPARED_NOT_YET_BUILT'
+          assert record['encoder_decoder_same_correction_and_update']
+          assert record['no_new_side_data'] and record['free_coded_bits_only']
+          assert record['eligible_hutter_score_S'] is None
+          for role in ('encoder','decoder'):
+              code=Path('/tmp/omr28-prepared/src/coder/'+role+'.cpp').read_text()
+              assert code.count('omr28_bitmix::Before(')==1
+              assert code.count('omr28_bitmix::After(')==1
+          print('OMR28_REAL_UPSTREAM_SYMMETRIC_SOURCE_PREFLIGHT_OK; NO_HUTTER_SCORE')
+          PY
+      - name: Archive text metadata only, no GPL source, model or corpus
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr28-bayesian-source-preflight
+          path: |
+            /tmp/omr28-source-audit.json
+            /tmp/omr28-positive.stdout
+            /tmp/omr28-control.stdout
+            /tmp/omr28-positive.stderr
+            /tmp/omr28-control.stderr
+          retention-days: 14
+          if-no-files-found: ignore
