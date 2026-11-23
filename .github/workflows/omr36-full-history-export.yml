@@ -1,0 +1,35 @@
+name: "OMÉGA-R — export autonome de tout l'historique scientifique Git"
+on:
+  push:
+    branches: ["experiment/omr36-native-16m"]
+    paths:
+      - ".github/workflows/omr36-full-history-export.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construire la copie intégrale traçable des propres fichiers Git
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/omr36-history
+          git rev-parse HEAD > /tmp/omr36-history/GITHUB_SHA.txt
+          if git ls-files Hutter_OmegaR | grep -E '(^|/)(enwik9|enwik8)(\.zip)?$|\.c5$|/archive9$|/comp9$'; then
+            echo "Raw corpus, upstream weights or binary unexpectedly tracked: refusing export"
+            exit 1
+          fi
+          zip -q -r /tmp/omr36-history/FULL_GIT_PROJECT_HISTORY.zip \
+             Hutter_OmegaR .github/workflows README.md RELEASE_MANIFEST_SHA256.txt
+          unzip -tq /tmp/omr36-history/FULL_GIT_PROJECT_HISTORY.zip
+          cd /tmp/omr36-history
+          sha256sum FULL_GIT_PROJECT_HISTORY.zip > SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: omr36-full-git-project-history
+          path: /tmp/omr36-history/
+          retention-days: 14
