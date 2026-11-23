@@ -1,0 +1,118 @@
+name: "OMÉGA-R v0.36 — VRAI comp9/archive9 sur 16 Mio de flux prétraité"
+on:
+  push:
+    branches:
+      - experiment/omr36-native-16m
+    paths:
+      - .github/workflows/omr36-real-16m-once.yml
+permissions:
+  contents: read
+jobs:
+  genuine-canonical-16m-prefix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - name: Checkout authorized source and all native long-prefix guards
+        uses: actions/checkout@v4
+      - name: Reproduce adversarial suite before real work
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s Hutter_OmegaR/v32 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v31 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v25 -p 'test_*.py' -v
+          python3 -m unittest discover -s Hutter_OmegaR/v26 -p 'test_*.py' -v
+          free -m
+          df -h /tmp
+      - name: Install original cmix GPL-3.0-only dependencies and time utility
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 gawk build-essential binutils time unzip
+          clang++-18 --version | head -1
+      - name: Retrieve exact pinned upstream, prepare native zero-argument 16 MiB archive path
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/marwoelk/cmix-neif-2.0.git /tmp/omr36-upstream
+          git -C /tmp/omr36-upstream checkout --detach 35d1957a5074db802fc134126afc77b76d931761
+          python3 Hutter_OmegaR/v32/prepare_extended_prefix.py --upstream /tmp/omr36-upstream --output /tmp/omr36-16m-build --prefix-bytes 16777216
+          cmp /tmp/omr36-upstream/src/coder/encoder.cpp /tmp/omr36-16m-build/src/coder/encoder.cpp
+          cmp /tmp/omr36-upstream/src/coder/decoder.cpp /tmp/omr36-16m-build/src/coder/decoder.cpp
+          test -s /tmp/omr36-source-audit.json
+      - name: Compile real native comp9 and respect compressor/decompressor section-separation guard
+        run: |
+          cd /tmp/omr36-16m-build
+          if ! /usr/bin/time -f 'BUILD_WALL_S=%e BUILD_RSS_KIB=%M' -o /tmp/omr36-build-time.log bash build.sh > /tmp/omr36-build.stdout 2>/tmp/omr36-build.stderr; then
+            tail -n 140 /tmp/omr36-build.stderr
+            tail -n 40 /tmp/omr36-build.stdout
+            exit 1
+          fi
+          test -x comp9
+          sha256sum comp9 > /tmp/omr36-long-comp9.sha256
+      - name: Authenticate the original complete 1GB public enwik9
+        run: |
+          set -euo pipefail
+          curl -fL --retry 2 --connect-timeout 30 --max-time 1200 https://mattmahoney.net/dc/enwik9.zip -o /tmp/omr36-enwik9.zip
+          python3 - <<'PY'
+          import hashlib,shutil,zipfile
+          from pathlib import Path
+          input=Path('/tmp/omr36-enwik9.zip')
+          output=Path('/tmp/omr36-enwik9')
+          with zipfile.ZipFile(input) as z:
+              files=[i for i in z.infolist() if not i.is_dir()]
+              assert len(files)==1 and files[0].filename=='enwik9' and files[0].file_size==1_000_000_000
+              with z.open(files[0]) as src,output.open('wb') as dst:
+                  shutil.copyfileobj(src,dst,4<<20)
+          hasher=hashlib.sha256()
+          with output.open('rb') as f:
+              for part in iter(lambda:f.read(4<<20),b''):hasher.update(part)
+          assert output.stat().st_size==1_000_000_000
+          assert hasher.hexdigest()=='159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc'
+          input.unlink()
+          print('OMR36_REAL_1GB_CANONICAL_ENWIK9_VERIFIED_NO_UPLOAD')
+          PY
+      - name: True one-core comp9→archive9; independently compare ALL 16777216 bytes, from beginning
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v32/run_native_extended.py \
+            --binary /tmp/omr36-16m-build/comp9 \
+            --corpus /tmp/omr36-enwik9 \
+            --work /tmp/omr36-real-16m-work \
+            --report /tmp/omr36-real-16m-result.json \
+            --prefix-bytes 16777216 > /tmp/omr36-public-metrics.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('/tmp/omr36-real-16m-result.json').read_text())
+          assert r['status']=='LONGER_NATIVE_PRECODER_PREFIX_BITWISE_VERIFIED'
+          assert r['decoded_bytes']==16777216
+          assert r['reference_prefix_sha256']==r['decoded_sha256']
+          assert r['initial_independent_workdir_files']==['archive9']
+          assert r['independent_archive_argv']==[]
+          assert len(r['encode_resource_metrics']['cpu_affinity'])==1
+          assert len(r['decode_resource_metrics']['cpu_affinity'])==1
+          assert r['official_Hutter_score_S'] is None and not r['entire_original_enwik9_restored']
+          print('OMR36_REAL_16M_NATIVE_ARCHIVE_INDEPENDENT_BITWISE_SHA256_PASS')
+          print('OMR36_ARCHIVE_BYTES',r['native_archive_bytes'])
+          print('OMR36_ARITHMETIC_BYTES',r['arithmetic_payload_bytes'])
+          print('OMR36_RESTORED_SHA256',r['decoded_sha256'])
+          PY
+      - name: Preserve only SHA, lengths and performance, never corpus or weights
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omr36-real-16m-native-archive-roundtrip-metadata
+          path: |
+            /tmp/omr36-source-audit.json
+            /tmp/omr36-real-16m-result.json
+            /tmp/omr36-public-metrics.txt
+            /tmp/omr36-build-time.log
+            /tmp/omr36-long-comp9.sha256
+            /tmp/omr36-encode-meter.json
+            /tmp/omr36-decode-meter.json
+            /tmp/omr36-build.stderr
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Destroy all downloaded public corpus, GPL sources and transient model bytes
+        if: always()
+        run: |
+          rm -rf /tmp/omr36-enwik9.zip /tmp/omr36-enwik9 /tmp/omr36-real-16m-work
+          rm -rf /tmp/omr36-upstream /tmp/omr36-16m-build
