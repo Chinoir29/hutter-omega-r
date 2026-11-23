@@ -1,0 +1,44 @@
+name: "OMÉGA-R v0.36 — conserver les sources natives de reprise"
+on:
+  push:
+    branches: ["experiment/omr36-native-16m"]
+    paths:
+      - ".github/workflows/omr36-sources-export.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  freeze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compiler une reprise source sans corpus ni poids amont
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v36-export
+          git rev-parse HEAD > /tmp/v36-export/GITHUB_HEAD.txt
+          zip -q -r /tmp/v36-export/OWNED_NATIVE_SOURCE_V36.zip \
+            Hutter_OmegaR/Constitution_OMEGA_R_source.txt \
+            Hutter_OmegaR/v21 \
+            Hutter_OmegaR/v23 \
+            Hutter_OmegaR/v24 \
+            Hutter_OmegaR/v25 \
+            Hutter_OmegaR/v26 \
+            Hutter_OmegaR/v31 \
+            Hutter_OmegaR/v32 \
+            Hutter_OmegaR/results_v30 \
+            Hutter_OmegaR/results_v31 \
+            Hutter_OmegaR/results_v32 \
+            .github/workflows/omr32-real-32m-once.yml \
+            .github/workflows/omr36-real-16m-once.yml \
+            .github/workflows/omr36-sources-export.yml
+          sha256sum /tmp/v36-export/OWNED_NATIVE_SOURCE_V36.zip \
+            | sed 's@/tmp/v36-export/@@' > /tmp/v36-export/SHA256.txt
+          unzip -tq /tmp/v36-export/OWNED_NATIVE_SOURCE_V36.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: omr36-native-source-snapshot
+          path: /tmp/v36-export/
+          retention-days: 14
