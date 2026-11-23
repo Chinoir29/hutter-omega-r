@@ -1,0 +1,120 @@
+name: "OMÉGA-R v0.33 — lignes et gabarits sur vrai enwik9"
+# Recherche limitée à 5 fenêtres. Ce travail N'EST PAS une soumission au Hutter Prize.
+on:
+  push:
+    branches: ["experiment/omr33-line-template"]
+    paths:
+      - ".github/workflows/omr33-real-wikipedia-ab.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authentic-wikipedia-ab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérification unitaire du codec expérimental
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v33/line_template_codec.py test
+          python3 -m py_compile Hutter_OmegaR/v33/line_template_codec.py
+          command -v zstd || (sudo apt-get update -qq && sudo apt-get install -y zstd)
+
+      - name: Télécharger et authentifier le vrai enwik9
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data reports/v33
+          curl --fail --location --retry 4 --retry-all-errors \
+            --connect-timeout 30 --max-time 1500 \
+            -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" -eq 1000000000
+          printf '%s  %s\n' \
+            '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' \
+            data/enwik9 | sha256sum --check --status
+          echo 'TRUE ENWIK9 SHA256 VERIFIED'
+
+      - name: Compression A/B de 5 fenêtres disjointes et restitution SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,pathlib,subprocess,sys,time
+          sys.path.insert(0,'Hutter_OmegaR/v33')
+          from line_template_codec import encode,decode
+          source=pathlib.Path('data/enwik9')
+          out=pathlib.Path('reports/v33')
+          length=8*1024*1024
+          offsets_mib=[0,128,320,640,872]
+          modes=['raw','exact','template','hybrid']
+          report={'project':'OMEGA-R v0.33','status':'full_lab_only',
+                  'official_hutter_score':None,'submission_sent':False,
+                  'verified_enwik9_sha256':'159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc',
+                  'bytes_per_window':length,'windows_mib':offsets_mib,
+                  'note':'Zstd -9 proxy, not a cmix-neif result and not an enwik9 contest score.',
+                  'results':[]}
+          def z(data,decode_mode=False):
+              cmd=['zstd','-q','-T1','--stdout','-d' if decode_mode else '-9']
+              p=subprocess.run(cmd,input=data,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
+              return p.stdout
+          for off_mib in offsets_mib:
+              with source.open('rb') as f:
+                  f.seek(off_mib*1024*1024)
+                  raw=f.read(length)
+              assert len(raw)==length
+              sha=hashlib.sha256(raw).hexdigest()
+              sizes={}
+              for mode in modes:
+                  start=time.monotonic()
+                  if mode=='raw':
+                      pre=raw;counts={}
+                  else:
+                      pre,counts=encode(raw,mode=mode)
+                  packed=z(pre)
+                  output=z(packed,True)
+                  if mode!='raw':output=decode(output)
+                  assert len(output)==len(raw) and hashlib.sha256(output).hexdigest()==sha
+                  elapsed=round(time.monotonic()-start,3)
+                  sizes[mode]=len(packed)
+                  row={'offset_mib':off_mib,'mode':mode,'source_sha256':sha,
+                      'raw_size':len(raw),'transformed_size':len(pre),
+                      'zstd_bytes':len(packed),'roundtrip_exact':True,
+                      'elapsed_s':elapsed,'counts':counts}
+                  report['results'].append(row)
+                  print('WINDOW',off_mib,'MODE',mode,'ZSTD',len(packed),
+                        'PRE',len(pre),'TIME',elapsed,flush=True)
+              print('DELTA_HYBRID',off_mib,sizes['hybrid']-sizes['raw'],flush=True)
+          for m in modes:
+              rows=[r for r in report['results'] if r['mode']==m]
+              report.setdefault('aggregate_zstd_bytes',{})[m]=sum(r['zstd_bytes'] for r in rows)
+          report['delta_hybrid_vs_raw_zstd_bytes']=(
+              report['aggregate_zstd_bytes']['hybrid']-report['aggregate_zstd_bytes']['raw'])
+          report['roundtrip_count']=len(report['results'])
+          report['all_roundtrips_verified']=all(x['roundtrip_exact'] for x in report['results'])
+          assert report['roundtrip_count']==20 and report['all_roundtrips_verified']
+          (out/'A_B_REAL_ENWIK9_WINDOWS.json').write_text(
+              json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
+          print('FINAL_LAB_DELTA_BYTES',report['delta_hybrid_vs_raw_zstd_bytes'])
+          PY
+
+      - name: Supprimer le corpus authentique
+        if: always()
+        shell: bash
+        run: rm -f data/enwik9 data/enwik9.zip
+
+      - name: Conserver seulement les résultats numériques et SHA256
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omega-r-v033-enwik9-sampled-ab
+          path: reports/v33/
+          if-no-files-found: warn
+          retention-days: 7
