@@ -1,0 +1,112 @@
+name: "OMÉGA-R v0.35 — cache sémantique, stockage 950 ou 980"
+# A/B sur 5 x 65536 octets vrais et réversibles. PAS un score Hutter.
+on:
+  push:
+    branches: ["experiment/omr35-store-retention"]
+    paths:
+      - ".github/workflows/omr35-store-retention-ab.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prospective-fully-reversible-ab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests préalables, échantillons préenregistrés, patch source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/escaped reports/v35
+          python3 Hutter_OmegaR/v35/fresh_samples.py --self-test
+          python3 Hutter_OmegaR/v35/patch_storage.py --self-test
+          python3 Hutter_OmegaR/v17/reversible_sample.py --self-test
+          python3 Hutter_OmegaR/v16/test_patch_upper_gate.py
+          python3 Hutter_OmegaR/v14/test_enable_raw_lab.py
+          python3 -m unittest discover -s Hutter_OmegaR/v17 -p 'test_*.py' -v
+          python3 -m py_compile Hutter_OmegaR/v35/*.py
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential make binutils ca-certificates git gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          free -h
+          df -h .
+          test "$(df -PB1 . | awk 'NR==2 {print $4}')" -ge 6000000000
+      - name: Vérifier la source GPL-3.0 et l'état initial strictement épinglé
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          test "$(git -C upstream rev-parse HEAD)" = "$expected"
+          test "$(git -C upstream hash-object src/vocab_frozen.h)" = da5ffe84fb7e3d9a5061b43da5970f7c9f728e19
+          test "$(git -C upstream hash-object src/semantic_cache.h)" = 20614538d3ff90906163a6bd9150894cbb7020f1
+          test -s upstream/LICENSE
+          test -s upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5
+      - name: Télécharger, contrôler et échantillonner enwik9 officiel
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 4 --retry-all-errors \
+            --connect-timeout 30 --max-time 1200 \
+            -o data/enwik9.zip https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" -eq 1000000000
+          printf '%s  %s\n' \
+            '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' \
+            data/enwik9 | sha256sum --check --status
+          python3 Hutter_OmegaR/v35/fresh_samples.py \
+            --enwik9 data/enwik9 \
+            --vocab-header upstream/src/vocab_frozen.h \
+            --out-dir data/escaped \
+            --report reports/v35/sample_manifest.json
+          rm -f data/enwik9 data/enwik9.zip
+      - name: Changer uniquement le seuil de stockage SEMCACHE et mesurer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v35/run_storage_ab.py \
+            --upstream upstream \
+            --samples-dir data/escaped \
+            --manifest reports/v35/sample_manifest.json \
+            --reports reports/v35 \
+            --phase-timeout 600
+          python3 - <<'PY'
+          import json
+          data=json.load(open('reports/v35/V35_SEMCACHE_STORAGE_AB.json'))
+          assert data['status']=='all_ten_double_roundtrips_verified'
+          assert data['hutter_prize_score'] is None
+          assert data['query_threshold_qpe3_fixed']==999
+          assert len(data['measurements'])==10 and len(data['paired_results'])==5
+          assert all(r['double_roundtrip_verified'] for r in data['measurements'])
+          print('VALID_V035_DOUBLE_ROUNDTRIPS',len(data['measurements']))
+          print('V035_BYTE_DELTA',data['delta_candidate_minus_control_lab_bytes'])
+          PY
+      - name: Supprimer données et modèle téléchargés, conserver uniquement preuves
+        if: always()
+        shell: bash
+        run: rm -rf upstream data
+      - name: Conserver rapport compact, empreintes et contrôle des limites
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omega-r-v035-store-retention-audit
+          path: |
+            reports/v35/sample_manifest.json
+            reports/v35/V35_SEMCACHE_STORAGE_AB.json
+            reports/v35/sp950/patch.json
+            reports/v35/sp980/patch.json
+            reports/v35/sp950/build_resources.txt
+            reports/v35/sp980/build_resources.txt
+            reports/v35/sp950/failure.json
+            reports/v35/sp980/failure.json
+          if-no-files-found: warn
+          retention-days: 14
