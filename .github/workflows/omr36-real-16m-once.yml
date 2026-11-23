@@ -36,7 +36,7 @@ jobs:
           python3 Hutter_OmegaR/v32/prepare_extended_prefix.py --upstream /tmp/omr36-upstream --output /tmp/omr36-16m-build --prefix-bytes 16777216
           cmp /tmp/omr36-upstream/src/coder/encoder.cpp /tmp/omr36-16m-build/src/coder/encoder.cpp
           cmp /tmp/omr36-upstream/src/coder/decoder.cpp /tmp/omr36-16m-build/src/coder/decoder.cpp
-          test -s /tmp/omr36-source-audit.json
+          test -s /tmp/omr32-source-audit.json
       - name: Compile real native comp9 and respect compressor/decompressor section-separation guard
         run: |
           cd /tmp/omr36-16m-build
@@ -101,13 +101,13 @@ jobs:
         with:
           name: omr36-real-16m-native-archive-roundtrip-metadata
           path: |
-            /tmp/omr36-source-audit.json
+            /tmp/omr32-source-audit.json
             /tmp/omr36-real-16m-result.json
             /tmp/omr36-public-metrics.txt
             /tmp/omr36-build-time.log
             /tmp/omr36-long-comp9.sha256
-            /tmp/omr36-encode-meter.json
-            /tmp/omr36-decode-meter.json
+            /tmp/omr32-encode-meter.json
+            /tmp/omr32-decode-meter.json
             /tmp/omr36-build.stderr
           if-no-files-found: ignore
           retention-days: 14
