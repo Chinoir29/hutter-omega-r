@@ -1,0 +1,48 @@
+name: "OMÉGA-R v0.35 — export autonome du code et des tests"
+on:
+  push:
+    branches: ["experiment/omr35-store-retention"]
+    paths:
+      - ".github/workflows/omr35-owned-sources-export.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conserver les sources appartenant au projet, leurs tests et leurs empreintes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/omr35snapshot
+          printf '%s\n' "$(git rev-parse HEAD)" > /tmp/omr35snapshot/HEAD_SHA.txt
+          zip -q -r /tmp/omr35snapshot/OWNED_SOURCE_SNAPSHOT.zip \
+            README.md \
+            Hutter_OmegaR/Constitution_OMEGA_R_source.txt \
+            Hutter_OmegaR/CONSTITUTION_OMEGA_R_ADAPTATION_HUTTER_v8.md \
+            Hutter_OmegaR/v13 \
+            Hutter_OmegaR/v14 \
+            Hutter_OmegaR/v16 \
+            Hutter_OmegaR/v17 \
+            Hutter_OmegaR/v33 \
+            Hutter_OmegaR/v34 \
+            Hutter_OmegaR/v35 \
+            Hutter_OmegaR/results_v11 \
+            Hutter_OmegaR/results_v16 \
+            Hutter_OmegaR/results_v17 \
+            .github/workflows/omr17-reversible-wiki-ab.yml \
+            .github/workflows/omr33-real-wikipedia-ab.yml \
+            .github/workflows/omr34-fresh-semcache-ab.yml \
+            .github/workflows/omr35-store-retention-ab.yml \
+            .github/workflows/omr35-owned-sources-export.yml
+          sha256sum /tmp/omr35snapshot/OWNED_SOURCE_SNAPSHOT.zip \
+            > /tmp/omr35snapshot/OWNED_SOURCE_SNAPSHOT.sha256
+          unzip -tq /tmp/omr35snapshot/OWNED_SOURCE_SNAPSHOT.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: omega-r-v035-owned-sources
+          path: /tmp/omr35snapshot/
+          retention-days: 14
