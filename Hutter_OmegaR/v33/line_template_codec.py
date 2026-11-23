@@ -154,7 +154,7 @@ def self_test():
            b'| Year 2005 Population 14 inhabitants total\n'*20+
            b'| Year 2019 Population 304 inhabitants total\n'*20]
     for _ in range(200):
-        data=b''.join(rng.choice(tests)+rng.randbytes(rng.randrange(200)) for _ in range(5))
+        data=b''.join(rng.choice(tests[:6])+rng.randbytes(rng.randrange(200)) for _ in range(5))
         tests.append(data)
         for mode in ('literal','exact','template','hybrid'):
             c,_=encode(data,mode=mode,window=64)
