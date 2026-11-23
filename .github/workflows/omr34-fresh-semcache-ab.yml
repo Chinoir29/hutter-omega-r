@@ -1,0 +1,113 @@
+name: "OMÉGA-R v0.34 — réplication SEMCACHE sur fenêtres nouvelles"
+# 5 blocs bruts du vrai enwik9, transformés sans perte avant le chemin laboratoire.
+# Ni le flux du concours, ni une archive autonome, ni un score officiel.
+on:
+  push:
+    branches: ["experiment/omr33-line-template"]
+    paths:
+      - ".github/workflows/omr34-fresh-semcache-ab.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paired-lossless-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prévol de la constitution de laboratoire et des dépendances
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/escaped reports/v34
+          python3 Hutter_OmegaR/v34/fresh_samples.py --self-test
+          python3 Hutter_OmegaR/v17/reversible_sample.py --self-test
+          python3 Hutter_OmegaR/v16/test_patch_upper_gate.py
+          python3 Hutter_OmegaR/v14/test_enable_raw_lab.py
+          python3 -m unittest discover -s Hutter_OmegaR/v17 -p 'test_*.py' -v
+          python3 -m py_compile Hutter_OmegaR/v34/*.py
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential make binutils ca-certificates git gawk python3 \
+            clang-18 lld-18 llvm-18 libclang-rt-18-dev gcc-13 g++-13 time
+          free -h
+          df -h .
+
+      - name: Révision amont GPL 3.0 et empreinte du vocabulaire
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=35d1957a5074db802fc134126afc77b76d931761
+          git init -q upstream
+          git -C upstream remote add origin https://github.com/marwoelk/cmix-neif-2.0.git
+          git -C upstream fetch --depth 1 origin "$expected"
+          git -C upstream checkout --detach -q FETCH_HEAD
+          test "$(git -C upstream rev-parse HEAD)" = "$expected"
+          test "$(git -C upstream hash-object src/vocab_frozen.h)" = da5ffe84fb7e3d9a5061b43da5970f7c9f728e19
+          test -s upstream/LICENSE
+          test -s upstream/weights-poc8m_w2048_tf2t3_pruned_v5k_np2.c5
+
+      - name: Authentifier les 1 milliard d'octets et préparer 5 nouvelles fenêtres
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-all-errors --connect-timeout 30 \
+            --max-time 1200 -o data/enwik9.zip \
+            https://mattmahoney.net/dc/enwik9.zip
+          unzip -tq data/enwik9.zip
+          test "$(unzip -Z1 data/enwik9.zip)" = enwik9
+          unzip -p data/enwik9.zip enwik9 > data/enwik9
+          test "$(stat -c%s data/enwik9)" = 1000000000
+          printf '%s  %s\n' \
+            '159b85351e5f76e60cbe32e04c677847a9ecba3adc79addab6f4c6c7aa3744bc' \
+            data/enwik9 | sha256sum --check --status
+          python3 Hutter_OmegaR/v34/fresh_samples.py \
+            --enwik9 data/enwik9 \
+            --vocab-header upstream/src/vocab_frozen.h \
+            --out-dir data/escaped \
+            --report reports/v34/sample_manifest.json
+          rm -f data/enwik9 data/enwik9.zip
+
+      - name: Confronter SEMCACHE kQpE3=990 vs 999
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Hutter_OmegaR/v34/run_fresh_sweep.py \
+            --upstream upstream --samples-dir data/escaped \
+            --manifest reports/v34/sample_manifest.json \
+            --reports reports/v34 \
+            --phase-timeout 600
+          python3 - <<'PY'
+          import json
+          r=json.load(open('reports/v34/V34_FRESH_SEMCACHE_RESULT.json'))
+          assert r['status']=='all_ten_double_roundtrips_verified'
+          assert len(r['rows'])==10 and len(r['pairs'])==5
+          assert r['hutter_score'] is None
+          print('DOUBLE_ROUNDTRIP_VERIFIED_10_OF_10')
+          print('DELTA_Q999_MINUS_Q990_LAB_BYTES',r['delta_q999_minus_q990'])
+          PY
+
+      - name: Supprimer poids, modèles et échantillons avant l'archivage
+        if: always()
+        shell: bash
+        run: rm -rf upstream data
+
+      - name: Publier seulement rapports non sensibles
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omega-r-v034-prospective-semcache-audit
+          path: |
+            reports/v34/sample_manifest.json
+            reports/v34/V34_FRESH_SEMCACHE_RESULT.json
+            reports/v34/q990/patch_semcache.json
+            reports/v34/q999/patch_semcache.json
+            reports/v34/q990/build_resources.txt
+            reports/v34/q999/build_resources.txt
+            reports/v34/q990/failure.json
+            reports/v34/q999/failure.json
+          if-no-files-found: warn
+          retention-days: 14
